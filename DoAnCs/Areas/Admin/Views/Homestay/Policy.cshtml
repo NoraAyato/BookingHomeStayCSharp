@@ -1,0 +1,236 @@
+﻿@using DoAnCs.Models
+@model ChinhSach
+@{
+    ViewData["Title"] = "Quản lý chính sách - " + ViewBag.HomestayName;
+}
+
+<!-- Main Content -->
+<div class="flex flex-col h-full">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 px-6 pt-4">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-200">Chính sách của @ViewBag.HomestayName</h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-1 text-sm md:text-base">
+                Quản lý chính sách áp dụng cho homestay này
+            </p>
+        </div>
+        <div>
+            <a asp-area="Admin" asp-controller="Homestay" asp-action="Index"
+               class="inline-flex items-center gap-2 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2.5 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg text-sm md:text-base">
+                <i class="fas fa-arrow-left mr-1"></i>
+                Quay lại danh sách
+            </a>
+        </div>
+    </div>
+
+    <!-- Policy Section -->
+    <div class="flex-1 overflow-y-auto px-6 pb-6">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">
+                    <i class="fas fa-file-contract text-primary-600 dark:text-primary-400 mr-2"></i>
+                    Thông tin chính sách
+                </h2>
+                <span class="text-xs px-3 py-1 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                    <i class="fas fa-hashtag mr-1"></i> ID: @Model.ID_Homestay
+                </span>
+            </div>
+
+            <form id="policyForm" class="space-y-6">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="homestayId" value="@Model.ID_Homestay" />
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Check-in Time -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-sign-in-alt text-green-500 dark:text-green-400 mr-2"></i>
+                            Giờ nhận phòng
+                        </label>
+                        <div class="relative">
+                            <input type="text" id="NhanPhong" value="@Model.NhanPhong"
+                                   class="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200 text-sm transition duration-150"
+                                   placeholder="Ví dụ: 14:00" required />
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-clock text-gray-400"></i>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Thời gian khách có thể nhận phòng</p>
+                    </div>
+
+                    <!-- Check-out Time -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-sign-out-alt text-red-500 dark:text-red-400 mr-2"></i>
+                            Giờ trả phòng
+                        </label>
+                        <div class="relative">
+                            <input type="text" id="TraPhong" value="@Model.TraPhong"
+                                   class="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200 text-sm transition duration-150"
+                                   placeholder="Ví dụ: 12:00" required />
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-clock text-gray-400"></i>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Thời gian khách cần trả phòng</p>
+                    </div>
+                </div>
+
+                <!-- Cancellation Policy -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <i class="fas fa-ban text-red-500 dark:text-red-400 mr-2"></i>
+                        Chính sách hủy phòng
+                    </label>
+                    <div class="relative">
+                        <textarea id="HuyPhong" rows="5"
+                                  class="w-full px-4 py-3 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200 text-sm transition duration-150"
+                                  placeholder="Nhập chính sách hủy phòng..." required>@Model.HuyPhong</textarea>
+                        <div class="absolute top-3 left-3">
+                            <i class="fas fa-exclamation-triangle text-gray-400"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Quy định về việc hủy đặt phòng và hoàn tiền</p>
+                </div>
+
+                <!-- Meal Policy -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <i class="fas fa-utensils text-yellow-500 dark:text-yellow-400 mr-2"></i>
+                        Chính sách bữa ăn
+                    </label>
+                    <div class="relative">
+                        <textarea id="BuaAn" rows="5"
+                                  class="w-full px-4 py-3 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200 text-sm transition duration-150"
+                                  placeholder="Nhập chính sách bữa ăn..." required>@Model.BuaAn</textarea>
+                        <div class="absolute top-3 left-3">
+                            <i class="fas fa-info-circle text-gray-400"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Quy định về bữa ăn, giờ phục vụ và các dịch vụ liên quan</p>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+                    <button type="button" onclick="resetPolicyForm()"
+                            class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition duration-150">
+                        <i class="fas fa-undo mr-2"></i>
+                        Đặt lại
+                    </button>
+                    <button type="button" onclick="submitPolicyForm()"
+                            class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition duration-150">
+                        <i class="fas fa-save mr-2"></i>
+                        Lưu chính sách
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Enhanced showToast function with dark mode support
+        function showToast(message, isSuccess) {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
+                color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                }
+            });
+
+            Toast.fire({
+                icon: isSuccess ? 'success' : 'error',
+                title: message,
+                iconColor: isSuccess ? '#10b981' : '#ef4444'
+            });
+        }
+
+        // Reset form to original values
+        function resetPolicyForm() {
+            document.getElementById('NhanPhong').value = '@Model.NhanPhong';
+            document.getElementById('TraPhong').value = '@Model.TraPhong';
+            document.getElementById('HuyPhong').value = `@Html.Raw(Model.HuyPhong)`;
+            document.getElementById('BuaAn').value = `@Html.Raw(Model.BuaAn)`;
+
+            showToast('Đã đặt lại giá trị ban đầu', true);
+        }
+
+        // Submit policy form via fetch with improved error handling
+        async function submitPolicyForm() {
+            const form = document.getElementById('policyForm');
+            const submitBtn = form.querySelector('button[type="button"]:last-child');
+            const homestayId = document.getElementById('homestayId').value;
+            const nhanPhong = document.getElementById('NhanPhong').value.trim();
+            const traPhong = document.getElementById('TraPhong').value.trim();
+            const huyPhong = document.getElementById('HuyPhong').value.trim();
+            const buaAn = document.getElementById('BuaAn').value.trim();
+            const token = form.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            // Validate required fields
+            if (!nhanPhong || !traPhong || !huyPhong || !buaAn) {
+                showToast('Vui lòng điền đầy đủ thông tin chính sách', false);
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Đang lưu...';
+
+            try {
+                const response = await fetch(`/Admin/Homestay/Policy/${homestayId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify({
+                        NhanPhong: nhanPhong,
+                        TraPhong: traPhong,
+                        HuyPhong: huyPhong,
+                        BuaAn: buaAn
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast(data.message || 'Cập nhật chính sách thành công', true);
+                } else {
+                    showToast(data.message || 'Có lỗi xảy ra khi cập nhật chính sách', false);
+                }
+            } catch (error) {
+                console.error('Lỗi khi gửi yêu cầu:', error);
+                showToast('Có lỗi xảy ra khi kết nối với máy chủ', false);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-save mr-2"></i> Lưu chính sách';
+            }
+        }
+
+        // Initialize form validation
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('policyForm');
+            const inputs = form.querySelectorAll('input[required], textarea[required]');
+
+            inputs.forEach(input => {
+                input.addEventListener('invalid', function(e) {
+                    e.preventDefault();
+                    showToast(`Vui lòng điền thông tin vào trường ${input.previousElementSibling.textContent.trim()}`, false);
+                });
+            });
+        });
+    </script>
+}

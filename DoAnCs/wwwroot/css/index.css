@@ -1,0 +1,707 @@
+﻿.navbar-nav {
+    flex-wrap: nowrap; /* Không cho xuống dòng */
+    overflow: hidden; /* Tránh tràn */
+}
+body {
+    padding-top: 20px; /* Điều chỉnh theo chiều cao navbar */
+}
+
+    .navbar-nav .nav-link {
+        white-space: nowrap;
+        font-size: 18px;
+        padding: 10px 15px;
+        color: black; /* Màu mặc định */
+        transition: color 0.3s ease-in-out;
+    }
+
+        .navbar-nav .nav-link.active {
+            color: red !important; /* Màu đỏ khi được chọn */
+            font-weight: bold;
+        }
+
+
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    background: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand img {
+    height: 60px; /* Logo lớn hơn */
+    margin-left: 200px; /* Đẩy logo cách bên trái 500px */
+}
+
+
+    .nav-link:hover {
+        color: #0d6efd;
+    }
+
+.form-control {
+    width: auto;
+    /* Giữ kích thước vừa phải */
+}
+
+.search-btn {
+    margin-left: 5px;
+}
+
+.btn-primary,
+.btn-outline-primary {
+    white-space: nowrap;
+    /* Giữ nội dung nút trên cùng một dòng */
+
+}
+
+.d-flex > * {
+    margin-left: 10px;
+    /* Khoảng cách giữa các phần tử bên phải */
+}
+
+.search-btn {
+    margin-left: 5px;
+}
+
+.banner {
+    margin-top: 80px; /* Điều chỉnh nếu bị che */
+    position: relative;
+    height: 650px; /* Điều chỉnh chiều cao */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: url('https://bizweb.dktcdn.net/100/344/583/themes/894779/assets/slider_1.jpg?1676261382973') no-repeat center center/cover;
+}
+
+    .banner .section {
+        max-width: 800px; /* Giới hạn độ rộng */
+        text-align: center;
+    }
+
+    .banner h1 {
+        font-size: 48px; /* Tăng kích thước chữ */
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .banner p {
+        font-size: 18px;
+    }
+
+.input-custom {
+    background-color: #f8f9fa; /* Màu xám nhạt */
+    border: none;
+    padding: 10px;
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+    border: none;
+}
+
+.booking-form {
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 30px 20px; /* Tăng padding để form cao hơn */
+    min-height: 140px; /* Tăng chiều cao tối thiểu */
+}
+.spacer-section {
+    height: 60px; /* Điều chỉnh chiều cao theo ý muốn */
+}
+
+.price-text {
+    min-width: 150px;
+    font-size: 18px;
+}
+
+
+    .booking-form .input-group input,
+    .booking-form input {
+        font-size: 18px; /* Tăng cỡ chữ input */
+        padding: 12px; /* Tăng khoảng cách bên trong */
+    }
+
+    .booking-form button {
+        font-size: 20px; /* Làm to nút */
+        padding: 14px;
+        font-weight: bold;
+    }
+    .booking-form h4 {
+        font-size: 24px; /* Tăng kích thước chữ */
+        line-height: 1.5; /* Giãn cách dòng */
+        margin-bottom: 20px; /* Tạo khoảng cách dưới */
+        text-align: center; /* Căn giữa chữ */
+    }
+
+.price-box {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.8);
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.gallery img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.price-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    transition: transform 0.3s ease-in-out;
+    cursor: default;
+}
+
+    .price-card:hover {
+        transform: translateY(-10px);
+    }
+
+    .price-card h4 {
+        font-weight: bold;
+    }
+
+    .price-card p {
+        margin: 5px 0;
+    }
+
+    .price-card .price {
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+.book-btn {
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.testimonial-container {
+    text-align: center;
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+
+    .testimonial-container h2 {
+        margin-bottom: 20px;
+        font-size: 2rem;
+    }
+
+.statistics {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    gap: 50px;
+}
+
+    .statistics div {
+        text-align: center;
+    }
+
+    .statistics h3 {
+        font-size: 2rem;
+        margin: 0;
+        color: #007bff;
+    }
+
+    .statistics p {
+        margin: 5px 0 0;
+        font-size: 1rem;
+        color: #555;
+    }
+
+.stars {
+    color: #FFD700;
+    font-size: 1.2rem;
+}
+
+.testimonial-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Căn giữa các phần tử theo chiều ngang */
+    gap: 10px;
+}
+
+.arrow {
+    flex: 0 0 auto;
+    /* Giữ nguyên kích thước cố định */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: white;
+    background-color: #007bff;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.testimonial-card {
+    flex: 0 0 300px;
+    /* Đảm bảo các khối có kích thước cố định */
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+    .testimonial-card img {
+        border-radius: 50%;
+        width: 80px;
+        height: 80px;
+        margin-bottom: 15px;
+    }
+
+    .testimonial-card h5 {
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .testimonial-card p {
+        font-size: 0.9rem;
+        color: #555;
+    }
+.khoi11-content-section {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+}
+.khoi11-content-wrapper {
+    display: flex;
+    gap: 20px;
+    align-items: stretch; /* Đảm bảo hai cột có chiều cao đồng đều */
+}
+/* Cột bên trái */
+.khoi11-left-content {
+    width: 60%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Khoảng cách nhỏ hơn giữa các bài viết */
+    justify-content: space-between; /* Giãn đều các bài viết */
+    height: 100%; /* Đảm bảo nó căng theo bài viết nổi bật */
+}
+
+.khoi11-article {
+    display: flex;
+    gap: 10px;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 8px;
+    flex-grow: 1; /* Đảm bảo các bài viết chiếm đủ không gian */
+}
+
+    .khoi11-article img {
+        width: 100px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 6px;
+    }
+.khoi11-right-content {
+    width: 40%;
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+    .khoi11-right-content img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 6px;
+    }
+
+.khoi11-info h3 {
+    font-size: 16px;
+    margin: 0;
+}
+
+.khoi11-info p {
+    font-size: 12px;
+    color: gray;
+    margin: 2px 0;
+}
+
+/* Cột bên phải (bài viết nổi bật) */
+.khoi11-right-content {
+    width: 40%;
+    background: white;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+    .khoi11-right-content img {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+
+    .khoi11-right-content h3 {
+        font-size: 18px;
+        margin-top: 10px;
+    }
+
+/* General Footer Style */
+
+.footer {
+    background-color: #f9f9f9;
+    padding: 40px 20px;
+    font-family: Arial, sans-serif;
+    color: #333;
+}
+
+.footer-container {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.footer-left {
+    flex: 1;
+    max-width: 300px;
+}
+
+.facebook-section {
+    position: relative;
+    /* Đặt khối ở trạng thái tương đối để sử dụng ảnh nền */
+    text-align: left;
+    background-image: url('https://scr.vn/wp-content/uploads/2020/07/N%E1%BB%81n-t%E1%BB%91i-%C4%91en-4k-scaled.jpg');
+    background-size: cover;
+    /* Ảnh nền bao phủ toàn bộ khối */
+    background-position: center;
+    /* Canh giữa ảnh nền */
+    background-repeat: no-repeat;
+    /* Không lặp lại ảnh nền */
+    color: white;
+    /* Văn bản màu trắng để dễ đọc trên nền */
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 400px;
+    margin: auto;
+    border: 1px solid #ddd;
+    transform: scale(0.8);
+    /* Thu nhỏ khối xuống 80% */
+    transform-origin: center;
+    /* Điểm gốc thu nhỏ là trung tâm khối */
+}
+
+.facebook-info {
+    position: relative;
+    /* Đảm bảo nội dung hiển thị phía trên ảnh nền */
+    z-index: 2;
+    /* Đưa nội dung lên trên ảnh nền */
+}
+
+.facebook-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.facebook-logo {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+}
+
+.facebook-info h4 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: bold;
+    color: white;
+}
+
+.facebook-info p {
+    margin: 0;
+    font-size: 14px;
+    color: #e4e6eb;
+}
+
+.facebook-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.facebook-follow,
+.facebook-share {
+    padding: 8px 12px;
+    font-size: 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.facebook-follow {
+    background-color: #1877f2;
+    color: white;
+}
+
+.facebook-share {
+    background-color: #e4e6eb;
+    color: #333;
+}
+
+.facebook-follow:hover {
+    background-color: #145dbf;
+}
+
+.facebook-share:hover {
+    background-color: #d6d8db;
+}
+
+.contact-info p {
+    margin: 10px 0;
+    font-size: 14px;
+}
+
+.footer-right {
+    flex: 3;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 20px;
+}
+
+.footer-links h4 {
+    margin-bottom: 10px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.footer-links ul {
+    list-style: none;
+    padding: 0;
+}
+
+.footer-links li {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #555;
+    cursor: pointer;
+}
+
+    .footer-links li:hover {
+        text-decoration: underline;
+    }
+
+.footer-bottom {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 12px;
+    color: #777;
+}
+
+.khoi3 img {
+    width: 150px;
+    /* Chiều rộng cố định */
+    height: 150px;
+    /* Chiều cao cố định */
+    object-fit: cover;
+    /* Cắt ảnh để vừa với khung */
+    border-radius: 8px;
+    /* Bo góc (tuỳ chọn) */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    /* Đổ bóng (tuỳ chọn) */
+}
+
+.khoi3 p {
+    text-align: justify;
+    /* Căn đều hai bên */
+    max-width: 200px;
+    /* Giới hạn độ rộng của văn bản */
+    margin: 0 auto;
+    /* Căn giữa văn bản */
+    overflow: hidden;
+    /* Ẩn phần chữ vượt quá */
+    text-overflow: ellipsis;
+    /* Hiển thị dấu "..." nếu văn bản quá dài */
+    display: -webkit-box;
+    /* Sử dụng để giới hạn dòng */
+    -webkit-line-clamp: 2;
+    /* Hiển thị tối đa 2 dòng */
+    -webkit-box-orient: vertical;
+    /* Định hướng theo chiều dọc */
+}
+
+.khoi3 .description {
+    text-align: justify;
+    /* Căn đều hai bên */
+    margin: 10px auto;
+    /* Cách các cạnh của khối 10px */
+    max-width: 90%;
+    /* Giới hạn chiều rộng dựa vào khối chứa */
+    color: #555;
+    /* Màu chữ trung tính */
+    font-size: 16px;
+    /* Kích thước chữ vừa phải */
+    line-height: 1.6;
+    /* Giãn dòng để dễ đọc */
+}
+
+.khoi3 .mb-4 {
+    text-align: center;
+    margin: 10px auto;
+    /* Căn giữa và cách đều các cạnh */
+    max-width: 80%;
+    /* Tùy chọn giới hạn độ rộng nếu cần */
+    font-size: 16px;
+    /* Điều chỉnh kích thước chữ nếu cần */
+    color: #555;
+    /* Màu chữ */
+}
+
+.b4icon-img {
+    max-width: 100px;
+    max-height: 100px;
+    object-fit: cover;
+    margin-bottom: 10px;
+    border-radius: 8px;
+}
+
+.col-md-6 {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.b4container {
+    max-width: 1200px;
+    margin: auto;
+}
+
+h2.fw-bold {
+    font-size: 2.5rem; /* Tăng cỡ chữ */
+}
+
+p.description {
+    font-size: 1.2rem; /* Tăng cỡ chữ cho đoạn mô tả */
+    line-height: 1.6; /* Giãn dòng để dễ đọc hơn */
+}
+
+p.mb-4.text-center {
+    font-size: 1.2rem; /* Tăng cỡ chữ cho câu mời gọi */
+}
+/**/
+.dropdown {
+    position: relative;
+}
+/* Dropdown toggle button */
+
+.dropdown-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+    .dropdown-toggle:hover {
+        background-color: #f8f9fa;
+    }
+/* Dropdown menu */
+/* Dropdown menu cơ bản */
+
+.dropdown-menu {
+    display: none;
+    /* Ẩn menu ban đầu */
+    position: absolute;
+    right: 0;
+    min-width: 200px;
+    /* Quan trọng: Thiết lập hiển thị dọc */
+    flex-direction: column;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+    /* Khi menu hiển thị */
+
+    .dropdown-menu.show {
+        display: flex;
+        /* Hiển thị theo kiểu flex dọc */
+    }
+/* Các mục trong menu */
+
+.dropdown-item {
+    padding: 10px 15px;
+    color: #333;
+    text-decoration: none;
+    display: block;
+    transition: background 0.2s;
+}
+
+    .dropdown-item:hover {
+        background: #f5f5f5;
+    }
+/* Phân cách giữa các mục */
+
+.dropdown-divider {
+    height: 1px;
+    background: #eee;
+    margin: 5px 0;
+}
+
+.dropdown-item .bi {
+    width: 20px;
+    text-align: center;
+    font-size: 1.1rem;
+}
+/* Divider */
+
+.dropdown-divider {
+    height: 1px;
+    background-color: #e9ecef;
+    margin: 6px 0;
+}
+/* Logout item */
+
+.dropdown-item.logout {
+    color: #dc3545;
+}
+
+    .dropdown-item.logout:hover {
+        background-color: #fff0f0;
+    }
+.avatar {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 50% !important; /* Bo tròn */
+    background-color: red !important; /* Đổi màu nền */
+    color: white !important; /* Đổi màu chữ */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: bold !important;
+}

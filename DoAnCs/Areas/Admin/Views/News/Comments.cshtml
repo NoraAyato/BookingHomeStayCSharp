@@ -1,0 +1,202 @@
+﻿@model IEnumerable<DoAnCs.Models.BinhLuan>
+@{
+    ViewData["Title"] = "Quản lý Bình luận";
+}
+
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto px-4 py-6 bg-gray-50 dark:bg-gray-900">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header Section -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">Bình luận cho bài viết: @ViewBag.NewsTitle</h1>
+                <p class="text-gray-600 dark:text-gray-400 mt-1">
+                    Tổng số bình luận: <span id="totalComments" class="font-semibold text-primary-600 dark:text-primary-400">@Model.Count()</span>
+                </p>
+            </div>
+            <a asp-area="Admin" asp-controller="News" asp-action="Index"
+               class="inline-flex items-center gap-2 bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-lg shadow-sm transition-all duration-200 border border-gray-200 dark:border-gray-600">
+                <i class="fas fa-arrow-left mr-1"></i>
+                Quay lại
+            </a>
+        </div>
+
+        <!-- Comments Container -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <!-- Comments List -->
+            <div class="divide-y divide-gray-200 dark:divide-gray-700">
+                @if (Model.Any())
+                {
+                    @foreach (var comment in Model.Where(c => c.BinhLuanChaId == null))
+                    {
+                        <div class="p-4 hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors duration-150">
+                            <!-- Main Comment -->
+                            <div class="flex items-start gap-3">
+                                <div class="flex-shrink-0">
+                                    <img class="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name=@comment.User.Email&background=random" alt="User avatar">
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex justify-between items-center">
+                                        <p class="text-sm font-medium text-gray-900 dark:text-gray-100">@comment.User.Email</p>
+                                        <span class="text-xs text-gray-500 dark:text-gray-400">@comment.NgayTao.ToString("dd/MM/yyyy HH:mm")</span>
+                                    </div>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">@comment.NoiDung</p>
+                                    <div class="mt-2 flex gap-3">
+                                        <button onclick="deleteComment(@comment.Ma_BinhLuan)"
+                                                class="text-xs text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 flex items-center gap-1 transition-colors">
+                                            <i class="fas fa-trash-alt text-xs"></i>
+                                            Xóa
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Replies Section -->
+                            @if (comment.PhanHois != null && comment.PhanHois.Any())
+                            {
+                                <div class="ml-12 mt-3 space-y-3 pl-4 border-l-2 border-gray-200 dark:border-gray-600">
+                                    @foreach (var reply in comment.PhanHois)
+                                    {
+                                        <div class="flex items-start gap-3 pt-3">
+                                            <div class="flex-shrink-0">
+                                                <img class="h-8 w-8 rounded-full" src="https://ui-avatars.com/api/?name=@reply.User.Email&background=random" alt="User avatar">
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex justify-between items-center">
+                                                    <p class="text-xs font-medium text-gray-900 dark:text-gray-100">@reply.User.Email</p>
+                                                    <span class="text-xs text-gray-500 dark:text-gray-400">@reply.NgayTao.ToString("dd/MM/yyyy HH:mm")</span>
+                                                </div>
+                                                <p class="text-xs text-gray-600 dark:text-gray-300 mt-1">@reply.NoiDung</p>
+                                                <div class="mt-2 flex gap-3">
+                                                    <button onclick="deleteComment(@reply.Ma_BinhLuan)"
+                                                            class="text-xs text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 flex items-center gap-1 transition-colors">
+                                                        <i class="fas fa-trash-alt text-xs"></i>
+                                                        Xóa
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                }
+                else
+                {
+                    <!-- Empty State -->
+                    <div class="p-8 text-center">
+                        <div class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500">
+                            <i class="fas fa-comment-slash text-3xl"></i>
+                        </div>
+                        <h3 class="mt-2 text-lg font-medium text-gray-900 dark:text-gray-200">Không có bình luận nào</h3>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Bài viết này chưa có bình luận nào.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteCommentModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" aria-modal="true" role="dialog">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 bg-gray-500 dark:bg-gray-900 bg-opacity-75 dark:bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+
+        <!-- Modal panel -->
+        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900 sm:mx-0 sm:h-10 sm:w-10">
+                        <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400"></i>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-200" id="modal-title">Xác nhận xóa</h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Bạn có chắc chắn muốn xóa bình luận này? Tất cả phản hồi liên quan cũng sẽ bị xóa.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button type="button" onclick="confirmDeleteComment()"
+                        class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 hover:bg-red-700 text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                    Xác nhận xóa
+                </button>
+                <button type="button" onclick="closeDeleteCommentModal()"
+                        class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-600 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                    Hủy bỏ
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="fixed top-4 right-4 z-50 hidden">
+    <div class="flex items-center p-4 rounded-lg shadow-lg max-w-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+        <div id="toastIcon" class="mr-3"></div>
+        <div id="toastMessage" class="text-sm font-medium text-gray-800 dark:text-gray-200"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentCommentId = 0;
+
+        function deleteComment(id) {
+            currentCommentId = id;
+            document.getElementById('deleteCommentModal').classList.remove('hidden');
+        }
+
+        function closeDeleteCommentModal() {
+            document.getElementById('deleteCommentModal').classList.add('hidden');
+        }
+
+        function confirmDeleteComment() {
+            $.ajax({
+                url: '/Admin/News/DeleteComment',
+                type: 'POST',
+                data: { id: currentCommentId },
+                success: function (response) {
+                    if (response.success) {
+                        showToast('success', 'Xóa bình luận thành công');
+                        closeDeleteCommentModal();
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        showToast('error', response.message || 'Có lỗi xảy ra');
+                    }
+                },
+                error: function (xhr) {
+                    showToast('error', 'Có lỗi xảy ra khi xóa bình luận');
+                    console.error(xhr.responseText);
+                }
+            });
+        }
+
+        // Toast notification
+        function showToast(type, message) {
+            const toast = document.getElementById('toast');
+            const toastIcon = document.getElementById('toastIcon');
+            const toastMessage = document.getElementById('toastMessage');
+
+            toast.className = 'fixed top-4 right-4 z-50 flex items-center p-4 rounded-lg shadow-lg max-w-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-all duration-300';
+
+            if (type === 'success') {
+                toastIcon.innerHTML = '<i class="fas fa-check-circle text-green-500 dark:text-green-400"></i>';
+            } else {
+                toastIcon.innerHTML = '<i class="fas fa-exclamation-circle text-red-500 dark:text-red-400"></i>';
+            }
+
+            toastMessage.textContent = message;
+            toast.classList.remove('hidden');
+
+            // Auto hide after 3 seconds
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.classList.add('hidden'), 300);
+            }, 3000);
+        }
+    </script>
+}

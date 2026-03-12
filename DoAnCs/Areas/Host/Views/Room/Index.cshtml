@@ -1,0 +1,829 @@
+﻿@using DoAnCs.Models
+@model IEnumerable<Phong>
+@{
+    ViewData["Title"] = "Quản lý Phòng";
+    var homestayId = ViewBag.HomestayId as string;
+    var homestayName = ViewBag.HomestayName;
+}
+
+<div class="px-6 py-4">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div class="flex items-center gap-4">
+            <a asp-controller="Homestay" asp-action="Index" asp-area="Host"
+               class="inline-flex items-center gap-2 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 px-4 py-2.5 rounded-lg shadow-sm transition-all duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                Trở lại Homestay
+            </a>
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">Quản lý Phòng - @homestayName</h1>
+                <p class="text-gray-600 dark:text-gray-300 mt-1 text-sm md:text-base">
+                    Tổng số phòng: <span class="font-semibold text-primary-600 dark:text-primary-400">@Model.Count()</span>
+                </p>
+            </div>
+        </div>
+        <div class="flex gap-3">
+            <button onclick="openAddPhongModal()"
+                    class="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2.5 rounded-lg shadow-sm transition-all duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                </svg>
+                Thêm phòng mới
+            </button>
+        </div>
+    </div>
+
+    <!-- Room Table -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tên Phòng</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Loại Phòng</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Đơn Giá</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Số Người</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Trạng Thái</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Hình Ảnh</th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    @foreach (var item in Model)
+                    {
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900 dark:text-white">@item.TenPhong</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-500 dark:text-gray-400">@item.LoaiPhong?.TenLoai</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-500 dark:text-gray-400">@item.DonGia.ToString("N0") VNĐ</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-500 dark:text-gray-400">@item.SoNguoi</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @{
+                                    var statusClass = item.TrangThai == "Bảo trì"
+                                    ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                                    : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+                                    var statusText = item.TrangThai == "Trống" || item.TrangThai == "Đã đặt" ? "Hoạt động" : item.TrangThai;
+                                }
+                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full @statusClass">
+                                    @statusText
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @{
+                                    var hinhAnhChinh = item.HinhAnhPhongs?.FirstOrDefault(h => h.LaAnhChinh)?.UrlAnh ?? "/img/default-room.jpg";
+                                }
+                                <div class="relative group">
+                                    <img src="@hinhAnhChinh" alt="@item.TenPhong" class="h-10 w-10 rounded-lg object-cover border border-gray-200 dark:border-gray-600">
+                                    <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div class="flex justify-end gap-2">
+                                    <button onclick="showEditModal('@item.Ma_Phong')"
+                                            class="p-2 text-blue-600 bg-blue-50 dark:bg-blue-900/30 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
+                                            title="Chỉnh sửa">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                    <button onclick="confirmDelete('@item.Ma_Phong')"
+                                            class="p-2 text-red-600 bg-red-50 dark:bg-red-900/30 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors"
+                                            title="Xóa">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="@(Model.Any() ? "hidden" : "") bg-white dark:bg-gray-800 rounded-xl p-8 text-center border border-gray-200 dark:border-gray-700 mt-6">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+        </svg>
+        <h3 class="mt-2 text-lg font-medium text-gray-900 dark:text-white">Không tìm thấy phòng nào</h3>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Thử thay đổi tiêu chí tìm kiếm hoặc thêm phòng mới.</p>
+        <div class="mt-6">
+            <button type="button" onclick="openAddPhongModal()"
+                    class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                Thêm phòng mới
+            </button>
+        </div>
+    </div>
+
+    <!-- Amenity Template -->
+    <div class="hidden">
+        <div class="amenity-item flex items-center gap-2" id="amenityTemplate">
+            <select name="ChiTietPhongs[0].Ma_TienNghi" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-sm bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                <option value="">Chọn tiện nghi</option>
+                @foreach (var item in ViewBag.TienNghiList)
+                {
+                    <option value="@item.Value">@item.Text</option>
+                }
+            </select>
+            <input type="number" name="ChiTietPhongs[0].SoLuong" placeholder="Số lượng" min="1" step="1"
+                   class="w-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-sm bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+            <button type="button" class="remove-amenity text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300" title="Xóa tiện nghi">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Create/Edit Modal -->
+    <div id="roomModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" aria-modal="true" role="dialog">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 dark:bg-gray-900 bg-opacity-75 dark:bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true"></span>
+            <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
+                <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/30 sm:mx-0 sm:h-10 sm:w-10">
+                            <svg id="modalIcon" class="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modalTitle">Thêm Phòng Mới</h3>
+                            <div class="mt-2 w-full">
+                                <form id="roomForm" class="space-y-6" enctype="multipart/form-data">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" id="Ma_Phong" name="Ma_Phong" />
+                                    <input type="hidden" name="ID_Homestay" value="@homestayId" />
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div class="md:col-span-2">
+                                            <label for="TenPhong" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tên Phòng *</label>
+                                            <input type="text" id="TenPhong" name="TenPhong" required
+                                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-sm bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                                        </div>
+                                        <div>
+                                            <label for="ID_Loai" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Loại Phòng *</label>
+                                            <select id="ID_Loai" name="ID_Loai" required
+                                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-sm bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                                                <option value="">Chọn loại phòng</option>
+                                                @foreach (var item in ViewBag.LoaiPhongList)
+                                                {
+                                                    <option value="@item.Value">@item.Text</option>
+                                                }
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label for="DonGia" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Đơn Giá (VNĐ) *</label>
+                                            <input type="number" id="DonGia" name="DonGia" required min="0" step="0.01"
+                                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-sm bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                                        </div>
+                                        <div>
+                                            <label for="SoNguoi" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Số Người *</label>
+                                            <input type="number" id="SoNguoi" name="SoNguoi" required min="1" max="100"
+                                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-sm bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                                        </div>
+                                        <div>
+                                            <label for="TrangThai" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Trạng Thái *</label>
+                                            <select id="TrangThai" name="TrangThai" required
+                                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-sm bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                                                <option value="Hoạt động">Hoạt động</option>
+                                                <option value="Bảo trì">Bảo trì</option>
+                                            </select>
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label for="VirtualTour" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Virtual Tour (Tùy chọn)</label>
+                                            <input type="text" id="VirtualTour" name="VirtualTour"
+                                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-sm bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300"
+                                                   placeholder="Nhập đường dẫn virtual tour (nếu có)">
+                                            <a href="https://discover.matterport.com" class="text-xs text-gray-500 dark:text-red-600 mt-1">
+                                                Bạn muốn tạo virtual tour cho phòng? 
+                                            </a>
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label for="HinhAnhPhongFiles" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ảnh Phòng (Tối đa 10 ảnh) *</label>
+                                            <div class="flex items-center gap-2">
+                                                <label class="cursor-pointer">
+                                                    <span class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                                        <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                                        </svg>
+                                                        Tải lên
+                                                    </span>
+                                                    <input type="file" id="HinhAnhPhongFiles" name="HinhAnhPhongFiles" multiple accept="image/jpeg,image/png,image/gif" class="sr-only">
+                                                </label>
+                                                <span id="roomImagesFileName" class="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">Chưa chọn file</span>
+                                            </div>
+                                            <div id="roomImagesPreview" class="mt-2 hidden">
+                                                <p class="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Ảnh đã chọn (chọn ảnh chính bằng cách nhấp vào ô):</p>
+                                                <div class="flex flex-wrap gap-2" id="currentRoomImages"></div>
+                                            </div>
+                                        </div>
+                                        <div id="amenitiesSection" class="md:col-span-2">
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tiện Nghi Phòng</label>
+                                            <div id="amenitiesContainer" class="space-y-2"></div>
+                                            <button type="button" id="addAmenity" class="mt-2 inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                                <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                                </svg>
+                                                Thêm tiện nghi
+                                            </button>
+                                        </div>
+
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" onclick="submitRoomForm()" id="submitRoomBtn"
+                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Lưu thay đổi
+                    </button>
+                    <button type="button" onclick="closeRoomModal()"
+                            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-600 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Hủy bỏ
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manage Services Modal -->
+    <div id="servicesModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" aria-modal="true" role="dialog">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 dark:bg-gray-900 bg-opacity-75 dark:bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true"></span>
+            <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 sm:mx-0 sm:h-10 sm:w-10">
+                            <svg class="h-6 w-6 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="servicesModalTitle">Quản lý Dịch Vụ</h3>
+                            <div class="mt-2 w-full">
+                                <input type="hidden" id="servicesMaPhong" />
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Chọn dịch vụ để thêm hoặc xóa dịch vụ hiện tại cho phòng.</p>
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Dịch vụ hiện tại</label>
+                                    <ul id="currentServices" class="space-y-2"></ul>
+                                </div>
+                                <div>
+                                    <label for="availableServices" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Thêm dịch vụ mới</label>
+                                    <select id="availableServices" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-sm bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                                        <option value="">Chọn dịch vụ</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" onclick="addService()" id="addServiceBtn"
+                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Thêm dịch vụ
+                    </button>
+                    <button type="button" onclick="closeServicesModal()"
+                            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-600 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Đóng
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" aria-modal="true" role="dialog">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 dark:bg-gray-900 bg-opacity-75 dark:bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true"></span>
+            <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/30 sm:mx-0 sm:h-10 sm:w-10">
+                            <svg class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title">Xác nhận xóa</h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Bạn có chắc chắn muốn xóa phòng này? Tất cả dữ liệu liên quan sẽ bị xóa vĩnh viễn và không thể khôi phục.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" onclick="submitDeleteForm()" id="deleteRoomBtn"
+                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Xác nhận xóa
+                    </button>
+                    <button type="button" onclick="closeDeleteModal()"
+                            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-600 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Hủy bỏ
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-4 right-4 z-50 hidden">
+        <div class="flex items-center p-4 rounded-lg shadow-lg max-w-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+            <div id="toastIcon" class="mr-3"></div>
+            <div id="toastMessage" class="text-sm font-medium text-gray-700 dark:text-gray-300"></div>
+            <button type="button" onclick="$('#toast').addClass('hidden')" class="ml-auto text-gray-500 hover:text-gray-700 dark:hover:text-gray-400">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    @section Scripts {
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js"></script>
+        <script>
+            // Khởi tạo biến toàn cục
+            let amenityIndex = 0;
+            let isEditMode = false;
+            let currentDeleteId = '';
+            let currentServicesMaPhong = '';
+
+            // Hàm hiển thị toast
+            function showToast(type, message) {
+                const toast = $('#toast');
+                const toastIcon = $('#toastIcon');
+                const toastMessage = $('#toastMessage');
+
+                toast.removeClass('hidden');
+                toastIcon.empty();
+
+                if (type === 'success') {
+                    toastIcon.html('<svg class="w-6 h-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>');
+                } else {
+                    toastIcon.html('<svg class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>');
+                }
+
+                toastMessage.html(message);
+                setTimeout(() => toast.addClass('hidden'), 3000);
+            }
+
+            $(document).ready(function () {
+                // Form validation
+                $('#roomForm').validate({
+                    rules: {
+                        TenPhong: { required: true, minlength: 2 },
+                        ID_Loai: { required: true },
+                        DonGia: { required: true, number: true, min: 0 },
+                        SoNguoi: { required: true, number: true, min: 1, max: 100 },
+                        TrangThai: { required: true },
+                        VirtualTour: { maxlength: 500 },
+                        HinhAnhPhongFiles: {
+                            required: function () {
+                                return !isEditMode || $('#currentRoomImages').children().length === 0;
+                            }
+                        }
+                    },
+                    messages: {
+                        TenPhong: {
+                            required: "Vui lòng nhập tên phòng",
+                            minlength: "Tên phòng phải có ít nhất 2 ký tự"
+                        },
+                        ID_Loai: { required: "Vui lòng chọn loại phòng" },
+                        DonGia: {
+                            required: "Vui lòng nhập đơn giá",
+                            number: "Đơn giá phải là số",
+                            min: "Đơn giá không được âm"
+                        },
+                        SoNguoi: {
+                            required: "Vui lòng nhập số người",
+                            number: "Số người phải là số",
+                            min: "Số người phải lớn hơn 0",
+                            max: "Số người tối đa là 100"
+                        },
+                        TrangThai: { required: "Vui lòng chọn trạng thái" },
+                        VirtualTour: { maxlength: "Đường dẫn Virtual Tour không được vượt quá 500 ký tự" },
+                        HinhAnhPhongFiles: { required: "Vui lòng tải lên ít nhất một ảnh" }
+                    },
+                    errorPlacement: function (error, element) {
+                        error.addClass('text-red-500 text-xs mt-1');
+                        error.insertAfter(element);
+                    }
+                });
+
+                // File input handlers
+                $('#HinhAnhPhongFiles').change(function () {
+                    const files = this.files;
+                    const maxImages = 10;
+
+                    if (files.length > maxImages) {
+                        showToast('error', `Bạn chỉ có thể tải lên tối đa ${maxImages} ảnh`);
+                        this.value = '';
+                        $('#roomImagesPreview').addClass('hidden');
+                        $('#roomImagesFileName').text('Chưa chọn file');
+                        return;
+                    }
+
+                    $('#roomImagesFileName').text(files.length > 0 ? `${files.length} file đã chọn` : 'Chưa chọn file');
+
+                    if (files.length > 0) {
+                        $('#currentRoomImages').empty();
+                        for (let i = 0; i < files.length; i++) {
+                            const reader = new FileReader();
+                            reader.onload = function (e) {
+                                const isMain = i === 0 ? 'checked' : '';
+                                $('#currentRoomImages').append(`
+                                    <div class="relative">
+                                        <img src="${e.target.result}" class="h-16 w-16 object-cover rounded-md border border-gray-200 dark:border-gray-600">
+                                        <input type="radio" name="MainImageIndex" value="${i}" ${isMain} class="absolute top-1 left-1">
+                                    </div>
+                                `);
+                            };
+                            reader.readAsDataURL(files[i]);
+                        }
+                        $('#roomImagesPreview').removeClass('hidden');
+                    } else {
+                        $('#roomImagesPreview').addClass('hidden');
+                    }
+                });
+
+                // Amenities dynamic fields
+                $('#addAmenity').on('click', function (e) {
+                    e.preventDefault();
+                    const template = $('#amenityTemplate');
+                    const container = $('#amenitiesContainer');
+
+                    const newItem = template.clone()
+                        .removeClass('hidden')
+                        .removeAttr('id')
+                        .addClass('amenity-item');
+
+                    newItem.find('select[name*="Ma_TienNghi"]').attr('name', `ChiTietPhongs[${amenityIndex}].Ma_TienNghi`);
+                    newItem.find('input[name*="SoLuong"]').attr('name', `ChiTietPhongs[${amenityIndex}].SoLuong`);
+
+                    container.append(newItem);
+
+                    // Cập nhật danh sách tiện nghi khả dụng
+                    updateAmenityOptions();
+
+                    // Validate trường mới
+                    newItem.find('select[name*="Ma_TienNghi"]').rules('add', {
+                        required: false
+                    });
+                    newItem.find('input[name*="SoLuong"]').rules('add', {
+                        required: false,
+                        number: true,
+                        min: 1,
+                        messages: {
+                            number: "Số lượng phải là số",
+                            min: "Số lượng phải lớn hơn 0"
+                        }
+                    });
+
+                    amenityIndex++;
+                });
+
+                // Cập nhật danh sách tiện nghi khi thay đổi lựa chọn
+                $(document).on('change', '.amenity-item select[name*="Ma_TienNghi"]', function () {
+                    updateAmenityOptions();
+                });
+
+                // Xóa tiện nghi
+                $(document).on('click', '.remove-amenity', function (e) {
+                    e.preventDefault();
+                    const item = $(this).closest('.amenity-item');
+                    item.remove();
+
+                    // Cập nhật lại tên các trường
+                    $('.amenity-item').each(function (index) {
+                        $(this).find('select[name*="Ma_TienNghi"]').attr('name', `ChiTietPhongs[${index}].Ma_TienNghi`);
+                        $(this).find('input[name*="SoLuong"]').attr('name', `ChiTietPhongs[${index}].SoLuong`);
+                    });
+                    amenityIndex = $('.amenity-item').length;
+
+                    // Cập nhật lại danh sách tiện nghi khả dụng
+                    updateAmenityOptions();
+                });
+
+                // Hàm cập nhật danh sách tiện nghi khả dụng
+                function updateAmenityOptions() {
+                    const selectedAmenities = $('.amenity-item select[name*="Ma_TienNghi"]').map(function () {
+                        return $(this).val();
+                    }).get();
+
+                    $('.amenity-item select[name*="Ma_TienNghi"]').each(function () {
+                        const currentSelect = $(this);
+                        const currentValue = currentSelect.val();
+
+                        // Lưu trữ trạng thái hiện tại của select
+                        const options = currentSelect.find('option').map(function () {
+                            return {
+                                value: $(this).val(),
+                                text: $(this).text(),
+                                disabled: false
+                            };
+                        }).get();
+
+                        // Reset tất cả options
+                        currentSelect.empty();
+                        options.forEach(opt => {
+                            const isDisabled = selectedAmenities.includes(opt.value) && opt.value !== currentValue && opt.value !== "";
+                            currentSelect.append(
+                                `<option value="${opt.value}" ${isDisabled ? 'disabled' : ''}>${opt.text}</option>`
+                            );
+                        });
+
+                        // Khôi phục giá trị đã chọn
+                        currentSelect.val(currentValue);
+                    });
+                }
+
+                // Modal functions
+                window.showCreateModal = function () {
+                    $('#modalTitle').text('Thêm Phòng Mới');
+                    $('#modalIcon').html('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />');
+                    $('#roomForm').attr('action', '@Url.Action("Create", "Room")');
+                    $('#Ma_Phong').val('');
+                    $('#roomForm')[0].reset();
+                    $('#VirtualTour').val(''); // Reset VirtualTour
+                    $('#roomImagesPreview').addClass('hidden');
+                    $('#roomImagesFileName').text('Chưa chọn file');
+                    $('#amenitiesContainer').empty();
+                    amenityIndex = 0;
+                    isEditMode = false;
+                    $('#roomModal').removeClass('hidden');
+                }
+
+                window.showEditModal = function (maPhong) {
+                    document.getElementById('amenitiesSection').classList.remove('hidden');
+                    fetch('@Url.Action("GetRoom", "Room")?id=' + maPhong)
+                        .then(response => {
+                            if (!response.ok) throw new Error('Network response was not ok');
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (!data.success) {
+                                showToast('error', data.message);
+                                return;
+                            }
+                            $('#modalTitle').text('Chỉnh Sửa Phòng');
+                            $('#modalIcon').html('<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />');
+                            $('#roomForm').attr('action', '@Url.Action("Update", "Room")');
+
+                            $('#Ma_Phong').val(data.data.ma_Phong);
+                            $('#TenPhong').val(data.data.tenPhong);
+                            $('#ID_Loai').val(data.data.id_Loai);
+                            $('#DonGia').val(data.data.donGia);
+                            $('#SoNguoi').val(data.data.soNguoi);
+                            $('#TrangThai').val(data.data.trangThai === 'Trống' || data.data.trangThai === 'Đã đặt' ? 'Hoạt động' : data.data.trangThai);
+                            $('#VirtualTour').val(data.data.virtualTour || ''); // Gán giá trị VirtualTour
+
+                            $('#currentRoomImages').empty();
+                            if (data.data.hinhAnhPhongs && data.data.hinhAnhPhongs.length > 0) {
+                                data.data.hinhAnhPhongs.forEach((img, index) => {
+                                    const isMain = img.laAnhChinh ? 'checked' : '';
+                                    $('#currentRoomImages').append(`
+                                        <div class="relative">
+                                            <img src="${img.urlAnh}" class="h-16 w-16 object-cover rounded-md border border-gray-200 dark:border-gray-600">
+                                            <input type="radio" name="MainImageIndex" value="${index}" ${isMain} class="absolute top-1 left-1">
+                                        </div>
+                                    `);
+                                });
+                                $('#roomImagesPreview').removeClass('hidden');
+                                $('#roomImagesFileName').text(`${data.data.hinhAnhPhongs.length} ảnh hiện tại`);
+                            } else {
+                                $('#roomImagesPreview').addClass('hidden');
+                                $('#roomImagesFileName').text('Chưa có ảnh');
+                            }
+
+                            $('#amenitiesContainer').empty();
+                            amenityIndex = 0;
+                            if (data.data.chiTietPhongs && data.data.chiTietPhongs.length > 0) {
+                                data.data.chiTietPhongs.forEach((amenity, index) => {
+                                    const template = $('#amenityTemplate');
+                                    const newItem = template.clone()
+                                        .removeClass('hidden')
+                                        .removeAttr('id')
+                                        .addClass('amenity-item');
+                                    newItem.find('select[name*="Ma_TienNghi"]').attr('name', `ChiTietPhongs[${index}].Ma_TienNghi`).val(amenity.ma_TienNghi);
+                                    newItem.find('input[name*="SoLuong"]').attr('name', `ChiTietPhongs[${index}].SoLuong`).val(amenity.soLuong);
+                                    $('#amenitiesContainer').append(newItem);
+                                    amenityIndex++;
+                                });
+                                updateAmenityOptions();
+                            }
+
+                            isEditMode = true;
+                            $('#roomModal').removeClass('hidden');
+                        })
+                        .catch(error => {
+                            showToast('error', 'Không thể tải thông tin phòng: ' + error.message);
+                        });
+                }
+
+                window.closeRoomModal = function () {
+                    $('#roomModal').addClass('hidden');
+                    $('#roomForm')[0].reset();
+                    $('#VirtualTour').val(''); // Reset VirtualTour
+                    $('#roomImagesPreview').addClass('hidden');
+                    $('#roomImagesFileName').text('Chưa chọn file');
+                    $('#amenitiesContainer').empty();
+                    amenityIndex = 0;
+                    isEditMode = false;
+                }
+
+                window.confirmDelete = function (maPhong) {
+                    currentDeleteId = maPhong;
+                    $('#deleteModal').removeClass('hidden');
+                }
+
+                window.closeDeleteModal = function () {
+                    $('#deleteModal').addClass('hidden');
+                    currentDeleteId = '';
+                }
+
+                window.submitDeleteForm = function () {
+                    if (!currentDeleteId) {
+                        showToast('error', 'Mã phòng không hợp lệ');
+                        return;
+                    }
+
+                    const deleteBtn = $('#deleteRoomBtn');
+                    deleteBtn.prop('disabled', true);
+                    deleteBtn.html('<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Đang xóa...');
+
+                    const formData = new FormData();
+                    formData.append('id', currentDeleteId);
+                    formData.append('__RequestVerificationToken', $('input[name="__RequestVerificationToken"]').val());
+
+                    $.ajax({
+                        url: '@Url.Action("DeleteConfirmed", "Room")',
+                        type: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function (response) {
+                            if (response.success) {
+                                showToast('success', response.message);
+                                setTimeout(() => window.location.reload(), 1500);
+                            } else {
+                                showToast('error', response.message);
+                            }
+                        },
+                        error: function (xhr) {
+                            let errorMessage = 'Lỗi kết nối server';
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                errorMessage = xhr.responseJSON.message;
+                            }
+                            showToast('error', errorMessage);
+                        },
+                        complete: function () {
+                            deleteBtn.prop('disabled', false);
+                            deleteBtn.html('Xác nhận xóa');
+                            closeDeleteModal();
+                        }
+                    });
+                }
+
+                window.submitRoomForm = function () {
+                    if (!$('#roomForm').valid()) {
+                        showToast('error', 'Vui lòng điền đầy đủ các trường bắt buộc');
+                        return;
+                    }
+
+                    // Kiểm tra tiện nghi
+                    const amenityItems = $('.amenity-item');
+                    const maTienNghiValues = [];
+                    for (let i = 0; i < amenityItems.length; i++) {
+                        const maTienNghi = $(amenityItems[i]).find('select[name*="Ma_TienNghi"]').val();
+                        const soLuong = $(amenityItems[i]).find('input[name*="SoLuong"]').val();
+
+                        if (maTienNghi && (!soLuong || soLuong <= 0)) {
+                            showToast('error', 'Số lượng tiện nghi phải lớn hơn 0');
+                            return;
+                        }
+                        if (soLuong && !maTienNghi) {
+                            showToast('error', 'Vui lòng chọn tiện nghi');
+                            return;
+                        }
+                        if (maTienNghi) {
+                            if (maTienNghiValues.includes(maTienNghi)) {
+                                showToast('error', `Tiện nghi đã được chọn trước đó`);
+                                return;
+                            }
+                            maTienNghiValues.push(maTienNghi);
+                        }
+                    }
+
+                    // Kiểm tra ảnh và MainImageIndex
+                    const files = $('#HinhAnhPhongFiles')[0].files;
+                    let mainImageIndex = $('input[name="MainImageIndex"]:checked').val();
+                    const currentImages = $('#currentRoomImages').children();
+
+                    if (files.length > 0) {
+                        // Có ảnh mới tải lên
+                        if (!mainImageIndex || mainImageIndex < 0 || mainImageIndex >= files.length) {
+                            showToast('error', 'Vui lòng chọn một ảnh chính');
+                            return;
+                        }
+                    } else if (isEditMode && currentImages.length > 0) {
+                        // Chế độ chỉnh sửa, không có ảnh mới nhưng có ảnh hiện tại
+                        if (!mainImageIndex || mainImageIndex < 0 || mainImageIndex >= currentImages.length) {
+                            mainImageIndex = 0;
+                            $('#currentRoomImages input[name="MainImageIndex"]').first().prop('checked', true);
+                        }
+                    } else {
+                        // Không có ảnh mới và không có ảnh hiện tại
+                        showToast('error', 'Phòng phải có ít nhất một ảnh');
+                        return;
+                    }
+
+                    const form = document.getElementById('roomForm');
+                    const formData = new FormData(form);
+
+                    // Tự động gán mô tả cho ảnh
+                    if (files.length > 0) {
+                        // Gửi mô tả cho các ảnh mới
+                        for (let i = 0; i < files.length; i++) {
+                            const description = i == mainImageIndex ? 'Hình chính' : 'Hình phụ';
+                            formData.append(`ImageDescriptions[${i}]`, description);
+                        }
+                        formData.append('MainImageIndex', mainImageIndex);
+                    } else if (isEditMode && currentImages.length > 0) {
+                        // Gửi lại mô tả cho các ảnh hiện tại
+                        currentImages.each(function (index) {
+                            const description = index == mainImageIndex ? 'Hình chính' : 'Hình phụ';
+                            formData.append(`ImageDescriptions[${index}]`, description);
+                        });
+                        formData.append('MainImageIndex', mainImageIndex);
+                    }
+
+                    // Xóa Ma_Phong nếu là tạo mới
+                    if (!isEditMode) {
+                        formData.delete('Ma_Phong');
+                    }
+
+                    const submitBtn = $('#submitRoomBtn');
+                    submitBtn.prop('disabled', true);
+                    submitBtn.html('<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Đang lưu...');
+
+                    $.ajax({
+                        url: isEditMode ? '@Url.Action("Update", "Room")' : '@Url.Action("Create", "Room")',
+                        type: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function (response) {
+                            if (response.success) {
+                                showToast('success', response.message);
+                                setTimeout(() => window.location.reload(), 1500);
+                            } else {
+                                showToast('error', response.message);
+                            }
+                        },
+                        error: function (xhr) {
+                            let errorMessage = 'Lỗi kết nối server';
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                errorMessage = xhr.responseJSON.message;
+                            }
+                            showToast('error', errorMessage);
+                        },
+                        complete: function () {
+                            submitBtn.prop('disabled', false);
+                            submitBtn.html('Lưu thay đổi');
+                        }
+                    });
+                }
+
+             // Hàm mở modal tạo phòng mới
+             window.openAddPhongModal = function () {
+                document.getElementById('amenitiesSection').classList.add('hidden');
+                showCreateModal();
+             }
+            });
+        </script>
+    }
+</div>

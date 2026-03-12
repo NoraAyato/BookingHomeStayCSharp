@@ -1,0 +1,1998 @@
+﻿@using DoAnCs.Models.ViewModels
+@{
+    ViewData["Title"] = "Hồ sơ cá nhân";
+    Layout = "_Layout";
+}
+
+<div class="bg-gray-50 min-h-screen">
+    <!-- Notification Center -->
+    <div id="notification" class="fixed top-4 right-4 z-50 hidden">
+        <div class="px-6 py-4 rounded-lg shadow-lg border-l-4 bg-white max-w-sm">
+            <div class="flex items-center">
+                <div id="notification-icon"></div>
+                <div class="ml-3">
+                    <p id="notification-message" class="text-sm"></p>
+                </div>
+                <button onclick="hideNotification()" class="ml-auto text-gray-400 hover:text-gray-500">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="pageLoading" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="spinner border-4 border-t-rose-600 rounded-full w-12 h-12 animate-spin"></div>
+    </div>
+
+    <!-- Modal for Booking Details -->
+    <div id="bookingDetailsModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen px-4 text-center">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:max-w-4xl sm:w-full">
+                <div class="bg-white px-6 py-4">
+                    <div class="flex justify-between items-center border-b pb-3">
+                        <h3 class="text-lg font-medium text-gray-900" id="modal-title">Chi tiết phiếu đặt phòng</h3>
+                        <button onclick="closeModal('bookingDetailsModal')" class="text-gray-400 hover:text-gray-500">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="mt-4">
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <p class="text-sm text-gray-500">Mã phiếu</p>
+                                <p class="font-medium" id="modalMaPDPhong"></p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Ngày lập</p>
+                                <p class="font-medium" id="modalNgayLap"></p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Trạng thái</p>
+                                <p class="font-medium" id="modalTrangThai"></p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Tổng tiền</p>
+                                <p class="font-medium" id="modalTongTien"></p>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <h4 class="text-md font-medium text-gray-900 mb-3">Danh sách phòng và dịch vụ</h4>
+                            <div id="modalChiTietPhongs" class="space-y-4"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-6 py-3 flex justify-end">
+                    <button onclick="closeModal('bookingDetailsModal')" class="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">
+                        Đóng
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Updating Profile -->
+    <div id="updateProfileModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="update-profile-title" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen px-4 text-center">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full">
+                <div class="bg-white px-6 py-4">
+                    <div class="flex justify-between items-center border-b pb-3">
+                        <h3 class="text-lg font-medium text-gray-900" id="update-profile-title">Cập nhật thông tin cá nhân</h3>
+                        <button onclick="closeModal('updateProfileModal')" class="text-gray-400 hover:text-gray-500">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="mt-4">
+                        <form id="profileForm" asp-action="Profile" asp-controller="User" method="post">
+                            @Html.AntiForgeryToken()
+                            <div class="space-y-6">
+                                <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                                    <!-- Full Name -->
+                                    <div class="sm:col-span-3">
+                                        <label for="FullName" class="block text-sm font-medium text-gray-700">Họ và tên</label>
+                                        <div class="mt-1">
+                                            <input id="FullName" name="FullName" type="text" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 sm:text-sm py-2 px-3">
+                                            <span id="FullNameError" class="text-red-500 text-xs"></span>
+                                        </div>
+                                    </div>
+                                    <!-- Email (display only) -->
+                                    <div class="sm:col-span-3">
+                                        <label class="block text-sm font-medium text-gray-700">Email</label>
+                                        <div class="mt-1">
+                                            <p id="modalEmail" class="block w-full rounded-md border-gray-300 shadow-sm bg-gray-100 sm:text-sm p-2"></p>
+                                        </div>
+                                    </div>
+                                    <!-- Phone Number -->
+                                    <div class="sm:col-span-3">
+                                        <label for="PhoneNumber" class="block text-sm font-medium text-gray-700">Số điện thoại</label>
+                                        <div class="mt-1">
+                                            <input id="PhoneNumber" name="PhoneNumber" type="tel" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 sm:text-sm py-2 px-3" required>
+                                            <span id="PhoneNumberError" class="text-red-500 text-xs"></span>
+                                        </div>
+                                    </div>
+                                    <!-- Date of Birth -->
+                                    <div class="sm:col-span-3">
+                                        <label for="DateOfBirth" class="block text-sm font-medium text-gray-700">Ngày sinh</label>
+                                        <div class="mt-1">
+                                            <input id="DateOfBirth" name="DateOfBirth" type="date" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 sm:text-sm py-2 px-3" required>
+                                            <p id="DateOfBirthError" class="text-red-500 text-xs mt-1 hidden"></p>
+                                        </div>
+                                    </div>
+                                    <!-- Address -->
+                                    <div class="sm:col-span-6">
+                                        <label for="Address" class="block text-sm font-medium text-gray-700">Địa chỉ</label>
+                                        <div class="mt-1">
+                                            <input id="Address" name="Address" type="text" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 sm:text-sm py-2 px-3" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-6 flex justify-end space-x-3">
+                                <button type="button" onclick="closeModal('updateProfileModal')" class="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">
+                                    Hủy
+                                </button>
+                                <button type="submit" id="submitButton" class="inline-flex justify-center rounded-md border border-transparent bg-rose-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-rose-700">
+                                    <span id="submitText">Lưu thay đổi</span>
+                                    <span id="submitSpinner" class="hidden ml-2"><i class="fas fa-spinner fa-spin"></i></span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Changing Password -->
+    <div id="changePasswordModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="change-password-title" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen px-4 text-center">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full">
+                <div class="bg-white px-6 py-4">
+                    <div class="flex justify-between items-center border-b pb-3">
+                        <h3 class="text-lg font-medium text-gray-900" id="change-password-title">Thay đổi mật khẩu</h3>
+                        <button onclick="closeModal('changePasswordModal')" class="text-gray-400 hover:text-gray-500">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="mt-4">
+                        <!-- OTP Verification Form -->
+                        <div id="otpForm" class="">
+                            <p class="text-sm text-gray-600 mb-4">Nhập mã OTP 6 số được gửi đến email <strong id="otpEmail"></strong>.</p>
+                            <div class="mt-1">
+                                <input id="otpInputuser" type="text" maxlength="6" placeholder="Nhập mã OTP" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 sm:text-sm py-2 px-3 text-center" onpaste="handleOtpPaste(event)" oninput="restrictToNumbers(this)">
+                                <p id="otpError" class="text-red-500 text-xs mt-1 hidden"></p>
+                            </div>
+                            <div class="mt-4 flex items-center justify-between">
+                                <button id="resendOtpButton" onclick="resendOtp()" disabled class="text-sm text-rose-600 hover:text-rose-700 transition-colors">
+                                    Gửi lại mã (<span id="countdown">60</span>s)
+                                </button>
+                                <button onclick="verifyOtpUser()" class="inline-flex justify-center rounded-md border border-transparent bg-rose-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-rose-700">
+                                    Xác minh
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Change Password Form -->
+                        <div id="passwordForm" class="hidden">
+                            <form id="changePasswordForm">
+                                <div class="space-y-4">
+                                    <!-- Old Password -->
+                                    <div>
+                                        <label for="oldPassword" class="block text-sm font-medium text-gray-700">Mật khẩu cũ</label>
+                                        <div class="mt-1">
+                                            <input id="oldPassword" name="oldPassword" type="password" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 sm:text-sm py-2 px-3">
+                                            <p id="oldPasswordError" class="text-red-500 text-xs mt-1 hidden"></p>
+                                        </div>
+                                    </div>
+                                    <!-- New Password -->
+                                    <div>
+                                        <label for="newPassword" class="block text-sm font-medium text-gray-700">Mật khẩu mới</label>
+                                        <div class="mt-1">
+                                            <input id="newPassword" name="newPassword" type="password" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 sm:text-sm py-2 px-3" oninput="validatePassword()">
+                                            <p id="newPasswordError" class="text-red-500 text-xs mt-1 hidden"></p>
+                                        </div>
+                                    </div>
+                                    <!-- Confirm New Password -->
+                                    <div>
+                                        <label for="changePasswordConfirm" class="block text-sm font-medium text-gray-700">Xác nhận mật khẩu mới</label>
+                                        <div class="mt-1">
+                                            <input id="changePasswordConfirm" name="changePasswordConfirm" type="password" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 sm:text-sm py-2 px-3" oninput="validatePassword()">
+                                            <p id="confirmPasswordErrorUser" class="text-red-500 text-xs mt-1 hidden"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-6 flex justify-end space-x-3">
+                                    <button type="button" onclick="closeModal('changePasswordModal')" class="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">
+                                        Hủy
+                                    </button>
+                                    <button type="submit" id="changePasswordButton" class="inline-flex justify-center rounded-md border border-transparent bg-rose-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-rose-700">
+                                        <span id="changePasswordText">Lưu thay đổi</span>
+                                        <span id="changePasswordSpinner" class="hidden ml-2"><i class="fas fa-spinner fa-spin"></i></span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Adding Services -->
+    <div id="addServiceModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="add-service-title" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen px-4 text-center">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:max-w-2xl sm:w-full">
+                <div class="bg-white px-6 py-4">
+                    <div class="flex justify-between items-center border-b pb-3">
+                        <h3 class="text-lg font-medium text-gray-900" id="add-service-title">Đăng ký thêm dịch vụ</h3>
+                        <button onclick="closeModal('addServiceModal')" class="text-gray-400 hover:text-gray-500" aria-label="Đóng modal">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="mt-4">
+                        <div id="addServiceLoading" class="hidden flex justify-center items-center py-4">
+                            <i class="fas fa-spinner fa-spin text-rose-600 text-2xl"></i>
+                        </div>
+                        <div id="addServiceContent">
+                            <p class="text-lg font-medium"><i class="fas fa-ticket-alt text-rose-500 mr-2"></i> <span id="addServiceMaPDPhong"></span></p>
+                            <form id="addServiceForm" class="mt-4">
+                                @Html.AntiForgeryToken()
+                                <div class="space-y-6">
+                                    <!-- Danh sách phòng -->
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-3">Chọn dịch vụ cho các phòng</label>
+                                        <div id="roomServiceList" class="space-y-6"></div>
+                                        <p id="roomError" class="text-red-500 text-xs mt-1 hidden"></p>
+                                        <p id="serviceError" class="text-red-500 text-xs mt-1 hidden"></p>
+                                    </div>
+                                </div>
+                                <div class="mt-6 flex justify-end space-x-3">
+                                    <button type="button" onclick="closeModal('addServiceModal')" class="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">
+                                        Hủy
+                                    </button>
+                                    <button type="submit" id="submitServiceButton" class="inline-flex justify-center rounded-md border border-transparent bg-rose-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-rose-700">
+                                        <span id="submitServiceText">Thêm dịch vụ</span>
+                                        <span id="submitServiceSpinner" class="hidden ml-2"><i class="fas fa-spinner fa-spin"></i></span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Cancel Booking -->
+    <div id="cancelBookingModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="cancel-booking-title" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen px-4 text-center">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full">
+                <div class="bg-white px-6 py-4">
+                    <div class="flex justify-between items-center border-b pb-3">
+                        <h3 class="text-lg font-medium text-gray-900" id="cancel-booking-title">Hủy phiếu đặt phòng</h3>
+                        <button onclick="closeModal('cancelBookingModal')" class="text-gray-400 hover:text-gray-500">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="mt-4">
+                        <form id="cancelBookingForm">
+                            @Html.AntiForgeryToken()
+                            <div class="space-y-6">
+                                <!-- Mã phiếu -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Mã phiếu</label>
+                                    <div class="mt-1">
+                                        <input id="cancelMaPDPhong" name="MaPDPhong" type="text" readonly class="block w-full rounded-md border-gray-300 shadow-sm bg-gray-100 sm:text-sm py-2 px-3">
+                                    </div>
+                                </div>
+                                <!-- Thông báo hủy -->
+                                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                                    <div class="flex">
+                                        <div class="flex-shrink-0">
+                                            <i class="fas fa-exclamation-circle text-yellow-500"></i>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm text-yellow-700">
+                                                Việc hủy phiếu đặt phòng có thể áp dụng phí hủy theo chính sách của homestay. Vui lòng kiểm tra kỹ trước khi xác nhận.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Lý do hủy -->
+                                <div>
+                                    <label for="LyDo" class="block text-sm font-medium text-gray-700">Lý do hủy (tùy chọn)</label>
+                                    <div class="mt-1">
+                                        <textarea id="LyDo" name="LyDo" rows="3" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 sm:text-sm py-2 px-3" placeholder="Nhập lý do hủy phòng (nếu có)"></textarea>
+                                    </div>
+                                </div>
+                                <!-- Thông tin hoàn tiền -->
+                                <div class="border-t border-gray-200 pt-4">
+                                    <h4 class="text-sm font-medium text-gray-700 mb-2">Thông tin hoàn tiền (nếu có)</h4>
+                                    <!-- Tên ngân hàng -->
+                                    <div class="mt-2">
+                                        <label for="TenNganHang" class="block text-sm font-medium text-gray-700">Tên ngân hàng</label>
+                                        <div class="mt-1">
+                                            <input id="TenNganHang" name="TenNganHang" type="text" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 sm:text-sm py-2 px-3" placeholder="VD: Vietcombank">
+                                            <p id="tenNganHangError" class="text-red-500 text-xs mt-1 hidden"></p>
+                                        </div>
+                                    </div>
+                                    <!-- Số tài khoản -->
+                                    <div class="mt-2">
+                                        <label for="SoTaiKhoan" class="block text-sm font-medium text-gray-700">Số tài khoản</label>
+                                        <div class="mt-1">
+                                            <input id="SoTaiKhoan" name="SoTaiKhoan" type="text" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 sm:text-sm py-2 px-3" placeholder="VD: 1234567890">
+                                            <p id="soTaiKhoanError" class="text-red-500 text-xs mt-1 hidden"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-6 flex justify-end space-x-3">
+                                <button type="button" onclick="closeModal('cancelBookingModal')" class="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">
+                                    Hủy
+                                </button>
+                                <button type="submit" id="submitCancelButton" class="inline-flex justify-center rounded-md border border-transparent bg-rose-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-rose-700">
+                                    <span id="submitCancelText">Xác nhận hủy</span>
+                                    <span id="submitCancelSpinner" class="hidden ml-2"><i class="fas fa-spinner fa-spin"></i></span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Review (Add/View) -->
+    <div id="reviewModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="review-title" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen px-4 text-center">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:max-w-2xl sm:w-full">
+                <div class="bg-white px-6 py-4">
+                    <div class="flex justify-between items-center border-b pb-3">
+                        <h3 class="text-lg font-medium text-gray-900" id="review-title">
+                            <i class="fas fa-star text-yellow-400 mr-2"></i>
+                            <span id="review-modal-title">Đánh giá phiếu đặt phòng</span>
+                        </h3>
+                        <button onclick="closeModal('reviewModal')" class="text-gray-400 hover:text-gray-500">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="mt-4">
+                        <!-- Add Review Form -->
+                        <div id="addReviewFormContainer" class="hidden">
+                            <form id="addReviewForm">
+                                @Html.AntiForgeryToken()
+                                <div class="space-y-6">
+                                    <!-- Mã phiếu -->
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Mã phiếu</label>
+                                        <div class="mt-1">
+                                            <input id="reviewMaPDPhong" name="MaPDPhong" type="text" readonly class="block w-full rounded-md border-gray-300 shadow-sm bg-gray-100 sm:text-sm py-2 px-3">
+                                        </div>
+                                    </div>
+                                    <!-- Điểm đánh giá -->
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Đánh giá của bạn</label>
+                                        <div class="flex items-center space-x-1">
+                                            <input type="hidden" id="rating" name="Rating" value="5">
+                                            <button type="button" onclick="setRating(1)" class="text-2xl focus:outline-none">
+                                                <i class="far fa-star rating-star" data-rating="1"></i>
+                                            </button>
+                                            <button type="button" onclick="setRating(2)" class="text-2xl focus:outline-none">
+                                                <i class="far fa-star rating-star" data-rating="2"></i>
+                                            </button>
+                                            <button type="button" onclick="setRating(3)" class="text-2xl focus:outline-none">
+                                                <i class="far fa-star rating-star" data-rating="3"></i>
+                                            </button>
+                                            <button type="button" onclick="setRating(4)" class="text-2xl focus:outline-none">
+                                                <i class="far fa-star rating-star" data-rating="4"></i>
+                                            </button>
+                                            <button type="button" onclick="setRating(5)" class="text-2xl focus:outline-none">
+                                                <i class="far fa-star rating-star" data-rating="5"></i>
+                                            </button>
+                                            <span class="ml-2 text-sm font-medium text-gray-700" id="rating-text">Tuyệt vời</span>
+                                        </div>
+                                        <p id="ratingError" class="text-red-500 text-xs mt-1 hidden"></p>
+                                    </div>
+                                    <!-- Mẫu bình luận -->
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Mẫu bình luận (chọn một)</label>
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <button type="button" onclick="setComment('Trải nghiệm tuyệt vời, sẽ quay lại!')" class="text-left p-2 border border-gray-200 rounded-md hover:bg-rose-50 hover:border-rose-200 transition-colors">
+                                                <p class="text-sm font-medium">Trải nghiệm tuyệt vời</p>
+                                                <p class="text-xs text-gray-500">Sẽ quay lại!</p>
+                                            </button>
+                                            <button type="button" onclick="setComment('Phòng sạch sẽ, view đẹp')" class="text-left p-2 border border-gray-200 rounded-md hover:bg-rose-50 hover:border-rose-200 transition-colors">
+                                                <p class="text-sm font-medium">Phòng sạch sẽ</p>
+                                                <p class="text-xs text-gray-500">View đẹp</p>
+                                            </button>
+                                            <button type="button" onclick="setComment('Nhân viên thân thiện, nhiệt tình')" class="text-left p-2 border border-gray-200 rounded-md hover:bg-rose-50 hover:border-rose-200 transition-colors">
+                                                <p class="text-sm font-medium">Nhân viên thân thiện</p>
+                                                <p class="text-xs text-gray-500">Nhiệt tình</p>
+                                            </button>
+                                            <button type="button" onclick="setComment('Vị trí thuận tiện, dễ tìm')" class="text-left p-2 border border-gray-200 rounded-md hover:bg-rose-50 hover:border-rose-200 transition-colors">
+                                                <p class="text-sm font-medium">Vị trí thuận tiện</p>
+                                                <p class="text-xs text-gray-500">Dễ tìm</p>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <!-- Bình luận -->
+                                    <div>
+                                        <label for="binhLuan" class="block text-sm font-medium text-gray-700">Bình luận của bạn</label>
+                                        <div class="mt-1">
+                                            <textarea id="binhLuan" name="BinhLuan" rows="3" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 sm:text-sm py-2 px-3" placeholder="Hãy chia sẻ trải nghiệm của bạn..."></textarea>
+                                            <p id="binhLuanError" class="text-red-500 text-xs mt-1 hidden"></p>
+                                        </div>
+                                    </div>
+                                    <!-- Hình ảnh -->
+                                    <div>
+                                        <label for="hinhAnh" class="block text-sm font-medium text-gray-700">Hình ảnh</label>
+                                        <div class="mt-1">
+                                            <input id="hinhAnh" name="HinhAnh" type="file" accept="image/*" multiple class="hidden" onchange="previewImages(this)">
+                                            <div class="flex items-center space-x-4">
+                                                <label for="hinhAnh" class="cursor-pointer">
+                                                    <div class="w-24 h-24 border-2 border-dashed border-gray-300 rounded-md flex items-center justify-center text-gray-400 hover:text-rose-500 hover:border-rose-400 transition-colors">
+                                                        <i class="fas fa-camera text-2xl"></i>
+                                                    </div>
+                                                </label>
+                                                <div id="imagePreviewContainer" class="flex space-x-2"></div>
+                                            </div>
+                                        </div>
+                                        <p id="hinhAnhError" class="text-red-500 text-xs mt-1 hidden"></p>
+                                    </div>
+                                </div>
+                                <div class="mt-6 flex justify-end space-x-3">
+                                    <button type="button" onclick="closeModal('reviewModal')" class="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">
+                                        Hủy
+                                    </button>
+                                    <button type="submit" id="submitReviewButton" class="inline-flex justify-center rounded-md border border-transparent bg-rose-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-rose-700">
+                                        <span id="submitReviewText">Gửi đánh giá</span>
+                                        <span id="submitReviewSpinner" class="hidden ml-2"><i class="fas fa-spinner fa-spin"></i></span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        <!-- View Review Content -->
+                        <div id="viewReviewContent" class="hidden">
+                            <div class="flex items-start space-x-4">
+                                <div class="flex-shrink-0">
+                                    <img id="reviewerAvatar" class="h-10 w-10 rounded-full" src="/img/default-avatar.jpg" alt="Ảnh đại diện">
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-gray-900" id="reviewerName"></p>
+                                    <div class="flex items-center mt-1">
+                                        <div id="reviewStars" class="flex"></div>
+                                        <p class="ml-2 text-sm text-gray-500" id="reviewDate"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-4 pl-14">
+                                <p class="text-sm text-gray-700" id="reviewComment"></p>
+                                <div id="reviewImages" class="mt-3 grid grid-cols-3 gap-2"></div>
+                                <div class="mt-6 flex justify-end">
+                                    <button onclick="closeModal('reviewModal')" class="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">
+                                        Đóng
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <!-- Header section -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-900 font-lora">Hồ sơ cá nhân</h1>
+            <p class="mt-3 text-lg text-gray-600">Quản lý thông tin cá nhân và lịch sử đặt phòng của bạn</p>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Sidebar Profile Card -->
+            <div class="lg:w-1/3">
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <!-- Cover photo -->
+                    <div class="h-32 bg-gradient-to-r from-rose-500 to-rose-600 relative">
+                        <div class="absolute -bottom-16 left-1/2 transform -translate-x-1/2">
+                            <div class="relative group">
+                                <img id="profileImagePreview" src="/img/default-avatar.jpg" alt="Profile picture" class="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover">
+                                <!-- Upload button -->
+                                <label for="profileImageUpload" class="absolute bottom-0 right-0 bg-rose-600 text-white p-2 rounded-full cursor-pointer shadow-md hover:bg-rose-700 transition-all">
+                                    <i class="fas fa-camera"></i>
+                                    <input id="profileImageUpload" name="profileImage" type="file" accept="image/*" class="hidden">
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- User info -->
+                    <div class="pt-20 pb-6 px-6 text-center">
+                        <h2 id="profileFullName" class="text-2xl font-bold text-gray-900 font-lora">Đang tải...</h2>
+                        <p id="profileEmail" class="text-gray-600 mt-1"></p>
+                        <p id="profilePhoneNumber" class="text-gray-600"></p>
+                        <!-- Status badge -->
+                        <div class="mt-3">
+                            <span id="profileTrangThai" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"></span>
+                        </div>
+                    </div>
+                    <!-- Points section -->
+                    <div class="bg-rose-50 p-4 mx-4 mb-6 rounded-lg">
+                        <div class="flex items-center justify-center">
+                            <div class="p-3 rounded-full bg-rose-100 text-rose-600">
+                                <i class="fas fa-gem text-xl"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-gray-500">Điểm tích lũy</p>
+                                <p id="profileTichDiem" class="text-2xl font-bold text-rose-600">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Navigation tabs -->
+                    <div class="border-t border-gray-200">
+                        <nav class="flex flex-col">
+                            <button id="profileTab" class="tab-button text-left px-6 py-4 text-gray-700 hover:bg-gray-50 font-medium border-l-4 border-rose-500 bg-rose-50">
+                                <i class="fas fa-user-circle mr-3 text-rose-600"></i> Thông tin cá nhân
+                            </button>
+                            <button id="bookingsTab" class="tab-button text-left px-6 py-4 text-gray-500 hover:bg-gray-50 font-medium border-l-4 border-transparent">
+                                <i class="fas fa-calendar-alt mr-3"></i> Đặt phòng của tôi
+                            </button>
+                            <button id="securityTab" class="tab-button text-left px-6 py-4 text-gray-500 hover:bg-gray-50 font-medium border-l-4 border-transparent">
+                                <i class="fas fa-lock mr-3"></i> Bảo mật
+                            </button>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="lg:w-2/3">
+                <!-- Profile Information Tab -->
+                <div id="profileContent" class="tab-content bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-6 font-lora border-b pb-3">Thông tin cơ bản</h3>
+                    <div class="space-y-6">
+                        <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                            <!-- Full Name -->
+                            <div class="sm:col-span-3">
+                                <label class="block text-sm font-medium text-gray-700">Họ và tên</label>
+                                <div class="mt-1">
+                                    <p id="infoFullName" class="block w-full rounded-md border-gray-300 shadow-sm bg-gray-100 sm:text-sm p-2">Đang tải...</p>
+                                </div>
+                            </div>
+                            <!-- Email -->
+                            <div class="sm:col-span-3">
+                                <label class="block text-sm font-medium text-gray-700">Email</label>
+                                <div class="mt-1">
+                                    <p id="infoEmail" class="block w-full rounded-md border-gray-300 shadow-sm bg-gray-100 sm:text-sm p-2"></p>
+                                </div>
+                            </div>
+                            <!-- Phone Number -->
+                            <div class="sm:col-span-3">
+                                <label class="block text-sm font-medium text-gray-700">Số điện thoại</label>
+                                <div class="mt-1">
+                                    <p id="infoPhoneNumber" class="block w-full rounded-md border-gray-300 shadow-sm bg-gray-100 sm:text-sm p-2"></p>
+                                </div>
+                            </div>
+                            <!-- Date of Birth -->
+                            <div class="sm:col-span-3">
+                                <label class="block text-sm font-medium text-gray-700">Ngày sinh</label>
+                                <div class="mt-1">
+                                    <p id="infoDateOfBirth" class="block w-full rounded-md border-gray-300 shadow-sm bg-gray-100 sm:text-sm p-2"></p>
+                                </div>
+                            </div>
+                            <!-- Address -->
+                            <div class="sm:col-span-6">
+                                <label class="block text-sm font-medium text-gray-700">Địa chỉ</label>
+                                <div class="mt-1">
+                                    <p id="infoAddress" class="block w-full rounded-md border-gray-300 shadow-sm bg-gray-100 sm:text-sm p-2"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bookings Tab -->
+                <div id="bookingsContent" class="tab-content hidden bg-white rounded-xl shadow-md p-6">
+                    <div class="flex justify-between items-center mb-6 border-b pb-3">
+                        <h3 class="text-xl font-bold text-gray-900 font-lora">Lịch sử đặt phòng</h3>
+                        <div class="text-sm text-gray-500">
+                            Tổng: <span id="totalBookings" class="font-medium">0</span> phiếu
+                        </div>
+                    </div>
+                    <div id="bookingsList" class="space-y-4">
+                        <!-- Bookings will be populated here -->
+                    </div>
+                    <!-- Pagination -->
+                    <div id="pagination" class="mt-6 flex items-center justify-between border-t border-gray-200 pt-4 hidden">
+                        <!-- Pagination will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Security Tab -->
+                <div id="securityContent" class="tab-content hidden bg-white rounded-xl shadow-md p-6">
+                    <div class="text-center py-12">
+                        <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-rose-100">
+                            <i class="fas fa-lock text-rose-600"></i>
+                        </div>
+                        <h3 class="mt-3 text-xl font-bold text-gray-900 font-lora">Bảo mật</h3>
+                        <p class="mt-2 text-gray-500">Quản lý thông tin cá nhân và mật khẩu của bạn một cách an toàn.</p>
+                        <div class="mt-6 flex justify-center space-x-4">
+                            <button onclick="showUpdateProfileModal()" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-rose-600 hover:bg-rose-700">
+                                <i class="fas fa-edit mr-2"></i> Thay đổi thông tin
+                            </button>
+                            <button id="showchangePasswordButton" onclick="showChangePasswordModal()" class="hidden inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-rose-600 hover:bg-rose-700">
+                                <i class="fas fa-key mr-2"></i> Thay đổi mật khẩu
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        @@keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+    <script>
+        // Global variables to store profile and booking data
+        let profileInfo = null;
+        let bookingData = null;
+         let currentPage = 1;
+        // Fetch profile information
+        async function fetchProfileInfo() {
+            document.getElementById('pageLoading').classList.remove('hidden');
+            try {
+                const response = await fetch('/User/GetProfile');
+                const data = await response.json();
+                if (data.success) {
+                    profileInfo = data.data;
+                    updateProfileUI();
+                } else {
+                    showNotification('error', data.message || 'Không thể tải dữ liệu hồ sơ.');
+                }
+            } catch (error) {
+                showNotification('error', 'Lỗi khi tải dữ liệu: ' + error.message);
+              
+            } finally {
+                document.getElementById('pageLoading').classList.add('hidden');
+            }
+        }
+
+        // Fetch booking data
+        async function fetchMyBookings(pageNumber = 1) {
+            document.getElementById('pageLoading').classList.remove('hidden');
+            try {
+                const response = await fetch(`/User/GetMyBooking?pageNumber=${pageNumber}`);
+                const data = await response.json();
+                if (data.success) {
+                    bookingData = data.data;
+              
+                    updateBookingsUI();
+                    updatePaginationUI(pageNumber, data.data.TotalPages);
+                } else {
+                    showNotification('error', data.message || 'Không thể tải danh sách đặt phòng.');
+                }
+            } catch (error) {
+                showNotification('error', 'Lỗi khi tải dữ liệu: ' + error.message);
+              
+            } finally {
+                document.getElementById('pageLoading').classList.add('hidden');
+            }
+        }
+
+        // Update Profile UI
+        function updateProfileUI() {
+            if (!profileInfo) return;
+
+            // Sidebar
+            document.getElementById('profileFullName').textContent = profileInfo.fullName || 'Chưa cung cấp';
+            document.getElementById('profileEmail').textContent = profileInfo.email || '';
+            document.getElementById('profilePhoneNumber').textContent = profileInfo.phoneNumber || 'Chưa cung cấp';
+            const trangThaiSpan = document.getElementById('profileTrangThai');
+            trangThaiSpan.textContent = profileInfo.trangThai || 'Không xác định';
+            trangThaiSpan.className = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ' +
+                (profileInfo.trangThai === 'Hoạt động' ? 'bg-green-100 text-green-800' :
+                 profileInfo.trangThai === 'Khóa' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800');
+            document.getElementById('profileTichDiem').textContent = profileInfo.tichDiem;
+            document.getElementById('profileImagePreview').src = profileInfo.profilePicture || '/img/default-avatar.jpg';
+            document.getElementById('reviewerAvatar').src = profileInfo.profilePicture || '/img/default-avatar.jpg';
+            document.getElementById('reviewerName').textContent = profileInfo.fullName || 'Người dùng';
+
+            // Profile Tab
+            document.getElementById('infoFullName').textContent = profileInfo.fullName || 'Chưa cung cấp';
+            document.getElementById('infoEmail').textContent = profileInfo.email || '';
+            document.getElementById('infoPhoneNumber').textContent = profileInfo.phoneNumber || 'Chưa cung cấp';
+            document.getElementById('infoDateOfBirth').textContent = profileInfo.dateOfBirth ? new Date(profileInfo.dateOfBirth).toLocaleDateString('vi-VN') : 'Chưa cung cấp';
+            document.getElementById('infoAddress').textContent = profileInfo.address || 'Chưa cung cấp';
+
+            // Update Profile Modal
+            document.getElementById('modalEmail').textContent = profileInfo.email || '';
+            document.getElementById('otpEmail').textContent = profileInfo.email || '';
+        }
+
+        // Update Bookings UI
+            function updateBookingsUI() {
+            const bookingsList = document.getElementById('bookingsList');
+            const totalBookings = document.getElementById('totalBookings');
+            bookingsList.innerHTML = '';
+
+            // Kiểm tra PhieuDatPhongs từ MyBookingDTO
+            const phieuDatPhongs = bookingData.PhieuDatPhongs || [];
+            totalBookings.textContent = phieuDatPhongs.length;
+
+            if (phieuDatPhongs.length === 0) {
+                bookingsList.innerHTML = `
+                    <div class="text-center py-12">
+                        <i class="fas fa-calendar-times text-4xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500 text-lg">Bạn chưa có phiếu đặt phòng nào.</p>
+                        <a href="/homestay" class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-rose-600 hover:bg-rose-700">
+                            Đặt phòng ngay <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>`;
+                return;
+            }
+
+            phieuDatPhongs.forEach(phieu => {
+                // Kiểm tra dữ liệu phiếu
+                if (!phieu || !phieu.maPDPhong) return;
+
+                const statusClass = phieu.trangThai === 'Đã xác nhận' ? 'bg-green-100 text-green-800' :
+                                   phieu.trangThai === 'Chờ xác nhận' ? 'bg-yellow-100 text-yellow-800' :
+                                   phieu.trangThai === 'Hoàn thành' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800';
+
+                let buttons = `
+                    <button onclick="showBookingDetails('${phieu.maPDPhong}')" class="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        <i class="fas fa-info-circle mr-1"></i> Chi tiết
+                    </button>`;
+                if (phieu.trangThai === 'Đã xác nhận') {
+                    buttons += `
+                        <button onclick="showCancelBookingModal('${phieu.maPDPhong}')" class="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            <i class="fas fa-times-circle mr-1"></i> Hủy
+                        </button>
+                        <button onclick="showAddServiceModal('${phieu.maPDPhong}')" class="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            <i class="fas fa-plus-circle mr-1"></i> Thêm dịch vụ
+                        </button>`;
+                }
+                if (phieu.trangThai === 'Hoàn thành') {
+                    buttons += `
+                        <button onclick="showReviewModal('${phieu.maPDPhong}')" class="review-button inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50" data-ma-pdphong="${phieu.maPDPhong}">
+                            <i class="fas fa-star mr-1"></i> <span class="review-text">Đánh giá</span>
+                        </button>`;
+                }
+
+                let chiTietHtml = '';
+                if (Array.isArray(phieu.chiTietDatPhongs) && phieu.chiTietDatPhongs.length > 0) {
+                    chiTietHtml = phieu.chiTietDatPhongs.map(chiTiet => {
+                        // Kiểm tra chiTiet và Phong
+                        if (!chiTiet || !chiTiet.Phong) return '';
+
+                        const ngayDen = chiTiet.NgayDen ? new Date(chiTiet.NgayDen).toLocaleDateString('vi-VN') : 'N/A';
+                        const ngayDi = chiTiet.NgayDi ? new Date(chiTiet.NgayDi).toLocaleDateString('vi-VN') : 'N/A';
+
+                        return `
+                            <li class="flex items-start">
+                                <div class="flex-shrink-0 h-16 w-16 rounded-md overflow-hidden">
+                                    <img class="h-full w-full object-cover" src="${chiTiet.Phong.HinhAnhPhongs?.find(s => s?.LaAnhChinh)?.UrlAnh || '/img/default-room.jpg'}" alt="${chiTiet.Phong.TenPhong || 'Phòng'}">
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-gray-900">${chiTiet.Phong.TenPhong || 'N/A'} - ${chiTiet.Phong.Homestay?.TenHomestay || 'N/A'}</p>
+                                    <p class="text-sm text-gray-500">
+                                        <i class="far fa-calendar mr-1"></i> ${ngayDen} - ${ngayDi}
+                                    </p>
+                                </div>
+                            </li>`;
+                    }).filter(Boolean).join('');
+                    chiTietHtml = chiTietHtml ? `<ul class="space-y-3">${chiTietHtml}</ul>` : '<p class="text-sm text-gray-500">Không có chi tiết phòng</p>';
+                } else {
+                    chiTietHtml = '<p class="text-sm text-gray-500">Không có chi tiết phòng</p>';
+                }
+
+                bookingsList.innerHTML += `
+                    <div class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+                        <div class="p-4 sm:p-6">
+                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start">
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-3">
+                                        <span class="text-sm font-medium text-gray-900">Mã phiếu: ${phieu.maPDPhong}</span>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClass}">
+                                            ${phieu.trangThai || 'N/A'}
+                                        </span>
+                                    </div>
+                                    <p class="mt-1 text-sm text-gray-500">
+                                        <i class="far fa-calendar-alt mr-1"></i> Ngày lập: ${phieu.ngayLap ? new Date(phieu.ngayLap).toLocaleDateString('vi-VN') : 'N/A'}
+                                    </p>
+                                </div>
+                                <div class="mt-3 sm:mt-0 flex space-x-2 flex-wrap gap-2">
+                                    ${buttons}
+                                </div>
+                            </div>
+                            <div class="mt-4 border-t border-gray-200 pt-4">
+                                <h4 class="text-sm font-medium text-gray-900 mb-2">Chi tiết phòng</h4>
+                                ${chiTietHtml}
+                            </div>
+                        </div>
+                    </div>`;
+            });
+
+            // Initialize review buttons
+            document.querySelectorAll('.review-button').forEach(button => {
+                const maPDPhong = button.getAttribute('data-ma-pdphong');
+                fetch(`/User/CheckReview?maPDPhong=${maPDPhong}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.hasReview) {
+                            button.querySelector('.review-text').textContent = 'Xem đánh giá';
+                        }
+                    })
+                    .catch(error => console.error('Lỗi khi kiểm tra đánh giá:', error));
+            });
+        }
+
+        // Update Pagination UI
+        function updatePaginationUI(currentPage, totalPages) {
+            const pagination = document.getElementById('pagination');
+            if (totalPages <= 1) {
+                pagination.classList.add('hidden');
+                return;
+            }
+            pagination.classList.remove('hidden');
+            let paginationHtml = `
+                <div class="flex-1 flex justify-between sm:hidden">
+                    <button onclick="fetchMyBookings(${currentPage - 1})" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ${currentPage === 1 ? 'pointer-events-none opacity-50' : ''}">
+                        Trước
+                    </button>
+                    <button onclick="fetchMyBookings(${currentPage + 1})" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ${currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}">
+                        Sau
+                    </button>
+                </div>
+                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm text-gray-700">
+                            Hiển thị trang <span class="font-medium">${currentPage}</span> của <span class="font-medium">${totalPages}</span>
+                        </p>
+                    </div>
+                    <div>
+                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                            <button onclick="fetchMyBookings(${currentPage - 1})" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 ${currentPage === 1 ? 'pointer-events-none opacity-50' : ''}">
+                                <span class="sr-only">Trước</span>
+                                <i class="fas fa-chevron-left"></i>
+                            </button>`;
+            for (let i = 1; i <= totalPages; i++) {
+                paginationHtml += `
+                    <button onclick="fetchMyBookings(${i})" class="relative inline-flex items-center px-4 py-2 border ${currentPage === i ? 'z-10 bg-rose-50 border-rose-500 text-rose-600' : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'} text-sm font-medium">
+                        ${i}
+                    </button>`;
+            }
+            paginationHtml += `
+                            <button onclick="fetchMyBookings(${currentPage + 1})" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 ${currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}">
+                                <span class="sr-only">Sau</span>
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </nav>
+                    </div>
+                </div>`;
+            pagination.innerHTML = paginationHtml;
+        }
+
+        // Notification Service
+        function showNotification(type, message) {
+            const notification = document.getElementById('notification');
+            const icon = document.getElementById('notification-icon');
+            const msg = document.getElementById('notification-message');
+
+            notification.className = 'fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg border-l-4 bg-white max-w-sm';
+            if (type === 'success') {
+                notification.classList.add('border-green-500');
+                icon.innerHTML = '<i class="fas fa-check-circle text-green-500"></i>';
+            } else if (type === 'error') {
+                notification.classList.add('border-red-500');
+                icon.innerHTML = '<i class="fas fa-times-circle text-red-500"></i>';
+            } else {
+                notification.classList.add('border-blue-500');
+                icon.innerHTML = '<i class="fas fa-info-circle text-blue-500"></i>';
+            }
+
+            msg.textContent = message;
+            notification.classList.remove('hidden');
+            setTimeout(() => notification.classList.add('hidden'), 5000);
+        }
+
+        function hideNotification() {
+            document.getElementById('notification').classList.add('hidden');
+        }
+
+        // Modal handling
+               
+        const pageSize = 2;
+        let chiTietPhongsGlobal = [];
+
+        function showBookingDetails(maPDPhong) {
+            fetch(`/User/GetBookingDetails?maPDPhong=${maPDPhong}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('modalMaPDPhong').textContent = data.data.maPDPhong;
+                        document.getElementById('modalNgayLap').textContent = data.data.ngayLap;
+
+                        let statusHtml = '';
+                        switch (data.data.trangThai) {
+                            case 'Đã xác nhận':
+                                statusHtml = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"><i class="fas fa-check-circle mr-1"></i> ${data.data.trangThai}</span>`;
+                                break;
+                            case 'Chờ xác nhận':
+                                statusHtml = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800"><i class="fas fa-clock mr-1"></i> ${data.data.trangThai}</span>`;
+                                break;
+                            case 'Hoàn thành':
+                                statusHtml = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"><i class="fas fa-calendar-check mr-1"></i> ${data.data.trangThai}</span>`;
+                                break;
+                            default:
+                                statusHtml = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"><i class="fas fa-times-circle mr-1"></i> ${data.data.trangThai}</span>`;
+                        }
+                        document.getElementById('modalTrangThai').innerHTML = statusHtml;
+
+                        document.getElementById('modalTongTien').textContent = data.data.tongTien
+                            ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(data.data.tongTien)
+                            : 'Chưa có thông tin';
+
+                        // Gán dữ liệu chi tiết phòng vào biến toàn cục để phân trang
+                        chiTietPhongsGlobal = data.data.chiTietPhongs || [];
+                        currentPage = 1;
+
+                        renderChiTietPhongsPage();
+                        document.getElementById('bookingDetailsModal').classList.remove('hidden');
+                    } else {
+                        showNotification('error', data.message || 'Không thể tải chi tiết phiếu đặt phòng.');
+                    }
+                })
+                .catch(error => {
+                    showNotification('error', 'Lỗi khi tải chi tiết: ' + error.message);
+                    console.error(error);
+                });
+        }
+
+        function renderChiTietPhongsPage() {
+            const chiTietPhongsDiv = document.getElementById('modalChiTietPhongs');
+            chiTietPhongsDiv.innerHTML = '';
+
+            const start = (currentPage - 1) * pageSize;
+            const end = start + pageSize;
+            const currentItems = chiTietPhongsGlobal.slice(start, end);
+
+            if (currentItems.length === 0) {
+                chiTietPhongsDiv.innerHTML = '<p class="text-sm text-gray-500">Không có chi tiết phòng.</p>';
+                return;
+            }
+
+            currentItems.forEach(ct => {
+                let dichVuHtml = Array.isArray(ct.dichVus) && ct.dichVus.length > 0 ? `
+                    <div class="mt-3">
+                        <p class="text-sm font-medium text-gray-700 mb-1">Dịch vụ đã sử dụng:</p>
+                        <div class="bg-gray-50 rounded-md p-3">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Dịch vụ</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Số lượng</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Đơn giá</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y-activator">
+                                    ${ct.dichVus.map(dv => `
+                                        <tr>
+                                            <td class="px-3 py-2 text-sm text-gray-900">${dv.tenDV}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-500">${dv.soLuong}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-500">${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(dv.donGia)}</td>
+                                        </tr>`).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>` : '<p class="text-sm text-gray-500 mt-2">Không có dịch vụ nào được sử dụng.</p>';
+
+                chiTietPhongsDiv.innerHTML += `
+                    <div class="border border-gray-200 rounded-lg p-4 mb-4">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 h-20 w-20 rounded-md overflow-hidden">
+                                <img class="h-full w-full object-cover" src="${ct.hinhAnhChinh || '/img/default-room.jpg'}" alt="${ct.tenPhong}">
+                            </div>
+                            <div class="ml-4 flex-1">
+                                <p class="text-sm font-medium text-gray-900">${ct.tenPhong} - ${ct.tenHomestay}</p>
+                                <p class="text-sm text-gray-500">
+                                    <i class="far fa-calendar mr-1"></i> ${ct.ngayDen} - ${ct.ngayDi}
+                                </p>
+                                ${dichVuHtml}
+                            </div>
+                        </div>
+                    </div>`;
+            });
+
+            // Phân trang
+            const totalPages = Math.ceil(chiTietPhongsGlobal.length / pageSize);
+            if (totalPages > 1) {
+                chiTietPhongsDiv.innerHTML += `
+                    <div class="flex justify-between items-center mt-2">
+                        <button onclick="changePage(-1)" class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded" ${currentPage === 1 ? 'disabled' : ''}>Trước</button>
+                        <span class="text-sm text-gray-600">Trang ${currentPage} / ${totalPages}</span>
+                        <button onclick="changePage(1)" class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded" ${currentPage === totalPages ? 'disabled' : ''}>Sau</button>
+                    </div>`;
+            }
+        }
+
+        function changePage(delta) {
+            const totalPages = Math.ceil(chiTietPhongsGlobal.length / pageSize);
+            currentPage += delta;
+            if (currentPage < 1) currentPage = 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+            renderChiTietPhongsPage();
+        }
+
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+            if (modalId === 'updateProfileModal') {
+                document.getElementById('profileForm').reset();
+                document.getElementById('FullNameError').textContent = '';
+                document.getElementById('PhoneNumberError').textContent = '';
+            } else if (modalId === 'changePasswordModal') {
+                document.getElementById('otpForm').classList.remove('hidden');
+                document.getElementById('passwordForm').classList.add('hidden');
+                document.getElementById('otpInputuser').value = '';
+                document.getElementById('otpError').classList.add('hidden');
+                document.getElementById('changePasswordForm').reset();
+                document.getElementById('oldPasswordError').classList.add('hidden');
+                document.getElementById('newPasswordError').classList.add('hidden');
+                document.getElementById('confirmPasswordErrorUser').classList.add('hidden');
+            } else if (modalId === 'addServiceModal') {
+                document.getElementById('addServiceForm').reset();
+                document.getElementById('roomServiceList').innerHTML = '';
+                document.getElementById('roomError').classList.add('hidden');
+                document.getElementById('serviceError').classList.add('hidden');
+            } else if (modalId === 'cancelBookingModal') {
+                document.getElementById('cancelBookingForm').reset();
+                document.getElementById('tenNganHangError').classList.add('hidden');
+                document.getElementById('soTaiKhoanError').classList.add('hidden');
+            } else if (modalId === 'reviewModal') {
+                document.getElementById('addReviewForm').reset();
+                document.getElementById('imagePreviewContainer').innerHTML = '';
+                document.getElementById('rating').value = 5;
+                updateRatingStars(5);
+                document.getElementById('rating-text').textContent = 'Tuyệt vời';
+                document.getElementById('addReviewFormContainer').classList.add('hidden');
+                document.getElementById('viewReviewContent').classList.add('hidden');
+            }
+        }
+
+             document.getElementById('profileImageUpload').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Hiển thị preview
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('profileImagePreview').src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+
+            // Lấy AntiForgeryToken từ input hidden
+            const tokenElement = document.querySelector('input[name="__RequestVerificationToken"]');
+            const token = tokenElement ? tokenElement.value : '';
+
+            const formData = new FormData();
+            formData.append('profileImage', file);
+
+            fetch('/User/UploadProfileImage', {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': token
+                },
+                body: formData
+            })
+            .then(async response => {
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Không thể tải ảnh lên.');
+                }
+                return data;
+            })
+            .then(data => {
+                // Hiển thị thông báo thành công
+                showNotification('success', 'Cập nhật ảnh đại diện thành công.');
+
+                // Cập nhật ảnh đại diện trong giao diện
+                if (typeof profileInfo !== 'undefined') {
+                    profileInfo.profilePicture = data.profilePicture;
+                }
+
+                if (typeof updateProfileUI === 'function') {
+                    updateProfileUI();
+                }
+            })
+            .catch(error => {
+                showNotification('error', 'Lỗi khi tải ảnh: ' + error.message);
+                console.error(error);
+            });
+        });
+
+        // Tab Navigation
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.tab-button').forEach(btn => {
+                    btn.classList.remove('border-rose-500', 'bg-rose-50', 'text-gray-700');
+                    btn.classList.add('border-transparent', 'text-gray-500');
+                });
+                button.classList.add('border-rose-500', 'bg-rose-50', 'text-gray-700');
+                button.classList.remove('border-transparent', 'text-gray-500');
+
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+                const contentId = button.id.replace('Tab', 'Content');
+                document.getElementById(contentId).classList.remove('hidden');
+
+                if (button.id === 'bookingsTab') {
+                    fetchMyBookings();
+                } else if (button.id === 'securityTab') {
+                    checkGoogleLoginAndToggleButton();
+                }
+            });
+        });
+       // Hàm kiểm tra đăng nhập Google và hiển thị nút
+        async function checkGoogleLoginAndToggleButton() {
+            try {
+                const response = await fetch('/Account/CheckGoogleLogin', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+
+                const changePasswordButton = document.getElementById('showchangePasswordButton');
+                if (data.success && !data.isGoogleLogin) {
+                    changePasswordButton.classList.remove('hidden');
+                } else {
+                    changePasswordButton.classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('Lỗi khi kiểm tra đăng nhập Google:', error);
+                document.getElementById('showchangePasswordButton').classList.add('hidden');
+            }
+        }
+        // Update Profile Modal
+         
+        let initialFormState = {};
+
+        function showUpdateProfileModal() {
+            if (profileInfo) {
+                document.getElementById('FullName').value = profileInfo.fullName || '';
+                document.getElementById('PhoneNumber').value = profileInfo.phoneNumber || '';
+                document.getElementById('DateOfBirth').value = profileInfo.dateOfBirth ? new Date(profileInfo.dateOfBirth).toISOString().split('T')[0] : '';
+                document.getElementById('Address').value = profileInfo.address || '';
+
+                // Lưu trạng thái ban đầu
+                initialFormState = {
+                    FullName: profileInfo.fullName || '',
+                    PhoneNumber: profileInfo.phoneNumber || '',
+                    DateOfBirth: profileInfo.dateOfBirth ? new Date(profileInfo.dateOfBirth).toISOString().split('T')[0] : '',
+                    Address: profileInfo.address || ''
+                };
+            }
+            document.getElementById('updateProfileModal').classList.remove('hidden');
+
+            // Kiểm tra tuổi khi mở modal (nếu có DateOfBirth)
+            const dateOfBirthInput = document.getElementById('DateOfBirth');
+            if (dateOfBirthInput.value) {
+                checkAge(dateOfBirthInput.value);
+            }
+
+            // Ẩn nút submit ban đầu vì chưa có thay đổi
+            toggleSubmitButton();
+        }
+
+        // Hàm tính tuổi và kiểm tra
+        function checkAge(dateOfBirth) {
+            const birthDate = new Date(dateOfBirth);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+
+            const dateOfBirthError = document.getElementById('DateOfBirthError');
+            if (age < 18) {
+                dateOfBirthError.textContent = 'Bạn phải từ 18 tuổi trở lên.';
+                dateOfBirthError.classList.remove('hidden');
+            } else {
+                dateOfBirthError.classList.add('hidden');
+            }
+        }
+
+        // Sự kiện thay đổi ngày sinh để kiểm tra tuổi realtime
+        document.getElementById('DateOfBirth').addEventListener('change', function () {
+            checkAge(this.value);
+            toggleSubmitButton();
+        });
+
+        // Theo dõi thay đổi trên các input
+        ['FullName', 'PhoneNumber', 'DateOfBirth', 'Address'].forEach(id => {
+            document.getElementById(id).addEventListener('input', toggleSubmitButton);
+        });
+
+        // Hàm kiểm tra và hiển thị/ẩn nút submit
+        function toggleSubmitButton() {
+            const currentFormState = {
+                FullName: document.getElementById('FullName').value,
+                PhoneNumber: document.getElementById('PhoneNumber').value,
+                DateOfBirth: document.getElementById('DateOfBirth').value,
+                Address: document.getElementById('Address').value
+            };
+
+            const hasChanges = Object.keys(initialFormState).some(key => {
+                return initialFormState[key] !== currentFormState[key];
+            });
+
+            const submitButton = document.getElementById('submitButton');
+            if (hasChanges) {
+                submitButton.classList.remove('hidden');
+            } else {
+                submitButton.classList.add('hidden');
+            }
+        }
+
+        document.getElementById('profileForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const submitButton = document.getElementById('submitButton');
+            const submitText = document.getElementById('submitText');
+            const submitSpinner = document.getElementById('submitSpinner');
+
+            submitButton.disabled = true;
+            submitText.classList.add('hidden');
+            submitSpinner.classList.remove('hidden');
+
+            const formData = new FormData(this);
+            const fullName = formData.get('FullName');
+            const phoneNumber = formData.get('PhoneNumber');
+            const dateOfBirth = formData.get('DateOfBirth');
+
+            // Ẩn tất cả thông báo lỗi trước khi kiểm tra
+            document.getElementById('FullNameError').textContent = '';
+            document.getElementById('PhoneNumberError').textContent = '';
+            document.getElementById('DateOfBirthError').textContent = '';
+
+            let hasError = false;
+
+            // Validation cho FullName
+            if (!fullName || fullName.trim().length === 0) {
+                document.getElementById('FullNameError').textContent = 'Họ và tên không được để trống';
+                hasError = true;
+            }
+
+            // Validation cho PhoneNumber
+            if (!phoneNumber || !/^\d{10,11}$/.test(phoneNumber)) {
+                document.getElementById('PhoneNumberError').textContent = 'Số điện thoại phải có 10-11 chữ số';
+                hasError = true;
+            }
+
+            // Validation cho DateOfBirth (tuổi >= 18)
+            if (dateOfBirth) {
+                const birthDate = new Date(dateOfBirth);
+                const today = new Date();
+                let age = today.getFullYear() - birthDate.getFullYear();
+                const monthDiff = today.getMonth() - birthDate.getMonth();
+
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                    age--;
+                }
+
+                if (age < 18) {
+                    document.getElementById('DateOfBirthError').textContent = 'Bạn phải từ 18 tuổi trở lên.';
+                    hasError = true;
+                }
+            } else {
+                document.getElementById('DateOfBirthError').textContent = 'Ngày sinh không được để trống.';
+                hasError = true;
+            }
+
+            if (hasError) {
+                submitButton.disabled = false;
+                submitText.classList.remove('hidden');
+                submitSpinner.classList.add('hidden');
+                return;
+            }
+
+            fetch('/User/UpdateProfile', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('success', 'Cập nhật thông tin thành công.');
+                    profileInfo.fullName = formData.get('FullName');
+                    profileInfo.phoneNumber = formData.get('PhoneNumber');
+                    profileInfo.dateOfBirth = formData.get('DateOfBirth');
+                    profileInfo.address = formData.get('Address');
+                    updateProfileUI();
+                    closeModal('updateProfileModal');
+                } else {
+                    showNotification('error', data.message || 'Không thể cập nhật thông tin.');
+                }
+            })
+            .catch(error => {
+                showNotification('error', 'Lỗi khi cập nhật: ' + error.message);
+                console.error(error);
+            })
+            .finally(() => {
+                submitButton.disabled = false;
+                submitText.classList.remove('hidden');
+                submitSpinner.classList.add('hidden');
+            });
+        });
+
+        // Change Password Modal
+               function showChangePasswordModal() {
+          
+            document.getElementById('changePasswordModal').classList.remove('hidden');
+            startOtpCountdownUser();
+            requestOtp();
+        }
+
+
+        function requestOtp() {
+             fetch('/Account/SendOTP', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification('success', 'Mã OTP đã được gửi đến email của bạn.');
+                    } else {
+                        showNotification('error', data.message || 'Không thể gửi OTP.');
+                    }
+                })
+                .catch(error => {
+                    showNotification('error', 'Lỗi khi gửi OTP: ' + error.message);
+                    console.error(error);
+                });
+        }
+
+        function startOtpCountdownUser() {
+           
+            const countdownElement = document.getElementById('countdown');
+            const resendButton = document.getElementById('resendOtpButton');
+            let timeLeft = 60;
+
+            resendButton.disabled = true;
+            const countdown = setInterval(() => {
+                timeLeft--;
+                countdownElement.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    resendButton.disabled = false;
+                    countdownElement.textContent = '60';
+                }
+            }, 1000);
+        }
+
+        function resendOtp() {
+            requestOtp();
+            startOtpCountdownUser();
+        }
+
+        function restrictToNumbers(input) {
+            input.value = input.value.replace(/[^0-9]/g, '');
+        }
+
+        function handleOtpPaste(event) {
+            const pastedData = (event.clipboardData || window.clipboardData).getData('text');
+            if (/^\d{6}$/.test(pastedData)) {
+                document.getElementById('otpInputuser').value = pastedData;
+                verifyOtpUser();
+            }
+            event.preventDefault();
+        }
+
+        function verifyOtpUser() {
+            const otp = document.getElementById('otpInputuser').value;
+            if (!otp || otp.length !== 6) {
+                document.getElementById('otpError').textContent = 'Mã OTP phải có 6 chữ số.';
+                document.getElementById('otpError').classList.remove('hidden');
+                return;
+            }
+
+            fetch('/Account/VerifyOtp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ otp })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('otpForm').classList.add('hidden');
+                    document.getElementById('passwordForm').classList.remove('hidden');
+                    document.getElementById('otpError').classList.add('hidden');
+                } else {
+                    document.getElementById('otpError').textContent = data.message || 'Mã OTP không hợp lệ.';
+                    document.getElementById('otpError').classList.remove('hidden');
+                }
+            })
+            .catch(error => {
+                document.getElementById('otpError').textContent = 'Lỗi khi xác minh OTP.';
+                document.getElementById('otpError').classList.remove('hidden');
+                console.error(error);
+            });
+        }
+
+        function validatePassword() {
+            const newPassword = document.getElementById('newPassword').value;
+          
+            const confirmPassword = document.getElementById('changePasswordConfirm').value;
+        
+            let hasError = false;
+
+            document.getElementById('newPasswordError').classList.add('hidden');
+            document.getElementById('confirmPasswordErrorUser').classList.add('hidden');
+
+            if (newPassword.length < 8) {
+                document.getElementById('newPasswordError').textContent = 'Mật khẩu mới phải có ít nhất 8 ký tự.';
+                document.getElementById('newPasswordError').classList.remove('hidden');
+                hasError = true;
+            }
+            if (newPassword !== confirmPassword) {
+                document.getElementById('confirmPasswordErrorUser').textContent = 'Mật khẩu xác nhận không khớp.';
+                document.getElementById('confirmPasswordErrorUser').classList.remove('hidden');
+                hasError = true;
+            }
+
+            return !hasError;
+        }
+
+        document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const submitButton = document.getElementById('changePasswordButton');
+            const submitText = document.getElementById('changePasswordText');
+            const submitSpinner = document.getElementById('changePasswordSpinner');
+
+            if (!validatePassword()) return;
+
+            submitButton.disabled = true;
+            submitText.classList.add('hidden');
+            submitSpinner.classList.remove('hidden');
+
+            const formData = new FormData(this);
+            const data = {
+                oldPassword: formData.get('oldPassword'),
+                newPassword: formData.get('newPassword')
+            };
+
+            fetch('/Account/ChangePassword', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('success', 'Đổi mật khẩu thành công.');
+                    closeModal('changePasswordModal');
+                } else {
+                    document.getElementById('oldPasswordError').textContent = data.message || 'Mật khẩu cũ không đúng.';
+                    document.getElementById('oldPasswordError').classList.remove('hidden');
+                }
+            })
+            .catch(error => {
+                showNotification('error', 'Lỗi khi đổi mật khẩu: ' + error.message);
+                console.error(error);
+            })
+            .finally(() => {
+                submitButton.disabled = false;
+                submitText.classList.remove('hidden');
+                submitSpinner.classList.add('hidden');
+            });
+        });
+
+        // Add Service Modal
+               function showAddServiceModal(maPDPhong) {
+            document.getElementById('addServiceMaPDPhong').textContent = maPDPhong;
+            document.getElementById('addServiceLoading').classList.remove('hidden');
+            document.getElementById('addServiceContent').classList.add('hidden');
+            document.getElementById('addServiceModal').classList.remove('hidden');
+
+            fetch(`/User/GetAvailableServices?maPDPhong=${maPDPhong}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('addServiceLoading').classList.add('hidden');
+                    document.getElementById('addServiceContent').classList.remove('hidden');
+
+                    if (data.success) {
+                        const roomServiceList = document.getElementById('roomServiceList');
+                        roomServiceList.innerHTML = '';
+
+                        if (Array.isArray(data.rooms) && data.rooms.length > 0) {
+                            data.rooms.forEach(room => {
+                                let serviceOptions = Array.isArray(room.services) && room.services.length > 0
+                                    ? room.services.map(service => `
+                                        <option value="${service.maDv}">${service.tenDv} - ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(service.donGia)}</option>
+                                    `).join('')
+                                    : '<option value="">Không có dịch vụ</option>';
+
+                                roomServiceList.innerHTML += `
+                                    <div class="border border-gray-200 rounded-lg p-4">
+                                        <p class="text-sm font-medium text-gray-900 mb-2">${room.tenPhong}</p>
+                                        <input type="hidden" name="roomIds" value="${room.maPhong}">
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700">Dịch vụ</label>
+                                                <select name="serviceIds" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 sm:text-sm">
+                                                    <option value="">Chọn dịch vụ</option>
+                                                    ${serviceOptions}
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700">Số lượng</label>
+                                                <input type="number" name="quantities" min="1" value="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 sm:text-sm">
+                                            </div>
+                                        </div>
+                                    </div>`;
+                            });
+                        } else {
+                            roomServiceList.innerHTML = '<p class="text-sm text-gray-500">Không có phòng nào để thêm dịch vụ.</p>';
+                        }
+                    } else {
+                        showNotification('error', data.message || 'Không thể tải dữ liệu phòng và dịch vụ.');
+                    }
+                })
+                .catch(error => {
+                    showNotification('error', 'Lỗi khi tải dữ liệu: ' + error.message);
+                    console.error(error);
+                    document.getElementById('addServiceLoading').classList.add('hidden');
+                    document.getElementById('addServiceContent').classList.remove('hidden');
+                });
+        }
+
+
+           document.getElementById('addServiceForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const submitButton = document.getElementById('submitServiceButton');
+            const submitText = document.getElementById('submitServiceText');
+            const submitSpinner = document.getElementById('submitServiceSpinner');
+
+            submitButton.disabled = true;
+            submitText.classList.add('hidden');
+            submitSpinner.classList.remove('hidden');
+
+            const maPDPhong = document.getElementById('addServiceMaPDPhong').textContent;
+            const roomIds = Array.from(document.getElementsByName('roomIds')).map(input => input.value);
+            const serviceIds = Array.from(document.getElementsByName('serviceIds')).map(input => input.value);
+            const quantities = Array.from(document.getElementsByName('quantities')).map(input => {
+                const value = parseInt(input.value);
+                return isNaN(value) || value <= 0 ? 1 : value;
+            });
+
+            let hasError = false;
+            document.getElementById('roomError').classList.add('hidden');
+            document.getElementById('serviceError').classList.add('hidden');
+
+            if (roomIds.length === 0) {
+                document.getElementById('roomError').textContent = 'Không có phòng nào được chọn.';
+                document.getElementById('roomError').classList.remove('hidden');
+                hasError = true;
+            }
+
+            if (serviceIds.every(id => id === '')) {
+                document.getElementById('serviceError').textContent = 'Vui lòng chọn ít nhất một dịch vụ.';
+                document.getElementById('serviceError').classList.remove('hidden');
+                hasError = true;
+            }
+
+            if (quantities.some(q => q <= 0)) {
+                document.getElementById('serviceError').textContent = 'Số lượng dịch vụ phải lớn hơn 0.';
+                document.getElementById('serviceError').classList.remove('hidden');
+                hasError = true;
+            }
+
+            if (hasError) {
+                submitButton.disabled = false;
+                submitText.classList.remove('hidden');
+                submitSpinner.classList.add('hidden');
+                return;
+            }
+
+            const rawData = roomIds.map((roomId, index) => ({
+                maPhong: roomId,
+                maDV: serviceIds[index] || null,
+                soLuong: quantities[index]
+            })).filter(item => item.maDV && item.soLuong > 0);
+
+            const groupedData = {};
+            rawData.forEach(item => {
+                if (!groupedData[item.maPhong]) {
+                    groupedData[item.maPhong] = [];
+                }
+                groupedData[item.maPhong].push({
+                    maDv: item.maDV,
+                    soLuong: item.soLuong
+                });
+            });
+
+            const finalData = {
+                maPDPhong: maPDPhong,
+                rooms: Object.entries(groupedData).map(([maPhong, services]) => ({
+                    maPhong,
+                    services
+                }))
+            };
+
+          
+
+            fetch(`/User/AddService`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify(finalData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                
+                    if (data.success) {
+                        showNotification('success', 'Thêm dịch vụ thành công.');
+                        closeModal('addServiceModal');
+                         fetchMyBookings(currentPage);
+                    } else {
+                        showNotification('error', data.message || 'Không thể thêm dịch vụ.');
+                    }
+                })
+                .catch(error => {
+                    showNotification('error', 'Lỗi khi thêm dịch vụ: ' + error.message);
+                    console.error(error);
+                })
+                .finally(() => {
+                    submitButton.disabled = false;
+                    submitText.classList.remove('hidden');
+                    submitSpinner.classList.add('hidden');
+                });
+        });
+
+
+        // Cancel Booking Modal
+        function showCancelBookingModal(maPDPhong) {
+            document.getElementById('cancelMaPDPhong').value = maPDPhong;
+            document.getElementById('cancelBookingModal').classList.remove('hidden');
+        }
+
+                document.getElementById('cancelBookingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const submitButton = document.getElementById('submitCancelButton');
+            const submitText = document.getElementById('submitCancelText');
+            const submitSpinner = document.getElementById('submitCancelSpinner');
+
+            submitButton.disabled = true;
+            submitText.classList.add('hidden');
+            submitSpinner.classList.remove('hidden');
+
+            // Thu thập dữ liệu từ form
+            const maPDPhong = document.getElementById('cancelMaPDPhong')?.value || null;
+            const tenNganHang = document.getElementById('TenNganHang')?.value || null;
+            const soTaiKhoan = document.getElementById('SoTaiKhoan')?.value || null;
+            const lyDo = document.getElementById('LyDo')?.value || null; // Nếu form có input lý do
+
+            // Ẩn thông báo lỗi
+            document.getElementById('tenNganHangError').classList.add('hidden');
+            document.getElementById('soTaiKhoanError').classList.add('hidden');
+
+            // Validation
+            let hasError = false;
+            if (tenNganHang && !soTaiKhoan) {
+                document.getElementById('soTaiKhoanError').textContent = 'Vui lòng nhập số tài khoản nếu đã cung cấp tên ngân hàng.';
+                document.getElementById('soTaiKhoanError').classList.remove('hidden');
+                hasError = true;
+            }
+            if (soTaiKhoan && !tenNganHang) {
+                document.getElementById('tenNganHangError').textContent = 'Vui lòng nhập tên ngân hàng nếu đã cung cấp số tài khoản.';
+                document.getElementById('tenNganHangError').classList.remove('hidden');
+                hasError = true;
+            }
+            if (soTaiKhoan && !/^\d+$/.test(soTaiKhoan)) {
+                document.getElementById('soTaiKhoanError').textContent = 'Số tài khoản chỉ được chứa các chữ số.';
+                document.getElementById('soTaiKhoanError').classList.remove('hidden');
+                hasError = true;
+            }
+            if (tenNganHang && tenNganHang.length > 100) {
+                document.getElementById('tenNganHangError').textContent = 'Tên ngân hàng không được vượt quá 100 ký tự.';
+                document.getElementById('tenNganHangError').classList.remove('hidden');
+                hasError = true;
+            }
+            if (soTaiKhoan && soTaiKhoan.length > 50) {
+                document.getElementById('soTaiKhoanError').textContent = 'Số tài khoản không được vượt quá 50 ký tự.';
+                document.getElementById('soTaiKhoanError').classList.remove('hidden');
+                hasError = true;
+            }
+            if (!maPDPhong) {
+                showNotification('error', 'Không tìm thấy mã phiếu đặt phòng.');
+                hasError = true;
+            }
+
+            if (hasError) {
+                submitButton.disabled = false;
+                submitText.classList.remove('hidden');
+                submitSpinner.classList.add('hidden');
+                return;
+            }
+
+            // Tạo object dữ liệu để gửi
+            const data = {
+                MaPDPhong: maPDPhong,
+                TenNganHang: tenNganHang,
+                SoTaiKhoan: soTaiKhoan,
+                LyDo: lyDo
+            };
+
+       
+
+            // Gửi request dưới dạng JSON
+            fetch('/User/CancelBooking', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+               
+                if (data.success) {
+                    showNotification('success', 'Hủy phiếu đặt phòng thành công.');
+                    closeModal('cancelBookingModal');
+                    fetchMyBookings();
+                } else {
+                    showNotification('error', data.message || 'Không thể hủy phiếu đặt phòng.');
+                }
+            })
+            .catch(error => {
+                console.error('Error details:', error);
+                showNotification('error', 'Lỗi khi hủy phiếu: ' + error.message);
+            })
+            .finally(() => {
+                submitButton.disabled = false;
+                submitText.classList.remove('hidden');
+                submitSpinner.classList.add('hidden');
+            });
+        });
+
+        // Review Modal
+                function showReviewModal(maPDPhong) {
+            fetch(`/User/CheckReview?maPDPhong=${maPDPhong}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('reviewMaPDPhong').value = maPDPhong;
+                    document.getElementById('reviewModal').classList.remove('hidden');
+
+                    if (data.success && data.hasReview) {
+                        // Show existing review
+                        document.getElementById('addReviewFormContainer').classList.add('hidden');
+                        document.getElementById('viewReviewContent').classList.remove('hidden');
+                        document.getElementById('review-modal-title').textContent = 'Xem đánh giá';
+
+                        fetch(`/User/GetReviews?maPDPhong=${maPDPhong}`)
+                            .then(response => response.json())
+                            .then(reviewData => {
+                                if (reviewData.success) {
+                                    const review = reviewData.danhGiaDto; // Truy cập đúng thuộc tính từ JSON
+                                    document.getElementById('reviewerName').textContent = review.tenNguoiDung || profileInfo.fullName || 'Người dùng';
+                                    document.getElementById('reviewComment').textContent = review.binhLuan || 'Không có bình luận';
+                                    document.getElementById('reviewDate').textContent = review.NgayDanhGia;
+
+                                    const starsContainer = document.getElementById('reviewStars');
+                                    starsContainer.innerHTML = '';
+                                    for (let i = 1; i <= 5; i++) {
+                                        starsContainer.innerHTML += `<i class="fas fa-star ${i <= review.rating ? 'text-yellow-400' : 'text-gray-300'}"></i>`;
+                                    }
+
+                                    const imagesContainer = document.getElementById('reviewImages');
+                                    imagesContainer.innerHTML = '';
+                                    if (review.hinhAnh) {
+                                        imagesContainer.innerHTML += `
+                                            <a href="${review.hinhAnh}" target="_blank">
+                                                <img src="${review.hinhAnh}" alt="Hình ảnh đánh giá" class="h-24 w-24 object-cover rounded-md">
+                                            </a>`;
+                                    } else {
+                                        imagesContainer.innerHTML = '<p class="text-sm text-gray-500">Không có hình ảnh.</p>';
+                                    }
+                                } else {
+                                    showNotification('error', reviewData.message || 'Không thể tải đánh giá.');
+                                }
+                            })
+                            .catch(error => {
+                                showNotification('error', 'Lỗi khi tải đánh giá: ' + error.message);
+                                console.error(error);
+                            });
+                    } else {
+                        // Show add review form
+                        document.getElementById('addReviewFormContainer').classList.remove('hidden');
+                        document.getElementById('viewReviewContent').classList.add('hidden');
+                        document.getElementById('review-modal-title').textContent = 'Đánh giá phiếu đặt phòng';
+                    }
+                })
+                .catch(error => {
+                    showNotification('error', 'Lỗi khi kiểm tra đánh giá: ' + error.message);
+                    console.error(error);
+                });
+        }
+
+        function setRating(rating) {
+            document.getElementById('rating').value = rating;
+            updateRatingStars(rating);
+            const ratingText = {
+                1: 'Tệ',
+                2: 'Kém',
+                3: 'Trung bình',
+                4: 'Tốt',
+                5: 'Tuyệt vời'
+            };
+            document.getElementById('rating-text').textContent = ratingText[rating];
+        }
+
+        function updateRatingStars(rating) {
+            document.querySelectorAll('.rating-star').forEach(star => {
+                const starRating = parseInt(star.getAttribute('data-rating'));
+                if (starRating <= rating) {
+                    star.classList.remove('far');
+                    star.classList.add('fas', 'text-yellow-400');
+                } else {
+                    star.classList.add('far');
+                    star.classList.remove('fas', 'text-yellow-400');
+                }
+            });
+        }
+
+        function setComment(comment) {
+            document.getElementById('binhLuan').value = comment;
+        }
+
+        function previewImages(input) {
+            const previewContainer = document.getElementById('imagePreviewContainer');
+            previewContainer.innerHTML = '';
+            const files = input.files;
+
+            if (files.length > 3) {
+                document.getElementById('hinhAnhError').textContent = 'Bạn chỉ có thể tải lên tối đa 3 hình ảnh.';
+                document.getElementById('hinhAnhError').classList.remove('hidden');
+                input.value = '';
+                return;
+            }
+
+            document.getElementById('hinhAnhError').classList.add('hidden');
+
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'h-24 w-24 object-cover rounded-md';
+                    previewContainer.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+           document.getElementById('addReviewForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const submitButton = document.getElementById('submitReviewButton');
+            const submitText = document.getElementById('submitReviewText');
+            const submitSpinner = document.getElementById('submitReviewSpinner');
+
+            // Vô hiệu hóa nút submit và hiển thị spinner
+            submitButton.disabled = true;
+            submitText.classList.add('hidden');
+            submitSpinner.classList.remove('hidden');
+
+            // Lấy dữ liệu từ form
+            const formData = new FormData(this);
+            const rating = formData.get('Rating');
+            const binhLuan = formData.get('BinhLuan');
+            const hinhAnh = document.getElementById('hinhAnh').files;
+
+            // Ẩn tất cả thông báo lỗi trước khi kiểm tra
+            document.getElementById('ratingError').classList.add('hidden');
+            document.getElementById('hinhAnhError').classList.add('hidden');
+            document.getElementById('binhLuanError').classList.add('hidden');
+
+            let hasError = false;
+
+            // Validation cho Rating
+            if (!rating || isNaN(rating) || rating < 1 || rating > 5) {
+                document.getElementById('ratingError').textContent = 'Vui lòng chọn điểm đánh giá từ 1 đến 5.';
+                document.getElementById('ratingError').classList.remove('hidden');
+                hasError = true;
+            }
+
+            // Validation cho Bình luận
+            if (!binhLuan || binhLuan.trim().length === 0) {
+                document.getElementById('binhLuanError').textContent = 'Bình luận không được để trống.';
+                document.getElementById('binhLuanError').classList.remove('hidden');
+                hasError = true;
+            } else if (binhLuan.length > 500) {
+                document.getElementById('binhLuanError').textContent = 'Bình luận không được vượt quá 500 ký tự.';
+                document.getElementById('binhLuanError').classList.remove('hidden');
+                hasError = true;
+            }
+
+            // Validation cho Hình ảnh
+            if (hinhAnh.length > 3) {
+                document.getElementById('hinhAnhError').textContent = 'Bạn chỉ có thể tải lên tối đa 3 hình ảnh.';
+                document.getElementById('hinhAnhError').classList.remove('hidden');
+                hasError = true;
+            }
+
+            // Nếu có lỗi, dừng lại và khôi phục trạng thái nút submit
+            if (hasError) {
+                submitButton.disabled = false;
+                submitText.classList.remove('hidden');
+                submitSpinner.classList.add('hidden');
+                return;
+            }
+
+            // Gửi request nếu không có lỗi
+            fetch('/User/AddReview', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    showNotification('success', 'Gửi đánh giá thành công.');
+                    closeModal('reviewModal');
+                    fetchMyBookings();
+                } else {
+                    showNotification('error', data.message || 'Không thể gửi đánh giá.');
+                }
+            })
+            .catch(error => {
+                showNotification('error', 'Lỗi khi gửi đánh giá: ' + error.message);
+                console.error(error);
+            })
+            .finally(() => {
+                submitButton.disabled = false;
+                submitText.classList.remove('hidden');
+                submitSpinner.classList.add('hidden');
+            });
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchProfileInfo();
+            setRating(5); // Default rating
+        });
+    </script>
+}

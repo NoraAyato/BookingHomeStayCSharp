@@ -1,0 +1,1079 @@
+﻿@{
+    ViewData["Title"] = "Rose Homestay - Trải Nghiệm Nghỉ Dưỡng Đẳng Cấp";
+}
+
+<!-- Hero Section với hiệu ứng parallax và gradient overlay -->
+<section class="relative h-screen min-h-[800px] flex items-center justify-center overflow-hidden">
+    <!-- Background Image với hiệu ứng parallax -->
+    <div class="absolute inset-0 z-0">
+        <div class="absolute inset-0 bg-gradient-to-b from-gray-900/40 via-gray-900/30 to-gray-900/50"></div>
+        <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
+             alt="Homestay sang trọng"
+             class="w-full h-full object-cover object-center transform scale-125 md:scale-100 transition-transform duration-1000 ease-out"
+             id="hero-parallax">
+    </div>
+
+    <!-- Hero Content với animation -->
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center" data-aos="fade-up" data-aos-duration="1000">
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white font-lora mb-6 leading-tight">
+                <span class="text-rose-300 animate-float">Kỳ nghỉ hoàn hảo</span> bắt đầu từ <span class="text-rose-300 animate-float animation-delay-2000">ngôi nhà hoàn hảo</span>
+            </h1>
+            <p class="text-xl text-white/90 mb-10 font-lora max-w-2xl mx-auto">
+                Khám phá hơn 1000 homestay cao cấp trên khắp Việt Nam với dịch vụ đẳng cấp và tiện nghi hiện đại
+            </p>
+        </div>
+
+        <!-- Search Bar với thiết kế mới nổi bật -->
+        <div id="homestaySearchForm" class="bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-6 max-w-5xl mx-auto border border-white/20" data-aos="fade-up" data-aos-delay="300">
+            <form action="@Url.Action("SearchHomestay", "Home")" method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                @Html.AntiForgeryToken()
+
+                <!-- Địa điểm -->
+                <div class="relative group">
+                    <label class="block text-sm font-medium text-gray-700 mb-1 text-left flex items-center">
+                        <i class="fas fa-map-marker-alt text-rose-500 mr-2"></i> Địa điểm
+                    </label>
+                    <div class="relative">
+                        <input type="text"
+                               name="location"
+                               id="location"
+                               placeholder="Nhập thành phố, khu vực..."
+                               class="w-full pl-4 pr-10 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all duration-300 bg-white/80 hover:border-rose-300 group-hover:border-rose-300"
+                               autocomplete="off"
+                               required>
+                        <span class="text-red-500 text-sm mt-1 error-message"></span>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <i class="fas fa-chevron-down text-gray-400 group-hover:text-rose-500 transition-colors duration-300"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ngày nhận phòng -->
+                <div class="relative group">
+                    <label class="block text-sm font-medium text-gray-700 mb-1 text-left flex items-center">
+                        <i class="fas fa-calendar-check text-rose-500 mr-2"></i> Nhận phòng
+                    </label>
+                    <div class="relative">
+                        <input type="date"
+                               name="checkInDate"
+                               id="checkInDate"
+                               class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all duration-300 bg-white/80 hover:border-rose-300 group-hover:border-rose-300"
+                               required
+                               min="@DateTime.Today.ToString("yyyy-MM-dd")">
+                        <span class="text-red-500 text-sm mt-1 error-message"></span>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <i class="fas fa-calendar-day text-gray-400 group-hover:text-rose-500 transition-colors duration-300"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ngày trả phòng -->
+                <div class="relative group">
+                    <label class="block text-sm font-medium text-gray-700 mb-1 text-left flex items-center">
+                        <i class="fas fa-calendar-times text-rose-500 mr-2"></i> Trả phòng
+                    </label>
+                    <div class="relative">
+                        <input type="date"
+                               name="checkOutDate"
+                               id="checkOutDate"
+                               class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all duration-300 bg-white/80 hover:border-rose-300 group-hover:border-rose-300"
+                               required>
+                        <span class="text-red-500 text-sm mt-1 error-message"></span>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <i class="fas fa-calendar-day text-gray-400 group-hover:text-rose-500 transition-colors duration-300"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nút tìm kiếm -->
+                <div class="flex items-end">
+                    <button type="submit"
+                            class="w-full h-full bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white py-3 px-6 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center transform hover:-translate-y-1 active:translate-y-0">
+                        <i class="fas fa-search mr-2"></i> Tìm kiếm
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Địa điểm phổ biến -->
+        <div id="popular-areas" class="mt-8 flex flex-wrap justify-center gap-3">
+            <span class="text-white/80 font-medium">Địa điểm phổ biến:</span>
+        </div>
+
+    </div>
+
+    <!-- Scroll Down Indicator với animation -->
+    <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-10 animate-bounce-slow">
+        <a href="#featured" class="text-white hover:text-rose-300 transition-colors duration-300">
+            <i class="fas fa-chevron-down text-2xl"></i>
+        </a>
+    </div>
+</section>
+
+<!-- Featured Homestays -->
+<section id="featured" class="py-20 bg-gradient-to-b from-white to-gray-50 w-full">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16" data-aos="fade-up">
+            <span class="inline-block px-3 py-1 text-sm font-medium rounded-full bg-rose-100 text-rose-600 mb-4">Khám phá</span>
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 font-lora mb-4">
+                Homestay <span class="text-rose-600">Nổi Bật</span>
+            </h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto font-lora">
+                Những homestay được yêu thích nhất với đánh giá 5 sao từ khách hàng
+            </p>
+        </div>
+
+        <!-- Loading Indicator với Skeleton -->
+        <div id="homestay-loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+            <div class="bg-gray-100 rounded-2xl h-96 animate-pulse">
+                <div class="h-48 bg-gray-200 rounded-t-2xl"></div>
+                <div class="p-4 space-y-3">
+                    <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                    <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+                    <div class="h-4 bg-gray-200 rounded w-2/3"></div>
+                    <div class="h-4 bg-gray-200 rounded w-1/4"></div>
+                </div>
+            </div>
+            <!-- Thêm 4 skeleton items tương tự -->
+        </div>
+
+        <!-- Homestay Grid -->
+        <div id="homestay-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 hidden">
+            <!-- Các mục homestay sẽ được thêm động bằng JavaScript -->
+        </div>
+
+        <div class="text-center mt-12" data-aos="fade-up">
+            <a href="/Homestay/Index?khuVucName"
+               class="inline-flex items-center bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white px-8 py-3 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 active:translate-y-0">
+                Xem tất cả homestay
+                <i class="fas fa-arrow-right ml-2 transition-transform duration-300 group-hover:translate-x-1"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose Us -->
+<section class="py-20 bg-white">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16" data-aos="fade-up">
+            <span class="inline-block px-3 py-1 text-sm font-medium rounded-full bg-rose-100 text-rose-600 mb-4">Tại sao chọn chúng tôi</span>
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 font-lora mb-4">
+                Trải Nghiệm <span class="text-rose-600">Khác Biệt</span>
+            </h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto font-lora">
+                Những lý do khiến Rose Homestay trở thành lựa chọn hàng đầu
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <!-- Lý do 1 -->
+            <div class="bg-white p-8 rounded-2xl text-center hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-rose-100" data-aos="fade-up" data-aos-delay="100">
+                <div class="w-16 h-16 bg-gradient-to-br from-rose-100 to-rose-50 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-6 transition-all duration-300 group-hover:from-rose-200 group-hover:to-rose-100">
+                    <i class="fas fa-home text-2xl transition-transform duration-300 group-hover:scale-110"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 font-lora mb-3">Homestay Chất Lượng</h3>
+                <p class="text-gray-600">
+                    Tất cả homestay đều được kiểm duyệt chất lượng nghiêm ngặt, đảm bảo tiêu chuẩn cao nhất
+                </p>
+            </div>
+
+            <!-- Lý do 2 -->
+            <div class="bg-white p-8 rounded-2xl text-center hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-rose-100" data-aos="fade-up" data-aos-delay="200">
+                <div class="w-16 h-16 bg-gradient-to-br from-rose-100 to-rose-50 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-6 transition-all duration-300 group-hover:from-rose-200 group-hover:to-rose-100">
+                    <i class="fas fa-medal text-2xl transition-transform duration-300 group-hover:scale-110"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 font-lora mb-3">Giải Thưởng Uy Tín</h3>
+                <p class="text-gray-600">
+                    Đạt giải thưởng "Nền tảng đặt homestay tốt nhất" 3 năm liên tiếp
+                </p>
+            </div>
+
+            <!-- Lý do 3 -->
+            <div class="bg-white p-8 rounded-2xl text-center hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-rose-100" data-aos="fade-up" data-aos-delay="300">
+                <div class="w-16 h-16 bg-gradient-to-br from-rose-100 to-rose-50 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-6 transition-all duration-300 group-hover:from-rose-200 group-hover:to-rose-100">
+                    <i class="fas fa-headset text-2xl transition-transform duration-300 group-hover:scale-110"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 font-lora mb-3">Hỗ Trợ 24/7</h3>
+                <p class="text-gray-600">
+                    Đội ngũ hỗ trợ luôn sẵn sàng giúp đỡ bạn mọi lúc, mọi nơi
+                </p>
+            </div>
+
+            <!-- Lý do 4 -->
+            <div class="bg-white p-8 rounded-2xl text-center hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-rose-100" data-aos="fade-up" data-aos-delay="400">
+                <div class="w-16 h-16 bg-gradient-to-br from-rose-100 to-rose-50 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-6 transition-all duration-300 group-hover:from-rose-200 group-hover:to-rose-100">
+                    <i class="fas fa-gem text-2xl transition-transform duration-300 group-hover:scale-110"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 font-lora mb-3">Ưu Đãi Độc Quyền</h3>
+                <p class="text-gray-600">
+                    Hàng trăm ưu đãi và khuyến mãi chỉ có tại Rose Homestay
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Promotions -->
+<section id="promotions" class="py-20 bg-gradient-to-r from-rose-50 to-rose-100">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16" data-aos="fade-up">
+            <span class="inline-block px-3 py-1 text-sm font-medium rounded-full bg-white text-rose-600 mb-4">Ưu đãi</span>
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 font-lora mb-4">
+                Khuyến Mãi <span class="text-rose-600">Đặc Biệt</span>
+            </h2>
+            <p class="text-lg text-gray-700 max-w-2xl mx-auto font-lora">
+                Những chương trình khuyến mãi hấp dẫn dành riêng cho bạn
+            </p>
+        </div>
+
+        <!-- Loading Indicator với Skeleton -->
+        <div id="promotions-loading" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-gray-100 rounded-2xl h-64 animate-pulse"></div>
+            <div class="bg-gray-100 rounded-2xl h-64 animate-pulse"></div>
+        </div>
+
+        <!-- Promotions Grid -->
+        <div id="promotions-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-8 hidden">
+            <!-- Các mục khuyến mãi sẽ được thêm động bằng JavaScript -->
+        </div>
+
+        <div class="text-center mt-12" data-aos="fade-up">
+            <a href="/User/AvailablePromotions"
+               class="inline-flex items-center bg-white hover:bg-gray-50 text-rose-600 border border-rose-600 px-8 py-3 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 active:translate-y-0">
+                Xem tất cả ưu đãi
+                <i class="fas fa-arrow-right ml-2 transition-transform duration-300 group-hover:translate-x-1"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials -->
+<section id="testimonials" class="py-20 bg-white">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16" data-aos="fade-up">
+            <span class="inline-block px-3 py-1 text-sm font-medium rounded-full bg-rose-100 text-rose-600 mb-4">Đánh giá</span>
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 font-lora mb-4">
+                Khách Hàng <span class="text-rose-600">Nói Gì</span>
+            </h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto font-lora">
+                Những đánh giá chân thực từ khách hàng đã trải nghiệm
+            </p>
+        </div>
+
+        <!-- Loading Indicator với Skeleton -->
+        <div id="testimonials-loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="bg-gray-100 rounded-2xl h-64 animate-pulse"></div>
+            <div class="bg-gray-100 rounded-2xl h-64 animate-pulse"></div>
+            <div class="bg-gray-100 rounded-2xl h-64 animate-pulse"></div>
+            <div class="bg-gray-100 rounded-2xl h-64 animate-pulse"></div>
+        </div>
+
+        <!-- Testimonials Grid -->
+        <div id="testimonials-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 hidden">
+            <!-- Các mục đánh giá sẽ được thêm động bằng JavaScript -->
+        </div>
+    </div>
+</section>
+
+<!-- Newsletter -->
+<section id="newsletter" class="py-20 bg-gradient-to-r from-rose-600 to-rose-500 text-white hidden">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto text-center" data-aos="fade-up">
+            <h2 class="text-3xl md:text-4xl font-bold font-lora mb-6">
+                Đăng ký nhận ưu đãi độc quyền
+            </h2>
+            <p class="text-lg mb-8 max-w-2xl mx-auto font-lora">
+                Nhận thông tin về các chương trình khuyến mãi đặc biệt và những homestay mới nhất qua email
+            </p>
+
+            <form id="newsletterForm" class="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto">
+                @Html.AntiForgeryToken()
+                <div class="relative flex-grow">
+                    <input type="email"
+                           id="newsletterEmail"
+                           name="email"
+                           placeholder="Nhập email của bạn"
+                           class="w-full pl-10 pr-4 py-3 rounded-lg focus:ring-2 focus:ring-white focus:border-transparent text-gray-900 transition-all duration-300"
+                           required>
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-envelope text-rose-500"></i>
+                    </div>
+                    <span class="text-red-500 text-sm mt-1 error-message"></span>
+                </div>
+                <button type="submit"
+                        class="bg-white hover:bg-gray-100 text-rose-600 px-6 py-3 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl whitespace-nowrap transform hover:-translate-y-1 active:translate-y-0">
+                    Đăng ký ngay
+                </button>
+            </form>
+
+            <p class="text-sm mt-4 text-white/80">
+                Chúng tôi cam kết không spam email của bạn.
+            </p>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize AOS animations
+            AOS.init({
+                duration: 800,
+                once: true,
+                easing: 'ease-out-quart'
+            });
+
+            // Parallax effect for hero image
+            window.addEventListener('scroll', function() {
+                const scrollPosition = window.pageYOffset;
+                const heroImage = document.getElementById('hero-parallax');
+                if (heroImage) {
+                    heroImage.style.transform = 'translateY(' + scrollPosition * 0.5 + 'px) scale(' + (1 + scrollPosition * 0.0002) + ')';
+                }
+            });
+
+            // Custom date input styling
+            document.querySelectorAll('input[type="date"]').forEach(input => {
+                input.addEventListener('change', function() {
+                    if (this.value) {
+                        this.classList.add('has-value');
+                    } else {
+                        this.classList.remove('has-value');
+                    }
+                });
+            });
+
+            // Hiển thị thông báo
+            function showNotification(message, type = "success") {
+                const notificationCenter = document.getElementById("notification-center") || document.createElement("div");
+                if (!notificationCenter.id) {
+                    notificationCenter.id = "notification-center";
+                    notificationCenter.className = "fixed top-4 right-4 z-50 space-y-2";
+                    document.body.appendChild(notificationCenter);
+                }
+                const notification = document.createElement("div");
+                notification.className = `p-4 rounded-lg shadow-lg flex items-center animate-fade-in-up ${
+                    type === "error" ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
+                }`;
+                notification.innerHTML = `
+                    <i class="fas ${type === "error" ? "fa-exclamation-circle" : "fa-check-circle"} mr-3"></i>
+                    <span>${message}</span>
+                    <button class="ml-auto text-gray-500 hover:text-gray-700 transition-colors duration-300" onclick="this.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                notificationCenter.appendChild(notification);
+
+                setTimeout(() => {
+                    notification.classList.add('animate-fade-out');
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 300);
+                }, 5000);
+            }
+
+            // Kiểm tra trạng thái nhận email thông báo
+            function checkNotificationPreference() {
+                $.ajax({
+                    url: '/User/GetNotificationPreference',
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success && !response.receiveEmailNotifications) {
+                            $('#newsletter').removeClass('hidden');
+                        } else {
+                            $('#newsletter').addClass('hidden');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error fetching notification preference:', status, error, xhr.responseText);
+                        showNotification("Lỗi khi kiểm tra trạng thái nhận email", "error");
+                    }
+                });
+            }
+
+            // Xử lý submit form đăng ký nhận email
+            $('#newsletterForm').on('submit', function(e) {
+                e.preventDefault();
+                const email = $('#newsletterEmail').val();
+                const token = $('input[name="__RequestVerificationToken"]').val();
+
+                // Client-side validation
+                const emailRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+                if (!emailRegex.test(email)) {
+                    $('#newsletterEmail').next('.error-message').text('Vui lòng nhập email hợp lệ');
+                    return;
+                } else {
+                    $('#newsletterEmail').next('.error-message').text('');
+                }
+
+                $.ajax({
+                    url: '/User/UpdateNotificationPreference',
+                    method: 'POST',
+                    data: {
+                        email: email,
+                        receiveEmailNotifications: true,
+                        __RequestVerificationToken: token
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            $('#newsletter').addClass('hidden');
+                            showNotification(response.message, 'success');
+                        } else {
+                            showNotification(response.message, 'error');
+                            if (response.errors) {
+                                response.errors.forEach(error => {
+                                    showNotification(error, 'error');
+                                });
+                            }
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error updating notification preference:', status, error, xhr.responseText);
+                        showNotification('Lỗi khi đăng ký nhận email', 'error');
+                    }
+                });
+            });
+
+            // Fetch Popular Areas
+            async function loadPopularAreas() {
+                try {
+                    const res = await fetch("/Homestay/GetPopularAreas");
+                    const data = await res.json();
+
+                    const container = document.getElementById("popular-areas");
+
+                    data.forEach((khuVuc, index) => {
+                        if (index > 0) {
+                            const dot = document.createElement("span");
+                            dot.className = "text-white/50";
+                            dot.textContent = "•";
+                            container.appendChild(dot);
+                        }
+
+                        const link = document.createElement("a");
+                        link.className = "text-white hover:text-rose-300 transition-colors duration-300 hover:underline";
+                        link.href = `/Homestay/Index?khuVucName=${encodeURIComponent(khuVuc.tenKv)}`;
+                        link.textContent = khuVuc.tenKv;
+
+                        container.appendChild(link);
+                    });
+                } catch (error) {
+                    console.error("Không thể tải danh sách khu vực phổ biến:", error);
+                    showNotification("Lỗi khi tải khu vực phổ biến", "error");
+                }
+            }
+
+            // Fetch Popular Homestays
+            function fetchPopularHomestays() {
+                const grid = $('#homestay-grid');
+                const loading = $('#homestay-loading');
+
+                loading.removeClass('hidden');
+                grid.addClass('hidden').empty();
+
+                $.ajax({
+                    url: '/Homestay/GetPopularHomestays',
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        loading.addClass('hidden');
+                        grid.removeClass('hidden');
+
+                        if (response && Array.isArray(response) && response.length > 0) {
+                            response.forEach((homestay, index) => {
+                                const formatter = new Intl.NumberFormat('vi-VN', {
+                                    style: 'currency',
+                                    currency: 'VND',
+                                    minimumFractionDigits: 0
+                                });
+                                const price = formatter.format(homestay.price);
+                                const originalPrice = homestay.originalPrice ? formatter.format(homestay.originalPrice) : '';
+
+                                const homestayHtml = `
+                                    <div class="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 group" data-aos="fade-up" data-aos-delay="${100 * (index + 1)}">
+                                        <div class="relative overflow-hidden">
+                                            <img src="${homestay.image || '/images/placeholder.jpg'}" alt="${homestay.name}"
+                                                 class="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-105">
+                                            ${homestay.discountPercent ? `
+                                                <div class="absolute top-4 left-4 bg-gradient-to-r from-rose-600 to-rose-500 text-white px-3 py-1 rounded-full text-sm font-medium shadow-md">
+                                                    <i class="fas fa-bolt mr-1"></i> Giảm ${homestay.discountPercent}%
+                                                </div>
+                                            ` : ''}
+                                            <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                        </div>
+                                        <div class="p-6">
+                                            <div class="flex justify-between items-start mb-3">
+                                                <h3 class="text-xl font-bold text-gray-900 font-lora group-hover:text-rose-600 transition-colors duration-300">${homestay.name}</h3>
+                                                <div class="flex items-center bg-rose-100 text-rose-600 px-2 py-1 rounded">
+                                                    <i class="fas fa-star text-yellow-400"></i>
+                                                    <span class="ml-1 font-medium">${homestay.rating.toFixed(1)}</span>
+                                                </div>
+                                            </div>
+                                            <p class="text-gray-600 mb-4 flex items-center">
+                                                <i class="fas fa-map-marker-alt text-rose-500 mr-2"></i> ${homestay.address}
+                                            </p>
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    ${homestay.originalPrice ? `<span class="text-gray-500 line-through mr-2">${originalPrice}</span>` : ''}
+                                                    <span class="text-xl font-bold text-rose-600">${price}</span>
+                                                    <span class="block text-sm text-gray-500">/ đêm</span>
+                                                </div>
+                                                <a href="/Homestay/HomestayDetails?id=${homestay.id}"
+                                                   class="bg-rose-100 hover:bg-rose-200 text-rose-600 px-4 py-2 rounded-lg transition-all duration-300 font-medium shadow-sm hover:shadow-md">
+                                                    Chi tiết
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                                grid.append(homestayHtml);
+                            });
+
+                            AOS.refresh();
+                          
+                        } else {
+                            grid.append('<p class="text-center text-gray-600 col-span-full">Không tìm thấy homestay nổi bật.</p>');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        loading.addClass('hidden');
+                        grid.removeClass('hidden');
+                        grid.append('<p class="text-center text-red-600 col-span-full">Lỗi khi tải homestay. Vui lòng thử lại sau.</p>');
+                        console.error('Error fetching popular homestays:', status, error, xhr.responseText);
+                        showNotification("Lỗi khi tải homestay nổi bật", "error");
+                    }
+                });
+            }
+
+            // Fetch Top Promotions
+            function fetchTopPromotions() {
+                const grid = $('#promotions-grid');
+                const loading = $('#promotions-loading');
+
+                loading.removeClass('hidden');
+                grid.addClass('hidden').empty();
+
+                $.ajax({
+                    url: '/Home/GetTopPromotions',
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        loading.addClass('hidden');
+                        grid.removeClass('hidden');
+
+                        if (response && Array.isArray(response) && response.length > 0) {
+                            response.forEach((promotion, index) => {
+                                const promotionHtml = `
+                                    <div class="bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300 transform hover:-translate-y-2" data-aos="${index === 0 ? 'fade-right' : 'fade-left'}">
+                                        <div class="flex flex-col md:flex-row h-full">
+                                            <div class="md:w-2/5 relative overflow-hidden">
+                                                <img src="${promotion.anhDaiDien || '/images/placeholder-promotion.jpg'}" alt="${promotion.tieuDe}"
+                                                     class="w-full h-full object-cover transition-transform duration-500 hover:scale-105">
+                                                <div class="absolute top-4 left-4 bg-gradient-to-r from-rose-600 to-rose-500 text-white px-3 py-1 rounded-full text-sm font-medium shadow-md">
+                                                    <i class="fas fa-bolt mr-1"></i> Hot
+                                                </div>
+                                            </div>
+                                            <div class="md:w-3/5 p-6 flex flex-col">
+                                                <div class="flex justify-between items-start mb-3">
+                                                    <h3 class="text-xl font-bold text-gray-900 font-lora">${promotion.tieuDe}</h3>
+                                                    <div class="bg-rose-100 text-rose-600 px-3 py-1 rounded-full text-sm font-medium">
+                                                        ${promotion.thoiGianConLai}
+                                                    </div>
+                                                </div>
+                                                <p class="text-gray-600 mb-4 flex-grow">
+                                                    ${promotion.moTa}
+                                                </p>
+                                                <div class="flex items-center justify-between">
+                                                    <div class="flex items-center">
+                                                        <span class="text-sm text-gray-500 mr-2">Mã:</span>
+                                                        <span class="bg-gray-100 px-3 py-1 rounded-md font-mono font-bold">${promotion.maGiamGia}</span>
+                                                    </div>
+                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                                grid.append(promotionHtml);
+                            });
+
+                           
+
+                            AOS.refresh();
+                          
+                        } else {
+                            grid.append('<p class="text-center text-gray-600 col-span-full">Hiện không có khuyến mãi.</p>');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        loading.addClass('hidden');
+                        grid.removeClass('hidden');
+                        grid.append('<p class="text-center text-red-600 col-span-full">Lỗi khi tải khuyến mãi. Vui lòng thử lại sau.</p>');
+                        console.error('Error fetching promotions:', status, error, xhr.responseText);
+                        showNotification("Lỗi khi tải khuyến mãi", "error");
+                    }
+                });
+            }
+
+            // Fetch Top Testimonials
+            function fetchTopTestimonials() {
+                const grid = $('#testimonials-grid');
+                const loading = $('#testimonials-loading');
+
+                loading.removeClass('hidden');
+                grid.addClass('hidden').empty();
+
+                $.ajax({
+                    url: '/Home/GetTopTestimonials',
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        loading.addClass('hidden');
+                        grid.removeClass('hidden');
+
+                        if (response && Array.isArray(response) && response.length > 0) {
+                            response.forEach((testimonial, index) => {
+                                const stars = Array(Math.floor(testimonial.rating)).fill('<i class="fas fa-star text-yellow-400"></i>').join('') +
+                                    (testimonial.rating % 1 !== 0 ? '<i class="fas fa-star-half-alt text-yellow-400"></i>' : '') +
+                                    Array(5 - Math.ceil(testimonial.rating)).fill('<i class="far fa-star text-yellow-400"></i>').join('');
+
+                                const testimonialHtml = `
+                                    <div class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2" data-aos="fade-up" data-aos-delay="${100 * (index + 1)}">
+                                        <div class="flex items-center mb-6">
+                                            <div class="w-16 h-16 rounded-full overflow-hidden mr-4 border-2 border-rose-200">
+                                                <img src="${testimonial.profilePicture || '/images/default-avatar.jpg'}" alt="${testimonial.userName}" class="w-full h-full object-cover">
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-gray-900">${testimonial.userName}</h4>
+                                                <div class="flex items-center">
+                                                    ${stars}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p class="text-gray-600 italic mb-6 relative before:content-['" '] before:text-4xl before:text-gray-300 before:absolute before:-top-2 before:-left-2 before:font-serif">
+                                            ${testimonial.content}
+                                        </p>
+                                        <div class="text-sm text-gray-500">
+                                            <i class="fas fa-home mr-2 text-rose-500"></i> Đã ở tại ${testimonial.homestayName} - ${testimonial.location}
+                                        </div>
+                                    </div>
+                                `;
+                                grid.append(testimonialHtml);
+                            });
+
+                            AOS.refresh();
+                         
+                        } else {
+                            grid.append('<p class="text-center text-gray-600 col-span-full">Không tìm thấy đánh giá khách hàng.</p>');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        loading.addClass('hidden');
+                        grid.removeClass('hidden');
+                        grid.append('<p class="text-center text-red-600 col-span-full">Lỗi khi tải đánh giá. Vui lòng thử lại sau.</p>');
+                        console.error('Error fetching testimonials:', status, error, xhr.responseText);
+                        showNotification("Lỗi khi tải đánh giá", "error");
+                    }
+                });
+            }
+
+            // Gọi các hàm khi trang tải
+            loadPopularAreas();
+           
+
+            // Gọi fetchPopularHomestays, fetchTopPromotions và fetchTopTestimonials khi section tương ứng xuất hiện trong viewport
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        if (entry.target.id === 'featured') {
+                            fetchPopularHomestays();
+                        } else if (entry.target.id === 'promotions') {
+                            fetchTopPromotions();
+                        } else if (entry.target.id === 'testimonials') {
+                            fetchTopTestimonials();
+                             checkNotificationPreference();
+                        }
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            observer.observe(document.getElementById('featured'));
+            observer.observe(document.getElementById('promotions'));
+            observer.observe(document.getElementById('testimonials'));
+        });
+
+        $(document).ready(function () {
+            // Autocomplete cho location
+            $("#location").autocomplete({
+                source: function (request, response) {
+                   
+                    $("#location").addClass("loading");
+
+                    $(".ui-autocomplete").html('<div class="px-4 py-2 text-center text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i> Đang tìm kiếm...</div>');
+
+                    $.ajax({
+                        url: "/Home/GetKhuVucs",
+                        data: { term: request.term },
+                        dataType: "json",
+                        success: function (data) {
+                         
+                            $("#location").removeClass("loading");
+                            if (data && data.length > 0) {
+                                response($.map(data, function (item) {
+                                    return {
+                                        label: item.ten_KV,
+                                        value: item.ten_KV,
+                                        icon: '<i class="fas fa-map-marker-alt text-rose-500 mr-2"></i>'
+                                    };
+                                }));
+                            } else {
+                                response([{
+                                    label: "Không tìm thấy khu vực phù hợp",
+                                    value: "",
+                                    disabled: true,
+                                    icon: '<i class="fas fa-exclamation-circle text-gray-400 mr-2"></i>'
+                                }]);
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("AJAX error:", status, error, xhr.responseText);
+                            $("#location").removeClass("loading");
+                            response([{
+                                label: "Lỗi kết nối, vui lòng thử lại sau",
+                                value: "",
+                                disabled: true,
+                                icon: '<i class="fas fa-exclamation-triangle text-red-400 mr-2"></i>'
+                            }]);
+                        }
+                    });
+                },
+                minLength: 2,
+                delay: 300,
+                select: function (event, ui) {
+                    if (!ui.item.disabled) {
+                        $("#location").val(ui.item.value);
+                       
+                    }
+                    return false;
+                },
+                open: function () {
+                    $(this).autocomplete("widget")
+                        .addClass("custom-autocomplete")
+                        .css("width", $(this).outerWidth() + "px");
+                },
+                focus: function (event, ui) {
+                    if (ui.item.disabled) {
+                        return false;
+                    }
+                },
+                response: function (event, ui) {
+                    if (ui.content.length === 0) {
+                        ui.content.push({
+                            label: "Không tìm thấy khu vực phù hợp",
+                            value: "",
+                            disabled: true,
+                            icon: '<i class="fas fa-exclamation-circle text-gray-400 mr-2"></i>'
+                        });
+                    }
+                }
+            }).data("ui-autocomplete")._renderItem = function (ul, item) {
+                return $("<li>")
+                    .attr("data-value", item.value)
+                    .addClass(item.disabled ? "ui-state-disabled" : "px-4 py-3 hover:bg-rose-50 cursor-pointer transition-colors duration-300")
+                    .append(`<div class="flex items-center">${item.icon || ''}<span class="${item.disabled ? 'text-gray-400' : 'text-gray-700'}">${item.label}</span></div>`)
+                    .appendTo(ul);
+            };
+
+            // Hiệu ứng hover cho input
+            $(".group").hover(
+                function() {
+                    $(this).find("i").addClass("text-rose-500").removeClass("text-gray-400");
+                },
+                function() {
+                    $(this).find("i").removeClass("text-rose-500").addClass("text-gray-400");
+                }
+            );
+
+            // Cập nhật min của checkOutDate
+            $("#checkInDate").on("change", function () {
+                var checkInDate = new Date($(this).val());
+                var checkOutDateInput = $("#checkOutDate");
+                var minCheckOutDate = new Date(checkInDate);
+                minCheckOutDate.setDate(checkInDate.getDate() + 1);
+                checkOutDateInput.attr("min", minCheckOutDate.toISOString().split("T")[0]);
+
+                if (checkOutDateInput.val() && new Date(checkOutDateInput.val()) <= checkInDate) {
+                    checkOutDateInput.val("");
+                    checkOutDateInput.next(".error-message").text("Ngày trả phòng phải sau ngày nhận phòng");
+                } else {
+                    checkOutDateInput.next(".error-message").text("");
+                }
+            });
+
+            // Validation client-side
+            $("#location").on("input", function () {
+                var errorMessage = $(this).next(".error-message");
+                if ($(this).val().trim() === "") {
+                    errorMessage.text("Vui lòng nhập địa điểm");
+                } else {
+                    errorMessage.text("");
+                }
+            });
+
+            $("#checkInDate").on("change", function () {
+                var errorMessage = $(this).next(".error-message");
+                if (new Date($(this).val()) < new Date("@DateTime.Today.ToString("yyyy-MM-dd")")) {
+                    errorMessage.text("Ngày nhận phòng không thể trong quá khứ");
+                } else {
+                    errorMessage.text("");
+                }
+            });
+
+            $("#checkOutDate").on("change", function () {
+                var checkInDate = new Date($("#checkInDate").val());
+                var checkOutDate = new Date($(this).val());
+                var errorMessage = $(this).next(".error-message");
+                if (checkOutDate <= checkInDate) {
+                    errorMessage.text("Ngày trả phòng phải sau ngày nhận phòng");
+                } else {
+                    errorMessage.text("");
+                }
+            });
+
+            // Validate khi submit form
+            $("#homestaySearchForm").on("submit", function (e) {
+                var isValid = true;
+
+                var formData = {
+                    location: $("#location").val(),
+                    checkInDate: $("#checkInDate").val(),
+                    checkOutDate: $("#checkOutDate").val()
+                };
+
+                $(".error-message").text("");
+
+                if (!formData.location) {
+                    $("#location").next(".error-message").text("Vui lòng nhập địa điểm");
+                    isValid = false;
+                }
+
+                if (!formData.checkInDate) {
+                    $("#checkInDate").next(".error-message").text("Vui lòng chọn ngày nhận phòng");
+                    isValid = false;
+                } else if (new Date(formData.checkInDate) < new Date("@DateTime.Today.ToString("yyyy-MM-dd")")) {
+                    $("#checkInDate").next(".error-message").text("Ngày nhận phòng không thể trong quá khứ");
+                    isValid = false;
+                }
+
+                if (!formData.checkOutDate) {
+                    $("#checkOutDate").next(".error-message").text("Vui lòng chọn ngày trả phòng");
+                    isValid = false;
+                } else if (new Date(formData.checkOutDate) <= new Date(formData.checkInDate)) {
+                    $("#checkOutDate").next(".error-message").text("Ngày trả phòng phải sau ngày nhận phòng");
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    e.preventDefault();
+                    showNotification("Vui lòng kiểm tra lại thông tin nhập", "error");
+                }
+            });
+        });
+    </script>
+
+    <style>
+        /* Custom style for autocomplete */
+        .custom-autocomplete {
+            max-height: 300px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid #fecdd3; /* rose-300 */
+            background: #fff;
+            z-index: 1000;
+            margin-top: 8px;
+            padding: 8px 0;
+        }
+
+        .ui-autocomplete .ui-menu-item {
+            padding: 0.5rem 1rem;
+            font-size: 0.9375rem;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+            .ui-autocomplete .ui-menu-item:hover {
+                background: #fecdd3; /* rose-300 */
+                color: #9f1239; /* rose-800 */
+            }
+
+        .ui-autocomplete .ui-state-active {
+            background: #fecdd3; /* rose-300 */
+            color: #9f1239; /* rose-800 */
+            border: none;
+        }
+
+        .ui-autocomplete .ui-state-disabled {
+            color: #999;
+            cursor: not-allowed;
+            background: #f5f5f5;
+            opacity: 0.7;
+        }
+
+        /* Loading indicator */
+        input.loading {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path fill="%23f43f5e" d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" opacity=".3"/><path fill="%23f43f5e" d="M20 12a8 8 0 0 1-8 8V4a8 8 0 0 1 8 8z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px 16px;
+        }
+
+        /* Custom scrollbar for autocomplete */
+        .custom-autocomplete::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-autocomplete::-webkit-scrollbar-track {
+            background: #f3f4f6;
+            border-radius: 3px;
+        }
+
+        .custom-autocomplete::-webkit-scrollbar-thumb {
+            background: #fda4af; /* rose-400 */
+            border-radius: 3px;
+        }
+
+        /* Custom date input */
+        input[type="date"] {
+            position: relative;
+        }
+
+            input[type="date"]::-webkit-calendar-picker-indicator {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                width: auto;
+                height: auto;
+                color: transparent;
+                background: transparent;
+            }
+
+            input[type="date"]:not(.has-value) {
+                color: transparent;
+            }
+
+            input[type="date"].has-value {
+                color: inherit;
+            }
+
+        /* Skeleton loading */
+        .animate-pulse {
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @@keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        /* Animation */
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .animation-delay-2000 {
+            animation-delay: 2s;
+        }
+
+        @@keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .animate-bounce-slow {
+            animation: bounce-slow 2s infinite;
+        }
+
+        @@keyframes bounce-slow {
+            0%, 100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        .animate-fade-in-up {
+            animation: fadeInUp 0.3s ease-out;
+        }
+
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-out {
+            animation: fadeOut 0.3s ease-out forwards;
+        }
+
+        @@keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+        }
+
+        /* Transition */
+        .transition-all {
+            transition-property: all;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 300ms;
+        }
+
+        /* Group hover effect */
+        .group:hover .group-hover\:translate-x-1 {
+            transform: translateX(0.25rem);
+        }
+
+        /* Custom shadow */
+        .shadow-2xl {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        /* Backdrop filter */
+        .backdrop-blur-md {
+            backdrop-filter: blur(12px);
+        }
+    </style>
+}

@@ -1,0 +1,549 @@
+﻿@{
+    ViewData["Title"] = "Quản lý Phiếu Hủy Phòng";
+}
+
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+    <div>
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">Quản lý Phiếu Hủy Phòng</h1>
+        <div class="flex flex-wrap items-center gap-3 mt-2">
+            <div class="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-300">
+                <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                <span>Tổng phiếu hủy: <span id="totalCancellations" class="font-semibold">0</span></span>
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+                <span class="px-2.5 py-1 text-xs rounded-full bg-red-100/80 text-red-800 dark:bg-red-900/50 dark:text-red-200 flex items-center gap-1">
+                    <i class="fas fa-ban text-xs"></i>
+                    <span>Đã hủy: <span id="cancelledCount" class="font-medium">0</span></span>
+                </span>
+            </div>
+        </div>
+    </div>
+    <div>
+        <button id="exportExcelBtn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2">
+            <i class="fas fa-file-excel"></i> Xuất Excel
+        </button>
+    </div>
+</div>
+
+<!-- Filter Card -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5 mb-6 border border-gray-200 dark:border-gray-700">
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fas fa-search text-gray-400"></i>
+            </div>
+            <input type="text" id="searchInput" class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-700 dark:text-white" placeholder="Tìm kiếm mã phiếu hủy...">
+        </div>
+        <div>
+            <select id="homestayFilter" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-700 dark:text-white">
+                <option value="">Tất cả homestay</option>
+            </select>
+        </div>
+        <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fas fa-calendar-alt text-gray-400"></i>
+            </div>
+            <input type="text" id="dateRangePicker" class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-700 dark:text-white" placeholder="Chọn khoảng ngày hủy">
+        </div>
+        <div>
+            <select id="sortBy" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-700 dark:text-white">
+                <option value="newest">Mới nhất trước</option>
+                <option value="oldest">Cũ nhất trước</option>
+            </select>
+        </div>
+        <div>
+            <select id="pageSize" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-700 dark:text-white">
+                <option value="5">5 mỗi trang</option>
+                <option value="10">10 mỗi trang</option>
+                <option value="20">20 mỗi trang</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<!-- Cancellation Cards -->
+<div id="cancellationCardsContainer" class="grid grid-cols-1 gap-4">
+    <!-- Skeleton Loading -->
+    <div class="animate-pulse bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-200 dark:border-gray-700">
+        <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-3/4 mb-2"></div>
+        <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-1/2 mb-4"></div>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="h-3 bg-gray-200 dark:bg-gray-600 rounded"></div>
+            <div class="h-3 bg-gray-200 dark:bg-gray-600 rounded"></div>
+            <div class="h-3 bg-gray-200 dark:bg-gray-600 rounded"></div>
+            <div class="h-3 bg-gray-200 dark:bg-gray-600 rounded"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Pagination -->
+<div class="mt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+    <div class="text-sm text-gray-600 dark:text-gray-300">
+        Hiển thị <span id="startItem" class="font-medium">1</span> - <span id="endItem" class="font-medium">5</span> của <span id="totalResults" class="font-medium">0</span> kết quả
+    </div>
+    <div class="flex items-center gap-1.5">
+        <button id="prevPage" class="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" disabled>
+            <i class="fas fa-chevron-left mr-1"></i> Trước
+        </button>
+        <div id="pageNumbers" class="flex gap-1"></div>
+        <button id="nextPage" class="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" disabled>
+            Sau <i class="fas fa-chevron-right ml-1"></i>
+        </button>
+    </div>
+</div>
+
+<!-- Export Excel Modal -->
+<div id="exportExcelModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-md">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Xuất Excel</h2>
+        <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">Chọn tùy chọn xuất dữ liệu:</p>
+        <div class="space-y-3">
+            <button id="exportAll" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
+                <i class="fas fa-file-excel"></i> Xuất tất cả phiếu hủy
+            </button>
+            <button id="exportPending" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
+                <i class="fas fa-file-excel"></i> Xuất phiếu chờ xác nhận
+            </button>
+        </div>
+        <div class="mt-4 flex justify-end">
+            <button id="closeExportModal" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors">Hủy</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadHomestays();
+            loadCancellations();
+            initializeDateRangePicker();
+            setupEventListeners();
+            setupExportExcelModal();
+        });
+
+        let currentPage = 1;
+        let pageSize = 5;
+        let totalPages = 1;
+        const cache = new Map(); // Lưu trữ cache cho dữ liệu phiếu hủy
+
+        function setupEventListeners() {
+            document.getElementById('searchInput').addEventListener('input', debounce(loadCancellations, 300));
+            document.getElementById('homestayFilter').addEventListener('change', loadCancellations);
+            document.getElementById('sortBy').addEventListener('change', loadCancellations);
+            document.getElementById('pageSize').addEventListener('change', (e) => {
+                pageSize = parseInt(e.target.value);
+                currentPage = 1;
+                loadCancellations();
+            });
+            document.getElementById('prevPage').addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    loadCancellations();
+                }
+            });
+            document.getElementById('nextPage').addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    loadCancellations();
+                }
+            });
+        }
+
+        function setupExportExcelModal() {
+            const exportExcelBtn = document.getElementById('exportExcelBtn');
+            const exportExcelModal = document.getElementById('exportExcelModal');
+            const closeExportModal = document.getElementById('closeExportModal');
+            const exportAllBtn = document.getElementById('exportAll');
+            const exportPendingBtn = document.getElementById('exportPending');
+
+            exportExcelBtn.addEventListener('click', () => {
+                exportExcelModal.classList.remove('hidden');
+            });
+
+            closeExportModal.addEventListener('click', () => {
+                exportExcelModal.classList.add('hidden');
+            });
+
+            exportAllBtn.addEventListener('click', () => {
+                exportCancellationsToExcel('all');
+                exportExcelModal.classList.add('hidden');
+            });
+
+            exportPendingBtn.addEventListener('click', () => {
+                exportCancellationsToExcel('pending');
+                exportExcelModal.classList.add('hidden');
+            });
+        }
+
+        async function exportCancellationsToExcel(exportOption) {
+            const searchQuery = document.getElementById('searchInput').value;
+            const homestayId = document.getElementById('homestayFilter').value;
+            let dateRange = document.getElementById('dateRangePicker').value;
+            const sortBy = document.getElementById('sortBy').value;
+
+            if (dateRange && !validateDateRange(dateRange)) {
+                showToast('error', 'Định dạng khoảng ngày không hợp lệ. Vui lòng chọn lại.');
+                document.getElementById('dateRangePicker').value = '';
+                dateRange = '';
+            }
+
+            try {
+                const response = await fetch(`/Admin/Booking/ExportCancellationsToExcel?searchQuery=${encodeURIComponent(searchQuery)}&homestayId=${encodeURIComponent(homestayId)}&dateRange=${encodeURIComponent(dateRange)}&sortBy=${sortBy}&exportOption=${exportOption}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    }
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `Cancellations_${exportOption === 'all' ? 'All' : 'Pending'}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    window.URL.revokeObjectURL(url);
+                    showToast('success', 'Xuất Excel thành công');
+                } else {
+                    const result = await response.json();
+                    showToast('error', result.message || 'Không thể xuất Excel');
+                }
+            } catch (error) {
+                showToast('error', 'Lỗi khi xuất Excel');
+                console.error(error);
+            }
+        }
+
+        function initializeDateRangePicker() {
+            flatpickr("#dateRangePicker", {
+                mode: "range",
+                dateFormat: "d/m/Y",
+                locale: { firstDayOfWeek: 1 },
+                onClose: (selectedDates, dateStr, instance) => {
+                    if (selectedDates.length !== 2) {
+                        showToast('error', 'Vui lòng chọn cả ngày bắt đầu và ngày kết thúc');
+                        instance.clear();
+                        return;
+                    }
+                    if (selectedDates[0] > selectedDates[1]) {
+                        showToast('error', 'Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày kết thúc');
+                        instance.clear();
+                        return;
+                    }
+                    const formattedStr = selectedDates.map(date => {
+                        const d = date.getDate().toString().padStart(2, '0');
+                        const m = (date.getMonth() + 1).toString().padStart(2, '0');
+                        const y = date.getFullYear();
+                        return `${d}/${m}/${y}`;
+                    }).join(' - ');
+                    instance.element.value = formattedStr;
+                    loadCancellations();
+                }
+            });
+        }
+
+        function validateDateRange(dateRange) {
+            if (!dateRange) return true;
+            const regex = /^(\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*(\d{1,2}\/\d{1,2}\/\d{4})$/;
+            return regex.test(dateRange.trim());
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function () {
+                const context = this;
+                const args = arguments;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(context, args), wait);
+            };
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return 'Không xác định';
+            const date = new Date(dateStr);
+            return isNaN(date.getTime()) ? 'Không xác định' : date.toLocaleDateString('vi-VN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+                    return str.replace(/[&<>"']/g, match => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&apos;'
+        })[match]);
+        }
+
+        function showToast(type, message) {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 px-4 py-3 rounded-lg shadow-lg text-white flex items-center gap-2 animate-slide-in ${
+                type === 'success' ? 'bg-green-500' :
+                type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+            }`;
+
+            const icon = document.createElement('i');
+            icon.className = type === 'success' ? 'fas fa-check-circle' :
+                            type === 'error' ? 'fas fa-exclamation-circle' : 'fas fa-info-circle';
+            toast.appendChild(icon);
+
+            const text = document.createElement('span');
+            text.textContent = message;
+            toast.appendChild(text);
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('animate-slide-out');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function generateCacheKey(searchQuery, homestayId, dateRange, page, pageSize, sortBy) {
+            return `${searchQuery}|${homestayId}|${dateRange}|${page}|${pageSize}|${sortBy}`;
+        }
+
+        async function loadHomestays() {
+            try {
+                const response = await fetch('/Admin/Homestay/GetHomestays');
+                const result = await response.json();
+                const homestayFilter = document.getElementById('homestayFilter');
+
+                if (result.success) {
+                    homestayFilter.innerHTML = '<option value="">Tất cả homestay</option>';
+                    result.data.forEach(homestay => {
+                        const option = document.createElement('option');
+                        option.value = homestay.idHomestay;
+                        option.textContent = homestay.tenHomestay;
+                        homestayFilter.appendChild(option);
+                    });
+                } else {
+                    showToast('error', result.message || 'Không thể tải danh sách homestay');
+                }
+            } catch (error) {
+                showToast('error', 'Lỗi khi tải danh sách homestay');
+                console.error(error);
+            }
+        }
+
+        async function loadCancellations() {
+            const searchQuery = document.getElementById('searchInput').value;
+            const homestayId = document.getElementById('homestayFilter').value;
+            let dateRange = document.getElementById('dateRangePicker').value;
+            const sortBy = document.getElementById('sortBy').value;
+
+            if (dateRange && !validateDateRange(dateRange)) {
+                showToast('error', 'Định dạng khoảng ngày không hợp lệ. Vui lòng chọn lại.');
+                document.getElementById('dateRangePicker').value = '';
+                dateRange = '';
+            }
+
+            const cacheKey = generateCacheKey(searchQuery, homestayId, dateRange, currentPage, pageSize, sortBy);
+            if (cache.has(cacheKey)) {
+                const cached = cache.get(cacheKey);
+                renderCancellations(cached.data, cached.totalCount);
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Admin/Booking/GetCancellations?searchQuery=${encodeURIComponent(searchQuery)}&homestayId=${encodeURIComponent(homestayId)}&dateRange=${encodeURIComponent(dateRange)}&page=${currentPage}&pageSize=${pageSize}&sortBy=${sortBy}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    cache.set(cacheKey, { data: result.data, totalCount: result.totalCount });
+                    renderCancellations(result.data, result.totalCount);
+                } else {
+                    showToast('error', result.message || 'Không thể tải danh sách phiếu hủy');
+                }
+            } catch (error) {
+                showToast('error', 'Lỗi khi tải danh sách phiếu hủy');
+                console.error(error);
+            }
+        }
+
+        async function updateCancellationStatus(maPHP, trangThai) {
+            try {
+                const response = await fetch('/Admin/Booking/UpdateCancellationStatus', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ MaPHP: maPHP, TrangThai: trangThai })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showToast('success', result.message);
+
+                    // Cập nhật cache
+                    const cacheKey = generateCacheKey(
+                        document.getElementById('searchInput').value,
+                        document.getElementById('homestayFilter').value,
+                        document.getElementById('dateRangePicker').value,
+                        currentPage,
+                        pageSize,
+                        document.getElementById('sortBy').value
+                    );
+                    if (cache.has(cacheKey)) {
+                        const cached = cache.get(cacheKey);
+                        const updatedCancellations = cached.data.map(c =>
+                            c.maPHP === maPHP ? { ...c, trangThai: trangThai } : c
+                        );
+                        cache.set(cacheKey, { data: updatedCancellations, totalCount: cached.totalCount });
+
+                        // Cập nhật thẻ phiếu hủy trên giao diện
+                        const card = document.querySelector(`#cancellationCardsContainer [data-ma-php="${maPHP}"]`);
+                        if (card) {
+                            const updatedCancellation = updatedCancellations.find(c => c.maPHP === maPHP);
+                            const newCard = createCancellationCard(updatedCancellation);
+                            card.replaceWith(newCard);
+
+                            // Cập nhật số lượng phiếu đã hủy
+                            const cancelledCount = updatedCancellations.filter(c => c.trangThai === 'Đã hủy' || c.trangThai === 'Đã xử lý').length;
+                            document.getElementById('cancelledCount').textContent = cancelledCount;
+                        }
+                    }
+                } else {
+                    showToast('error', result.message || 'Không thể cập nhật trạng thái');
+                }
+            } catch (error) {
+                showToast('error', 'Lỗi khi cập nhật trạng thái');
+                console.error(error);
+            }
+        }
+
+        function renderCancellations(cancellations, totalCount) {
+            const container = document.getElementById('cancellationCardsContainer');
+            container.innerHTML = '';
+
+            if (!cancellations || cancellations.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8 text-center border border-gray-200 dark:border-gray-600">
+                        <i class="fas fa-clipboard-list text-gray-300 dark:text-gray-400 text-4xl mb-3"></i>
+                        <p class="text-gray-500 dark:text-gray-400">Không có phiếu hủy nào</p>
+                    </div>
+                `;
+                updatePagination(0);
+                return;
+            }
+
+            let index = 0;
+            function renderBatch() {
+                const fragment = document.createDocumentFragment();
+                const batchSize = 5;
+                for (let i = 0; i < batchSize && index < cancellations.length; i++, index++) {
+                    const card = createCancellationCard(cancellations[index]);
+                    fragment.appendChild(card);
+                }
+                container.appendChild(fragment);
+                if (index < cancellations.length) {
+                    requestAnimationFrame(renderBatch);
+                }
+            }
+            requestAnimationFrame(renderBatch);
+
+            const cancelledCount = cancellations.filter(c => c.trangThai === 'Đã hủy' || c.trangThai === 'Đã xử lý').length;
+            document.getElementById('totalCancellations').textContent = totalCount;
+            document.getElementById('cancelledCount').textContent = cancelledCount;
+
+            updatePagination(totalCount);
+        }
+
+        function createCancellationCard(cancellation) {
+            const card = document.createElement('div');
+            card.className = 'bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5 hover:shadow-md transition-all duration-200 border border-gray-200 dark:border-gray-600';
+            card.setAttribute('data-ma-php', cancellation.maPHP); // Thêm thuộc tính để nhận diện
+
+            let statusUpdateHtml = '';
+            if (cancellation.trangThai === 'Chờ xử lý') {
+                statusUpdateHtml = `
+                    <div class="flex items-center gap-2">
+                        <select id="statusSelect_${escapeHtml(cancellation.maPHP)}" class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-700 dark:text-white">
+                            <option value="Đã xử lý">Đã xử lý</option>
+                        </select>
+                        <button onclick="updateCancellationStatus('${escapeHtml(cancellation.maPHP)}', document.getElementById('statusSelect_${escapeHtml(cancellation.maPHP)}').value)" class="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-800 transition-all duration-200">
+                            Cập nhật
+                        </button>
+                    </div>
+                `;
+            }
+
+            card.innerHTML = `
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">${escapeHtml(cancellation.customerName)}</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Mã phiếu hủy: <span class="font-mono">${escapeHtml(cancellation.maPHP)}</span></p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Mã đặt phòng: <span class="font-mono">${escapeHtml(cancellation.bookingId)}</span></p>
+                    </div>
+                    <span class="px-3 py-1 text-xs font-medium rounded-full ${
+                        cancellation.trangThai === 'Chờ xử lý' ? 'bg-blue-100/80 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200' :
+                        cancellation.trangThai === 'Đã xử lý' ? 'bg-green-100/80 text-green-800 dark:bg-green-900/50 dark:text-green-200' :
+                        'bg-red-100/80 text-red-800 dark:bg-red-900/50 dark:text-red-200'
+                    } flex items-center gap-1">
+                        <i class="fas fa-${cancellation.trangThai === 'Chờ xử lý' ? 'clock' : 'ban'} text-xs"></i>
+                        <span>${escapeHtml(cancellation.trangThai)}</span>
+                    </span>
+                </div>
+                <div class="space-y-3 mb-4">
+                    <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                        <p class="text-sm font-medium text-gray-800 dark:text-gray-200">Homestay: ${escapeHtml(cancellation.homestayName)}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Ngày hủy: ${escapeHtml(cancellation.cancellationDate)}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Lý do: ${escapeHtml(cancellation.lyDo) || 'Không xác định'}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Người hủy: ${escapeHtml(cancellation.nguoiHuy) || 'Không xác định'}</p>
+                        ${cancellation.tenNganHang || cancellation.soTaiKhoan ? `
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Ngân hàng: ${escapeHtml(cancellation.tenNganHang) || 'Không xác định'}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Số tài khoản: ${escapeHtml(cancellation.soTaiKhoan) || 'Không xác định'}</p>
+                        ` : ''}
+                    </div>
+                    ${statusUpdateHtml}
+                </div>
+            `;
+            return card;
+        }
+
+        function updatePagination(totalCount) {
+            totalPages = Math.ceil(totalCount / pageSize);
+            const pageNumbers = document.getElementById('pageNumbers');
+            pageNumbers.innerHTML = '';
+
+            const startItem = (currentPage - 1) * pageSize + 1;
+            const endItem = Math.min(currentPage * pageSize, totalCount);
+
+            document.getElementById('startItem').textContent = startItem;
+            document.getElementById('endItem').textContent = endItem;
+            document.getElementById('totalResults').textContent = totalCount;
+
+            document.getElementById('prevPage').disabled = currentPage === 1;
+            document.getElementById('nextPage').disabled = currentPage === totalPages;
+
+            const maxPagesToShow = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+            let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+            if (endPage - startPage + 1 < maxPagesToShow) {
+                startPage = Math.max(1, endPage - maxPagesToShow + 1);
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const button = document.createElement('button');
+                button.className = `px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium ${
+                    i === currentPage ? 'bg-blue-600 text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
+                } transition-colors`;
+                button.textContent = i;
+                button.addEventListener('click', () => {
+                    currentPage = i;
+                    loadCancellations();
+                });
+                pageNumbers.appendChild(button);
+            }
+        }
+    </script>
+}

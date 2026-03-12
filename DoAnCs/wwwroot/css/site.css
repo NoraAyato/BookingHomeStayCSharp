@@ -1,0 +1,50 @@
+﻿html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+// Hàm hiển thị toast thông báo
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast .className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white $
+
+{
+    type === 'success' ? 'bg-green-500' : 'bg-red-500'
+}
+
+z-50 transition-all duration-300 transform translate-x-0 opacity-100`;
+toast.textContent = message;
+document.body.appendChild(toast);
+
+setTimeout(() => {
+        toast.classList.add('translate-x-full', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// Xử lý hiển thị thông báo từ TempData
+document.addEventListener('DOMContentLoaded', function() {
+    const toastMessage = document.getElementById('toastMessage').value;
+    const toastType = document.getElementById('toastType').value;
+    
+    if (toastMessage) {
+        showToast(toastMessage, toastType);
+    }
+});

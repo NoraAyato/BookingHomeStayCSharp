@@ -1,0 +1,852 @@
+﻿@{
+    ViewData["Title"] = "Host Dashboard";
+}
+
+<div class="w-full max-w-full ml-0">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4 pl-0">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-200">Bảng điều khiển Host</h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-1">Tổng quan homestay của bạn</p>
+        </div>
+        <div class="flex items-center space-x-4">
+            <select id="homestaySelector" class="px-3 py-2 bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-100 hover:text-blue-600 dark:hover:bg-blue-900 dark:hover:text-blue-400 transition">
+                <option value="">Tất cả Homestay</option>
+            </select>
+            <button id="exportExcelBtn" class="relative flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition shadow-md hover:shadow-lg disabled:opacity-50" title="Xuất báo cáo Excel" disabled>
+                <i class="fas fa-file-excel mr-2"></i> Xuất Excel
+                <span class="absolute inset-0 flex items-center justify-center hidden loading-spinner">
+                    <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </span>
+            </button>
+            <span class="text-sm text-gray-500 dark:text-gray-400">Cập nhật lúc: <span id="lastUpdatedTime">@DateTime.Now.ToString("HH:mm dd/MM/yyyy")</span></span>
+            <button id="refreshBtn" class="relative p-2 text-gray-500 hover:text-blue-600 hover:bg-gray-100 rounded-full transition" title="Làm mới dữ liệu">
+                <i class="fas fa-sync-alt"></i>
+                <span class="absolute inset-0 flex items-center justify-center hidden loading-spinner">
+                    <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-4 pl-0">
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition stat-card">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Tổng doanh thu</p>
+                    <h3 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200" id="totalRevenue">--</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Từ các hóa đơn đã thanh toán</p>
+                </div>
+                <div class="p-3 rounded-full bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400">
+                    <i class="fas fa-money-bill-wave text-lg sm:text-xl"></i>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition stat-card">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Tổng lợi nhuận</p>
+                    <h3 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200" id="totalProfit">--</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Sau phí 15% hệ thống</p>
+                </div>
+                <div class="p-3 rounded-full bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400">
+                    <i class="fas fa-coins text-lg sm:text-xl"></i>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition stat-card">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Tổng đặt phòng</p>
+                    <h3 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200" id="totalBookings">--</h3>
+                    <div class="flex space-x-2 mt-1">
+                        <span class="text-xs text-green-600 dark:text-green-400" id="confirmedBookings">-- xác nhận</span>
+                        <span class="text-xs text-yellow-600 dark:text-yellow-400" id="pendingBookings">-- chờ</span>
+                    </div>
+                </div>
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400">
+                    <i class="fas fa-calendar-check text-lg sm:text-xl"></i>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition stat-card">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Phòng trống</p>
+                    <h3 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200" id="availableRooms">--</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Tổng <span id="totalRooms">--</span> phòng</p>
+                </div>
+                <div class="p-3 rounded-full bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-400">
+                    <i class="fas fa-bed text-lg sm:text-xl"></i>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition stat-card">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Tỷ lệ lấp đầy</p>
+                    <h3 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200" id="occupancyRate">--%</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Tháng hiện tại</p>
+                </div>
+                <div class="p-3 rounded-full bg-orange-100 text-orange-600 dark:bg-orange-900 dark:text-orange-400">
+                    <i class="fas fa-chart-pie text-lg sm:text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts and Additional Stats -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4 pl-0">
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 lg:col-span-2">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Doanh thu theo tháng</h2>
+                <div class="flex space-x-2">
+                    <button id="revenue6Months" class="px-3 py-1 text-xs bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-full hover:bg-blue-100 hover:text-blue-600 dark:hover:bg-blue-900 dark:hover:text-blue-400 transition">6 tháng</button>
+                    <button id="revenue12Months" class="px-3 py-1 text-xs bg-blue-600 text-white rounded-full hover:bg-blue-700 transition">12 tháng</button>
+                </div>
+            </div>
+            <div class="h-64 sm:h-80 lg:h-96">
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+            <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Dịch vụ phổ biến</h2>
+            <div class="space-y-3" id="homestayServices">
+                <div class="space-y-3 animate-pulse">
+                    <div class="h-10 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                    <div class="h-10 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                    <div class="h-10 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Bookings and Invoices -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4 pl-0">
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Đặt phòng gần đây</h2>
+                <a href="/Host/Booking/Index" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">Xem tất cả</a>
+            </div>
+            <div class="space-y-3" id="recentBookings">
+                <div class="space-y-3 animate-pulse">
+                    <div class="h-16 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                    <div class="h-16 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Hóa đơn gần đây</h2>
+                <a href="/Host/Invoice" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">Xem tất cả</a>
+            </div>
+            <div class="space-y-3" id="recentInvoices">
+                <div class="space-y-3 animate-pulse">
+                    <div class="h-16 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                    <div class="h-16 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+            <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Hoạt động gần đây</h2>
+            <div class="space-y-3" id="recentActivities">
+                <div class="space-y-3 animate-pulse">
+                    <div class="h-16 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                    <div class="h-16 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .stat-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+            .stat-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+
+        .activity-item {
+            transition: background-color 0.2s ease;
+        }
+
+            .activity-item:hover {
+                background-color: #f9fafb;
+            }
+
+        #exportExcelBtn, #refreshBtn {
+            transition: all 0.2s ease;
+        }
+
+            #exportExcelBtn:hover, #refreshBtn:hover {
+                transform: translateY(-1px);
+            }
+
+        .loading-spinner.active {
+            display: flex;
+        }
+        @@media (max-width: 640px) {
+            .text-sm
+
+        {
+            font-size: 0.9rem;
+        }
+
+        .text-xs {
+            font-size: 0.75rem;
+        }
+
+        .text-2xl {
+            font-size: 1.5rem;
+        }
+
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
+
+    <script>
+        // Biến toàn cục
+        let revenueChart;
+        let currentMonths = 12;
+        let dashboardCache = { 6: null, 12: null };
+        let activitiesCache = null;
+        const BASE_URL = window.location.origin;
+        let selectedHomestayId = '';
+
+        // Định dạng tiền tệ VND
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
+        }
+
+        // Định dạng ngày
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return isNaN(date.getTime()) ? 'N/A' : date.toLocaleDateString('vi-VN');
+        }
+
+        // Định dạng thời gian tương đối
+        function timeAgo(dateString) {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return 'N/A';
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+            if (seconds >= 31536000) return `${Math.floor(seconds / 31536000)} năm trước`;
+            if (seconds >= 2592000) return `${Math.floor(seconds / 2592000)} tháng trước`;
+            if (seconds >= 86400) return `${Math.floor(seconds / 86400)} ngày trước`;
+            if (seconds >= 3600) return `${Math.floor(seconds / 3600)} giờ trước`;
+            if (seconds >= 60) return `${Math.floor(seconds / 60)} phút trước`;
+            return 'Vừa xong';
+        }
+
+        // Hiển thị thông báo toast
+        let toastCount = 0;
+        function showToast(type, message) {
+            if (toastCount >= 3) return;
+            toastCount++;
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 px-4 py-2 rounded-md shadow-lg text-white ${
+                type === 'success' ? 'bg-green-500' : 'bg-red-500'
+            } flex items-center space-x-2`;
+            toast.innerHTML = `
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                <span>${message}</span>
+                <button class="ml-2 text-white hover:text-gray-200" onclick="this.parentElement.remove(); toastCount--;">
+                    <i class="fas fa-times"></i>
+                </button>`;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                setTimeout(() => { toast.remove(); toastCount--; }, 300);
+            }, 5000);
+        }
+
+        // Khởi tạo biểu đồ doanh thu
+        function initRevenueChart(labels, revenueData) {
+            const ctx = document.getElementById('revenueChart')?.getContext('2d');
+            if (!ctx) return;
+            if (revenueChart) revenueChart.destroy();
+
+            if (!Array.isArray(labels) || !labels.length || !Array.isArray(revenueData) || !revenueData.length) {
+                ctx.canvas.parentElement.innerHTML = `
+                    <div class="text-center py-4 text-gray-500 dark:text-gray-400">
+                        Không có dữ liệu doanh thu
+                    </div>`;
+                return;
+            }
+
+            const dates = labels.map(label => {
+                const [month, year] = (label || '').split('/');
+                return year && month ? `${year}-${month.padStart(2, '0')}` : null;
+            }).filter(date => date);
+
+            revenueChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Doanh thu',
+                        data: revenueData,
+                        backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    plugins: {
+                        legend: { position: 'top', labels: { boxWidth: 20, padding: 15 } },
+                        tooltip: {
+                            callbacks: {
+                                label: context => `${context.dataset.label}: ${formatCurrency(context.raw)}`,
+                                title: context => {
+                                    const date = new Date(context[0].parsed.x);
+                                    return isNaN(date.getTime()) ? 'Tháng không xác định' : `Tháng ${date.getMonth() + 1}/${date.getFullYear()}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: { unit: 'month', displayFormats: { month: 'MM/yyyy' }, tooltipFormat: 'MM/yyyy' },
+                            grid: { display: false },
+                            ticks: {
+                                source: 'labels',
+                                callback: (value, index, ticks) => {
+                                    const date = new Date(ticks[index]?.value);
+                                    return isNaN(date.getTime()) ? '' : `${date.getMonth() + 1}/${date.getFullYear()}`;
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                            ticks: {
+                                callback: value => value >= 1000000 ? (value / 1000000) + 'M' : (value / 1000) + 'K'
+                            },
+                            title: { display: true, text: 'Số tiền (VND)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Cập nhật biểu đồ doanh thu
+        function updateRevenueChart(labels, revenueData) {
+            if (!Array.isArray(labels) || !labels.length || !Array.isArray(revenueData) || !revenueData.length) {
+                const ctx = document.getElementById('revenueChart')?.getContext('2d');
+                if (ctx) {
+                    ctx.canvas.parentElement.innerHTML = `
+                        <div class="text-center py-4 text-gray-500 dark:text-gray-400">
+                            Không có dữ liệu doanh thu
+                        </div>`;
+                }
+                return;
+            }
+
+            const dates = labels.map(label => {
+                const [month, year] = (label || '').split('/');
+                return year && month ? `${year}-${month.padStart(2, '0')}` : null;
+            }).filter(date => date);
+
+            if (revenueChart) {
+                if (JSON.stringify(revenueChart.data.labels) !== JSON.stringify(dates) ||
+                    JSON.stringify(revenueChart.data.datasets[0].data) !== JSON.stringify(revenueData)) {
+                    revenueChart.data.labels = dates;
+                    revenueChart.data.datasets[0].data = revenueData;
+                    revenueChart.update();
+                }
+            } else {
+                initRevenueChart(labels, revenueData);
+            }
+        }
+
+        // Render danh sách dịch vụ phổ biến
+        function renderHomestayServices(services) {
+            const container = document.getElementById('homestayServices');
+            if (!container) return;
+            if (!Array.isArray(services) || !services.length) {
+                container.innerHTML = `
+                    <div class="text-center py-4 text-gray-500 dark:text-gray-400">
+                        <i class="fas fa-concierge-bell text-3xl text-gray-300 dark:text-gray-600 mb-2"></i>
+                        <p>Không có dịch vụ phổ biến</p>
+                    </div>`;
+                return;
+            }
+            container.innerHTML = services.map(service => `
+                <div class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 activity-item">
+                    <div>
+                        <p class="text-sm font-medium text-gray-900 dark:text-gray-200">${service?.ten_DV || 'Dịch vụ'}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">${service?.bookingCount || 0} lần sử dụng</p>
+                    </div>
+                </div>`).join('');
+        }
+
+        // Render danh sách đặt phòng gần đây
+        function renderRecentBookings(bookings) {
+            const container = document.getElementById('recentBookings');
+            if (!container) return;
+            if (!Array.isArray(bookings) || !bookings.length) {
+                container.innerHTML = `
+                    <div class="text-center py-4 text-gray-500 dark:text-gray-400">
+                        <i class="fas fa-calendar-check text-3xl text-gray-300 dark:text-gray-600 mb-2"></i>
+                        <p>Không có đặt phòng gần đây</p>
+                    </div>`;
+                return;
+            }
+            container.innerHTML = bookings.map(booking => `
+                <div class="flex items-center justify-between p-3 rounded-lg border border-gray-100 dark:border-gray-700 activity-item">
+                    <div>
+                        <p class="text-sm font-medium text-gray-900 dark:text-gray-200">${booking?.id || 'N/A'}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">${booking?.customerName || 'Khách hàng'}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm font-medium ${booking?.status === 'Đã xác nhận' ? 'text-green-600 dark:text-green-400' : booking?.status === 'Chờ xác nhận' ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}">
+                            ${booking?.roomCount || 0} phòng
+                        </p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">${timeAgo(booking?.date)}</p>
+                    </div>
+                </div>`).join('');
+        }
+
+        // Render danh sách hóa đơn gần đây
+        function renderRecentInvoices(invoices) {
+            const container = document.getElementById('recentInvoices');
+            if (!container) return;
+            if (!Array.isArray(invoices) || !invoices.length) {
+                container.innerHTML = `
+                    <div class="text-center py-4 text-gray-500 dark:text-gray-400">
+                        <i class="fas fa-file-invoice text-3xl text-gray-300 dark:text-gray-600 mb-2"></i>
+                        <p>Không có hóa đơn gần đây</p>
+                    </div>`;
+                return;
+            }
+            container.innerHTML = invoices.map(invoice => `
+                <div class="flex items-center justify-between p-3 rounded-lg border border-gray-100 dark:border-gray-700 activity-item">
+                    <div>
+                        <p class="text-sm font-medium text-gray-900 dark:text-gray-200">${invoice?.id || 'N/A'}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">${invoice?.customerName || 'Khách hàng'}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm font-medium ${invoice?.status === 'Đã thanh toán' ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}">
+                            ${formatCurrency(invoice?.amount)}
+                        </p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">${timeAgo(invoice?.date)}</p>
+                    </div>
+                </div>`).join('');
+        }
+
+        // Render danh sách hoạt động gần đây
+        function renderRecentActivities(activities) {
+            const container = document.getElementById('recentActivities');
+            if (!container) return;
+            if (!Array.isArray(activities) || !activities.length) {
+                container.innerHTML = `
+                    <div class="text-center py-4 text-gray-500 dark:text-gray-400">
+                        <i class="fas fa-bell text-3xl text-gray-300 dark:text-gray-600 mb-2"></i>
+                        <p>Không có hoạt động gần đây</p>
+                    </div>`;
+                return;
+            }
+            container.innerHTML = activities.map(activity => `
+                <div class="flex items-center justify-between p-3 rounded-lg border border-gray-100 dark:border-gray-700 activity-item">
+                    <div>
+                        <p class="text-sm font-medium text-gray-900 dark:text-gray-200">${activity?.description || 'N/A'}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">${timeAgo(activity?.date)}</p>
+                    </div>
+                </div>`).join('');
+        }
+
+        // Render thống kê dashboard
+        function renderDashboardStats(cache) {
+            const stats = cache?.stats || {};
+            const updateElement = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = value;
+            };
+
+            updateElement('totalRevenue', formatCurrency(stats.totalRevenue || 0));
+            updateElement('totalProfit', formatCurrency(stats.totalProfit || 0));
+            updateElement('totalBookings', stats.bookingCount || 0);
+            updateElement('confirmedBookings', `${stats.confirmedBookingCount || 0} xác nhận`);
+            updateElement('pendingBookings', `${stats.pendingBookingCount || 0} chờ`);
+            updateElement('availableRooms', stats.availableRoomCount || 0);
+            updateElement('totalRooms', stats.roomCount || 0);
+            updateElement('occupancyRate', `${stats.occupancyRate || 0}%`);
+
+            if (Array.isArray(cache?.monthlyRevenue)) {
+                const labels = cache.monthlyRevenue.map(m => m.month || 'N/A');
+                const revenueData = cache.monthlyRevenue.map(m => m.revenue || 0);
+                updateRevenueChart(labels, revenueData);
+            }
+            renderHomestayServices(cache?.homestayServices);
+        }
+
+        // Lấy danh sách Homestay
+        async function fetchHomestays() {
+            try {
+                const response = await fetch(`${BASE_URL}/Host/Dashboard/GetHomestays`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const result = await response.json();
+                if (result.success && Array.isArray(result.data)) {
+                    const selector = document.getElementById('homestaySelector');
+                    if (selector) {
+                        selector.innerHTML = '<option value="">Tất cả Homestay</option>';
+                        result.data.forEach(homestay => {
+                            const option = document.createElement('option');
+                            option.value = homestay?.id || '';
+                            option.textContent = homestay?.name || 'N/A';
+                            selector.appendChild(option);
+                        });
+                    }
+                } else {
+                    showToast('error', result.message || 'Lỗi khi tải danh sách Homestay');
+                }
+            } catch (error) {
+                console.error('Lỗi khi tải danh sách Homestay:', error);
+                showToast('error', `Lỗi khi tải danh sách Homestay: ${error.message}`);
+            }
+        }
+
+        // Lấy dữ liệu dashboard
+        async function fetchDashboardData(months, forceRefresh = false) {
+            if (!forceRefresh && dashboardCache[months]) {
+                renderDashboardStats(dashboardCache[months]);
+                return;
+            }
+
+            const exportBtn = document.getElementById('exportExcelBtn');
+            const refreshBtn = document.getElementById('refreshBtn');
+            if (exportBtn) exportBtn.disabled = true;
+            if (refreshBtn) refreshBtn.querySelector('.loading-spinner')?.classList.add('active');
+
+            try {
+                const url = new URL(`${BASE_URL}/Host/Dashboard/GetHostDashboardStats`);
+                url.searchParams.append('months', months);
+                if (selectedHomestayId) url.searchParams.append('homestayId', selectedHomestayId);
+
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const result = await response.json();
+                if (result.success && result.data) {
+                    dashboardCache[months] = result.data;
+                    renderDashboardStats(result.data);
+                    const lastUpdated = document.getElementById('lastUpdatedTime');
+                    if (lastUpdated) lastUpdated.textContent = formatDate(result.data.lastUpdated);
+                    if (exportBtn) exportBtn.disabled = false;
+                } else {
+                    showToast('error', result.message || 'Lỗi khi tải dữ liệu dashboard');
+                }
+            } catch (error) {
+                console.error('Lỗi khi tải dữ liệu dashboard:', error);
+                showToast('error', `Lỗi khi tải dữ liệu dashboard: ${error.message}`);
+            } finally {
+                if (refreshBtn) refreshBtn.querySelector('.loading-spinner')?.classList.remove('active');
+            }
+        }
+
+        // Lấy hoạt động gần đây
+        async function fetchRecentActivities() {
+            const containers = [
+                document.getElementById('recentBookings'),
+                document.getElementById('recentInvoices'),
+                document.getElementById('recentActivities')
+            ].filter(c => c);
+
+            try {
+                const url = new URL(`${BASE_URL}/Host/Dashboard/GetRecentActivities`);
+                if (selectedHomestayId) url.searchParams.append('homestayId', selectedHomestayId);
+
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const result = await response.json();
+                if (result.success && result.data) {
+                    activitiesCache = result.data;
+                    renderRecentBookings(result.data.recentBookings);
+                    renderRecentInvoices(result.data.recentInvoices);
+                    renderRecentActivities(result.data.recentActivities);
+                } else {
+                    showToast('error', result.message || 'Lỗi khi tải hoạt động gần đây');
+                    containers.forEach(container => {
+                        container.innerHTML = `
+                            <div class="text-center py-4 text-gray-500 dark:text-gray-400">
+                                <p>Không có dữ liệu</p>
+                            </div>`;
+                    });
+                }
+            } catch (error) {
+                console.error('Lỗi khi tải hoạt động gần đây:', error);
+                showToast('error', `Lỗi khi tải hoạt động gần đây: ${error.message}`);
+                containers.forEach(container => {
+                    container.innerHTML = `
+                        <div class="text-center py-4 text-gray-500 dark:text-gray-400">
+                            <p>Không có dữ liệu</p>
+                        </div>`;
+                    });
+            }
+        }
+
+        // Xuất Excel
+        function exportToExcel() {
+            const cache = dashboardCache[currentMonths];
+            const exportBtn = document.getElementById('exportExcelBtn');
+            if (exportBtn) {
+                exportBtn.querySelector('.loading-spinner')?.classList.add('active');
+                exportBtn.disabled = true;
+            }
+
+            try {
+                // Debug: Log cache and activitiesCache
+                console.log('Debug exportToExcel:');
+                console.log('currentMonths:', currentMonths);
+                console.log('dashboardCache:', dashboardCache);
+                console.log('cache:', cache);
+                console.log('activitiesCache:', activitiesCache);
+
+                // Check if cache and activitiesCache exist
+                if (!cache || !activitiesCache) {
+                    throw new Error('Dữ liệu dashboard hoặc hoạt động gần đây chưa được tải');
+                }
+
+                // Helper function to normalize arrays and objects
+                const normalizeArray = (arr, defaultItem) => Array.isArray(arr) ? arr.map(item => item || defaultItem) : [defaultItem];
+                const normalizeObject = (obj, defaultValue) => (obj !== undefined && obj !== null) ? obj : defaultValue;
+
+                // Validate and prepare data for each sheet
+                const statsData = [
+                    ['Tổng doanh thu', normalizeObject(cache.stats?.totalRevenue, 0)],
+                    ['Tổng lợi nhuận', normalizeObject(cache.stats?.totalProfit, 0)],
+                    ['Tổng đặt phòng', normalizeObject(cache.stats?.bookingCount, 0)],
+                    ['Đặt phòng đã xác nhận', normalizeObject(cache.stats?.confirmedBookingCount, 0)],
+                    ['Đặt phòng chờ xác nhận', normalizeObject(cache.stats?.pendingBookingCount, 0)],
+                    ['Tổng số phòng', normalizeObject(cache.stats?.roomCount, 0)],
+                    ['Phòng trống', normalizeObject(cache.stats?.availableRoomCount, 0)],
+                    ['Tỷ lệ lấp đầy', `${normalizeObject(cache.stats?.occupancyRate, 0)}%`]
+                ];
+                console.log('statsData:', statsData);
+
+                const revenueData = [
+                    ['Tháng', 'Doanh thu'],
+                    ...normalizeArray(cache.monthlyRevenue, { month: 'N/A', revenue: 0 }).map(m => [
+                        normalizeObject(m.month, 'N/A'),
+                        normalizeObject(m.revenue, 0)
+                    ])
+                ];
+                console.log('revenueData:', revenueData);
+
+                const bookingData = [
+                    ['Tháng', 'Số đặt phòng'],
+                    ...normalizeArray(cache.monthlyBookings, { month: 'N/A', bookingCount: 0 }).map(m => [
+                        normalizeObject(m.month, 'N/A'),
+                        normalizeObject(m.bookingCount, 0)
+                    ])
+                ];
+                console.log('bookingData:', bookingData);
+
+                const serviceData = [
+                    ['Dịch vụ', 'Số lần sử dụng'],
+                    ...normalizeArray(cache.homestayServices, { ten_DV: 'N/A', bookingCount: 0 }).map(s => [
+                        normalizeObject(s.ten_DV, 'N/A'),
+                        normalizeObject(s.bookingCount, 0)
+                    ])
+                ];
+                console.log('serviceData:', serviceData);
+
+                const recentBookingData = [
+                    ['Mã đặt phòng', 'Khách hàng', 'Ngày đặt', 'Trạng thái', 'Số phòng'],
+                    ...normalizeArray(activitiesCache.recentBookings, { id: 'N/A', customerName: 'N/A', date: new Date(), status: 'N/A', roomCount: 0 }).map(b => [
+                        normalizeObject(b.id, 'N/A'),
+                        normalizeObject(b.customerName, 'Khách hàng'),
+                        formatDate(b.date),
+                        normalizeObject(b.status, 'N/A'),
+                        normalizeObject(b.roomCount, 0)
+                    ])
+                ];
+                console.log('recentBookingData:', recentBookingData);
+
+                const recentInvoiceData = [
+                    ['Mã hóa đơn', 'Khách hàng', 'Ngày lập', 'Tổng tiền', 'Trạng thái'],
+                    ...normalizeArray(activitiesCache.recentInvoices, { id: 'N/A', customerName: 'N/A', date: new Date(), amount: 0, status: 'N/A' }).map(i => [
+                        normalizeObject(i.id, 'N/A'),
+                        normalizeObject(i.customerName, 'Khách hàng'),
+                        formatDate(i.date),
+                        normalizeObject(i.amount, 0),
+                        normalizeObject(i.status, 'N/A')
+                    ])
+                ];
+                console.log('recentInvoiceData:', recentInvoiceData);
+
+                const recentActivityData = [
+                    ['Hoạt động', 'Thời gian'],
+                    ...normalizeArray(activitiesCache.recentActivities, { description: 'N/A', date: new Date() }).map(a => [
+                        normalizeObject(a.description, 'N/A'),
+                        formatDate(a.date)
+                    ])
+                ];
+                console.log('recentActivityData:', recentActivityData);
+
+                // Create workbook and append sheets
+                const wb = XLSX.utils.book_new();
+
+                const statsSheet = XLSX.utils.aoa_to_sheet(statsData);
+                statsSheet['!cols'] = [{ wch: 30 }, { wch: 20 }];
+                XLSX.utils.book_append_sheet(wb, statsSheet, 'Thống kê tổng quan');
+
+                const revenueSheet = XLSX.utils.aoa_to_sheet(revenueData);
+                revenueSheet['!cols'] = [{ wch: 15 }, { wch: 20 }];
+                XLSX.utils.book_append_sheet(wb, revenueSheet, 'Doanh thu theo tháng');
+
+                const bookingSheet = XLSX.utils.aoa_to_sheet(bookingData);
+                bookingSheet['!cols'] = [{ wch: 15 }, { wch: 20 }];
+                XLSX.utils.book_append_sheet(wb, bookingSheet, 'Đặt phòng theo tháng');
+
+                const serviceSheet = XLSX.utils.aoa_to_sheet(serviceData);
+                serviceSheet['!cols'] = [{ wch: 30 }, { wch: 15 }];
+                XLSX.utils.book_append_sheet(wb, serviceSheet, 'Dịch vụ phổ biến');
+
+                const recentBookingSheet = XLSX.utils.aoa_to_sheet(recentBookingData);
+                recentBookingSheet['!cols'] = [{ wch: 20 }, { wch: 30 }, { wch: 15 }, { wch: 15 }, { wch: 10 }];
+                XLSX.utils.book_append_sheet(wb, recentBookingSheet, 'Đặt phòng gần đây');
+
+                const recentInvoiceSheet = XLSX.utils.aoa_to_sheet(recentInvoiceData);
+                recentInvoiceSheet['!cols'] = [{ wch: 20 }, { wch: 30 }, { wch: 15 }, { wch: 20 }, { wch: 15 }];
+                XLSX.utils.book_append_sheet(wb, recentInvoiceSheet, 'Hóa đơn gần đây');
+
+                const recentActivitySheet = XLSX.utils.aoa_to_sheet(recentActivityData);
+                recentActivitySheet['!cols'] = [{ wch: 50 }, { wch: 15 }];
+                XLSX.utils.book_append_sheet(wb, recentActivitySheet, 'Hoạt động gần đây');
+
+                // Export the Excel file
+                XLSX.writeFile(wb, 'Host_Dashboard.xlsx');
+                showToast('success', 'Xuất báo cáo Excel thành công');
+            } catch (error) {
+                console.error('Lỗi khi xuất Excel:', error);
+                showToast('error', `Lỗi khi xuất Excel: ${error.message}`);
+            } finally {
+                if (exportBtn) {
+                    exportBtn.querySelector('.loading-spinner')?.classList.remove('active');
+                    exportBtn.disabled = false;
+                }
+            }
+        }
+
+        // Khởi tạo dashboard
+        document.addEventListener('DOMContentLoaded', () => {
+            // Tải danh sách Homestay
+            fetchHomestays();
+
+            // Tải dữ liệu ban đầu
+            fetchDashboardData(currentMonths);
+            fetchRecentActivities();
+
+            // Xử lý sự kiện
+            const homestaySelector = document.getElementById('homestaySelector');
+            if (homestaySelector) {
+                homestaySelector.addEventListener('change', (e) => {
+                    selectedHomestayId = e.target.value;
+                    dashboardCache = { 6: null, 12: null };
+                    activitiesCache = null;
+                    fetchDashboardData(currentMonths, true);
+                    fetchRecentActivities();
+                });
+            }
+
+            const revenue6Months = document.getElementById('revenue6Months');
+            if (revenue6Months) {
+                revenue6Months.addEventListener('click', () => {
+                    currentMonths = 6;
+                    revenue6Months.classList.add('bg-blue-600', 'text-white');
+                    revenue6Months.classList.remove('bg-gray-100', 'text-gray-600', 'dark:bg-gray-700', 'dark:text-gray-300');
+                    document.getElementById('revenue12Months')?.classList.remove('bg-blue-600', 'text-white');
+                    document.getElementById('revenue12Months')?.classList.add('bg-gray-100', 'text-gray-600', 'dark:bg-gray-700', 'dark:text-gray-300');
+                    fetchDashboardData(currentMonths);
+                });
+            }
+
+            const revenue12Months = document.getElementById('revenue12Months');
+            if (revenue12Months) {
+                revenue12Months.addEventListener('click', () => {
+                    currentMonths = 12;
+                    revenue12Months.classList.add('bg-blue-600', 'text-white');
+                    revenue12Months.classList.remove('bg-gray-100', 'text-gray-600', 'dark:bg-gray-700', 'dark:text-gray-300');
+                    document.getElementById('revenue6Months')?.classList.remove('bg-blue-600', 'text-white');
+                    document.getElementById('revenue6Months')?.classList.add('bg-gray-100', 'text-gray-600', 'dark:bg-gray-700', 'dark:text-gray-300');
+                    fetchDashboardData(currentMonths);
+                });
+            }
+
+            const refreshBtn = document.getElementById('refreshBtn');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', () => {
+                    dashboardCache[currentMonths] = null;
+                    activitiesCache = null;
+                    fetchDashboardData(currentMonths, true);
+                    fetchRecentActivities();
+                });
+            }
+
+            const exportExcelBtn = document.getElementById('exportExcelBtn');
+            if (exportExcelBtn) {
+                exportExcelBtn.addEventListener('click', async () => {
+                    if (!dashboardCache[currentMonths] || !activitiesCache) {
+                        showToast('error', 'Đang tải dữ liệu, vui lòng thử lại sau vài giây');
+                        try {
+                            await fetchDashboardData(currentMonths, true);
+                            await fetchRecentActivities();
+                            exportToExcel();
+                        } catch (error) {
+                            console.error('Error during data fetch for export:', error);
+                            showToast('error', 'Không thể tải dữ liệu để xuất Excel');
+                        }
+                    } else {
+                        exportToExcel();
+                    }
+                });
+            }
+
+            // Tải dữ liệu lười với IntersectionObserver
+            const sections = [
+                { element: document.getElementById('homestayServices'), fetch: () => {} },
+                { element: document.getElementById('recentBookings'), fetch: fetchRecentActivities },
+                { element: document.getElementById('recentInvoices'), fetch: () => {} },
+                { element: document.getElementById('recentActivities'), fetch: () => {} }
+            ].filter(section => section.element);
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const section = sections.find(s => s.element === entry.target);
+                        if (section) section.fetch();
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            sections.forEach(section => observer.observe(section.element));
+        });
+    </script>
+}

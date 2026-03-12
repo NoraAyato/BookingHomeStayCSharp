@@ -1,0 +1,290 @@
+﻿<!DOCTYPE html>
+<html lang="vi" class="h-full">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - HOMESTAYPRO</title>
+
+    <!-- Font Awesome (phiên bản 6.4.0) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            600: '#2563eb',
+                        },
+                    },
+                    transitionDuration: {
+                        '200': '200ms',
+                    },
+                },
+            },
+        };
+    </script>
+
+    <!-- jQuery (tải trước để tránh lỗi) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 h-full">
+    <div class="flex h-full overflow-hidden">
+        <!-- Sidebar -->
+        <div class="hidden md:flex md:flex-shrink-0">
+            <div class="flex flex-col w-64 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
+                <!-- Logo và toggle dark mode -->
+                <div class="flex items-center justify-between h-20 px-4 border-b dark:border-gray-700">
+                    <h1 class="text-2xl font-bold text-primary-600 dark:text-primary-400 whitespace-nowrap">
+                        ROSE<span class="text-gray-700 dark:text-gray-300"> HOMESTAY</span>
+                    </h1>
+                    <button id="dark-mode-toggle" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+                        <i class="fas fa-moon dark:hidden"></i>
+                        <i class="fas fa-sun hidden dark:block"></i>
+                    </button>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto" id="sidebar-nav">
+                    @{
+                        var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
+                    }
+                    <!-- Tổng quan -->
+                    <div class="px-3 pt-2 pb-1">
+                        <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tổng quan</h3>
+                    </div>
+
+                    <a asp-area="Host" asp-controller="Dashboard" asp-action="Index" id="dashboard2-link"
+                       class="sidebar-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 relative
+                       @(currentController == "Dashboard" ? "active bg-primary-50 dark:bg-gray-700 text-primary-600 dark:text-primary-400" : "text-gray-600 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-gray-700 hover:text-primary-600 dark:hover:text-primary-400")">
+                        @if (currentController == "Dashboard")
+                        {
+                            <span class="active-indicator absolute left-0 top-0 bottom-0 w-1 bg-primary-600 dark:bg-primary-400 rounded-r"></span>
+                        }
+                        <i class="fas fa-chart-line w-5 mr-3 @(currentController == "Dashboard" ? "text-primary-500 dark:text-primary-400" : "text-gray-400 dark:text-gray-500 group-hover:text-primary-500 dark:group-hover:text-primary-400")"></i>
+                        <span class="truncate">Dashboard</span>
+                    </a>
+
+                    <!-- Quản lý -->
+                    <div class="px-3 pt-4 pb-1">
+                        <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Quản lý</h3>
+                    </div>
+
+                    <a asp-area="Host" asp-controller="Homestay" asp-action="Index" id="homestay-link"
+                       class="sidebar-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 relative
+                       @(currentController == "Homestay" ? "active bg-primary-50 dark:bg-gray-700 text-primary-600 dark:text-primary-400" : "text-gray-600 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-gray-700 hover:text-primary-600 dark:hover:text-primary-400")">
+                        @if (currentController == "Homestay")
+                        {
+                            <span class="active-indicator absolute left-0 top-0 bottom-0 w-1 bg-primary-600 dark:bg-primary-400 rounded-r"></span>
+                        }
+                        <i class="fas fa-home w-5 mr-3 @(currentController == "Homestay" ? "text-primary-500 dark:text-primary-400" : "text-gray-400 dark:text-gray-500 group-hover:text-primary-500 dark:group-hover:text-primary-400")"></i>
+                        <span class="truncate">Homestay</span>
+                    </a>
+
+                    <a asp-area="Host" asp-controller="Booking" asp-action="Index" id="booking-link"
+                       class="sidebar-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 relative
+                       @(currentController == "Booking" ? "active bg-primary-50 dark:bg-gray-700 text-primary-600 dark:text-primary-400" : "text-gray-600 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-gray-700 hover:text-primary-600 dark:hover:text-primary-400")">
+                        @if (currentController == "Booking")
+                        {
+                            <span class="active-indicator absolute left-0 top-0 bottom-0 w-1 bg-primary-600 dark:bg-primary-400 rounded-r"></span>
+                        }
+                        <i class="fas fa-calendar-check w-5 mr-3 @(currentController == "Booking" ? "text-primary-500 dark:text-primary-400" : "text-gray-400 dark:text-gray-500 group-hover:text-primary-500 dark:group-hover:text-primary-400")"></i>
+                        <span class="truncate">Đặt phòng</span>
+                    </a>
+
+                    <!-- Hợp đồng -->
+                    <div class="px-3 pt-4 pb-1">
+                        <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Hợp đồng</h3>
+                    </div>
+                    <a asp-area="Host" asp-controller="Contract" asp-action="Index" id="contract-link"
+                       class="sidebar-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 relative
+                       @(currentController == "Contract" ? "active bg-primary-50 dark:bg-gray-700 text-primary-600 dark:text-primary-400" : "text-gray-600 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-gray-700 hover:text-primary-600 dark:hover:text-primary-400")">
+                        @if (currentController == "Contract")
+                        {
+                            <span class="active-indicator absolute left-0 top-0 bottom-0 w-1 bg-primary-600 dark:bg-primary-400 rounded-r"></span>
+                        }
+                        <i class="fas fa-file-contract w-5 mr-3 @(currentController == "Contract" ? "text-primary-500 dark:text-primary-400" : "text-gray-400 dark:text-gray-500 group-hover:text-primary-500 dark:group-hover:text-primary-400")"></i>
+                        <span class="truncate">Hợp đồng</span>
+                    </a>
+
+                    <!-- Khác -->
+                    <div class="px-3 pt-4 pb-1">
+                        <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Khác</h3>
+                    </div>
+
+                    <a asp-area="Host" asp-controller="Reviews" asp-action="Index" id="reviews-link"
+                       class="sidebar-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 relative
+                       @(currentController == "Reviews" ? "active bg-primary-50 dark:bg-gray-700 text-primary-600 dark:text-primary-400" : "text-gray-600 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-gray-700 hover:text-primary-600 dark:hover:text-primary-400")">
+                        @if (currentController == "Reviews")
+                        {
+                            <span class="active-indicator absolute left-0 top-0 bottom-0 w-1 bg-primary-600 dark:bg-primary-400 rounded-r"></span>
+                        }
+                        <i class="fas fa-star w-5 mr-3 @(currentController == "Reviews" ? "text-primary-500 dark:text-primary-400" : "text-gray-400 dark:text-gray-500 group-hover:text-primary-500 dark:group-hover:text-primary-400")"></i>
+                        <span class="truncate">Đánh Giá</span>
+                    </a>
+
+                    <a asp-area="Host" asp-controller="Promotion" asp-action="Index" id="promotion-link"
+                       class="sidebar-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 relative
+                       @(currentController == "Promotion" ? "active bg-primary-50 dark:bg-gray-700 text-primary-600 dark:text-primary-400" : "text-gray-600 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-gray-700 hover:text-primary-600 dark:hover:text-primary-400")">
+                        @if (currentController == "Promotion")
+                        {
+                            <span class="active-indicator absolute left-0 top-0 bottom-0 w-1 bg-primary-600 dark:bg-primary-400 rounded-r"></span>
+                        }
+                        <i class="fas fa-tag w-5 mr-3 @(currentController == "Promotion" ? "text-primary-500 dark:text-primary-400" : "text-gray-400 dark:text-gray-500 group-hover:text-primary-500 dark:group-hover:text-primary-400")"></i>
+                        <span class="truncate">Khuyến mãi</span>
+                    </a>
+                </nav>
+
+                <!-- User profile -->
+                @using Microsoft.AspNetCore.Identity
+                @inject UserManager<ApplicationUser> UserManager
+                <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center">
+                        @{
+                            var user = await UserManager.GetUserAsync(User);
+                            var profilePicture = user?.ProfilePicture ?? "/img/default-avatar.jpg";
+                            var userName = user?.UserName ?? "Host";
+                            var roles = user != null ? await UserManager.GetRolesAsync(user) : new List<string>();
+                            var roleDisplay = roles.Any() ? roles.First() : "Quản trị viên";
+                        }
+                        <img class="w-10 h-10 rounded-full" src="@profilePicture" alt="User avatar">
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300">@userName</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">@roleDisplay</p>
+                        </div>
+                    </div>
+                    <!-- Logout button -->
+                    <form asp-area="default" asp-controller="Account" asp-action="Logout" method="post">
+                        <button type="submit"
+                                class="mt-3 w-full flex items-center justify-start px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-200">
+                            <i class="fas fa-sign-out-alt w-5 mr-3 text-gray-400 dark:text-gray-500"></i>
+                            <span>Đăng xuất</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-auto">
+            <!-- Mobile header -->
+            <div class="md:hidden flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                <button id="mobile-menu-button" class="text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 class="text-lg font-semibold text-gray-800 dark:text-gray-200">HOMESTAYPRO</h1>
+                <button id="mobile-dark-mode-toggle" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <i class="fas fa-moon dark:hidden"></i>
+                    <i class="fas fa-sun hidden dark:block"></i>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <main class="flex-1 p-4 md:p-6 bg-white dark:bg-gray-800">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+    <script>
+        (function($) {
+            document.addEventListener('DOMContentLoaded', function() {
+                // Dark mode toggle
+                function toggleDarkMode() {
+                    const isDark = document.documentElement.classList.toggle('dark');
+                    localStorage.setItem('darkMode', isDark);
+                }
+
+                // Check for saved dark mode preference
+                if (localStorage.getItem('darkMode') === 'true') {
+                    document.documentElement.classList.add('dark');
+                } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.documentElement.classList.add('dark');
+                }
+
+                // Set up dark mode toggle buttons
+                document.getElementById('dark-mode-toggle')?.addEventListener('click', toggleDarkMode);
+                document.getElementById('mobile-dark-mode-toggle')?.addEventListener('click', toggleDarkMode);
+
+                // Mobile menu toggle
+                document.getElementById('mobile-menu-button')?.addEventListener('click', function() {
+                    document.querySelector('.md\\:flex').classList.toggle('hidden');
+                });
+
+                // Lấy tất cả các link trong sidebar
+                const sidebarLinks = document.querySelectorAll('.sidebar-link');
+
+                // Mặc định active Dashboard nếu không có controller nào được chọn
+        @if (currentController == null)
+        {
+            @:activateLink(document.getElementById('dashboard2-link'));
+        }
+
+                // Xử lý click cho các link
+                sidebarLinks.forEach(link => {
+                    link.addEventListener('click', function(e) {
+                        // Nếu click vào link đã active thì không làm gì
+                        if (this.classList.contains('active')) {
+                            e.preventDefault();
+                            return;
+                        }
+
+                        // Xóa active state của tất cả các link
+                        sidebarLinks.forEach(l => {
+                            deactivateLink(l);
+                        });
+
+                        // Thêm active state cho link được click
+                        activateLink(this);
+                    });
+                });
+
+                // Hàm kích hoạt active state cho link
+                function activateLink(link) {
+                    link.classList.add('active', 'bg-primary-50', 'dark:bg-gray-700', 'text-primary-600', 'dark:text-primary-400');
+                    link.classList.remove('text-gray-600', 'dark:text-gray-300', 'hover:bg-primary-50', 'dark:hover:bg-gray-700', 'hover:text-primary-600', 'dark:hover:text-primary-400');
+
+                    // Thêm thanh indicator
+                    const indicator = document.createElement('span');
+                    indicator.className = 'active-indicator absolute left-0 top-0 bottom-0 w-1 bg-primary-600 dark:bg-primary-400 rounded-r';
+                    link.prepend(indicator);
+
+                    // Đổi màu icon
+                    const icon = link.querySelector('i');
+                    if (icon) {
+                        icon.classList.add('text-primary-500', 'dark:text-primary-400');
+                        icon.classList.remove('text-gray-400', 'dark:text-gray-500', 'group-hover:text-primary-500', 'dark:group-hover:text-primary-400');
+                    }
+                }
+
+                // Hàm xóa active state
+                function deactivateLink(link) {
+                    link.classList.remove('active', 'bg-primary-50', 'dark:bg-gray-700', 'text-primary-600', 'dark:text-primary-400');
+                    link.classList.add('text-gray-600', 'dark:text-gray-300', 'hover:bg-primary-50', 'dark:hover:bg-gray-700', 'hover:text-primary-600', 'dark:hover:text-primary-400');
+
+                    // Xóa thanh indicator
+                    const indicator = link.querySelector('.active-indicator');
+                    if (indicator) {
+                        link.removeChild(indicator);
+                    }
+
+                    // Đổi màu icon về mặc định
+                    const icon = link.querySelector('i');
+                    if (icon) {
+                        icon.classList.remove('text-primary-500', 'dark:text-primary-400');
+                        icon.classList.add('text-gray-400', 'dark:text-gray-500', 'group-hover:text-primary-500', 'dark:group-hover:text-primary-400');
+                    }
+                }
+            });
+        })(jQuery);
+    </script>
+</body>
+</html>

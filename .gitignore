@@ -1,0 +1,44 @@
+# Visual Studio
+.vs/
+# Build results
+[Dd]ebug/
+[Rr]elease/
+[Bb]in/
+[Oo]bj/
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+# Auto-generated files
+Generated_Code/
+# NuGet packages
+*.nupkg
+# Package directories
+packages/
+# Windows image file caches
+Thumbs.db
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+# DotCover
+*.dotCover
+# Rider
+.idea/
+*.sln.iml
+# Logs
+*.log
+# Others
+*.DS_Store
+*.swp
+*.bak
+*.tmp
+*.orig
+# Publish
+publish/
+# Test results
+TestResults/
+# Entity Framework
+Migrations/
+# Local secrets
+secrets.json
+appsettings.Development.json

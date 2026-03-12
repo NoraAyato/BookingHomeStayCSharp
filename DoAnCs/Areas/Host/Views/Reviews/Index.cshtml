@@ -1,0 +1,913 @@
+﻿@model dynamic
+@{
+    ViewData["Title"] = "Quản lý Đánh giá Homestay";
+}
+
+<!-- CSRF Token -->
+@Html.AntiForgeryToken()
+
+
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+    <div>
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-200">Quản lý Đánh giá</h1>
+        <div class="flex items-center mt-2 text-sm text-gray-600 dark:text-gray-400">
+            <i class="fas fa-home mr-2 text-primary-500"></i>
+            <span>Xem và quản lý tất cả đánh giá về homestay của bạn</span>
+        </div>
+    </div>
+    <div class="flex items-center gap-3">
+        <button onclick="loadReviews()" class="flex items-center px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200">
+            <i class="fas fa-sync-alt mr-2 text-gray-600 dark:text-gray-300"></i>
+            <span class="text-sm font-medium">Làm mới</span>
+        </button>
+    </div>
+</div>
+
+<!-- Stats Overview -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
+    <!-- Total Reviews Card -->
+    <div class="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Tổng đánh giá</p>
+                <h3 class="text-2xl font-bold text-gray-800 dark:text-white mt-1" id="totalReviews">--</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1"><span id="reviewsChange" class="font-semibold">0%</span> so với tháng trước</p>
+            </div>
+            <div class="p-3 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                <i class="fas fa-comments text-xl"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5-Star Reviews Card -->
+    <div class="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Đánh giá 5 sao</p>
+                <h3 class="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1" id="fiveStarReviews">--</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1"><span id="fiveStarChange" class="font-semibold">0%</span> tổng đánh giá</p>
+            </div>
+            <div class="p-3 rounded-full bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400">
+                <i class="fas fa-star text-xl"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Low Reviews Card -->
+    <div class="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Đánh giá 1-2 sao</p>
+                <h3 class="text-2xl font-bold text-rose-600 dark:text-rose-400 mt-1" id="lowStarReviews">--</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1"><span id="lowStarChange" class="font-semibold">0%</span> tổng đánh giá</p>
+            </div>
+            <div class="p-3 rounded-full bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400">
+                <i class="fas fa-star-half-alt text-xl"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Average Rating Card -->
+    <div class="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Đánh giá trung bình</p>
+                <h3 class="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1" id="avgRating">--</h3>
+                <div class="flex items-center mt-1">
+                    <div class="star-rating-container mr-2" id="avgRatingStars"></div>
+                    <span class="text-xs text-gray-500 dark:text-gray-400" id="avgRatingText">/5</span>
+                </div>
+            </div>
+            <div class="p-3 rounded-full bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
+                <i class="fas fa-chart-line text-xl"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters Card -->
+<div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 mb-8">
+    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-5 flex items-center">
+        <i class="fas fa-sliders-h mr-2 text-primary-600"></i>
+        Bộ lọc đánh giá
+    </h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+        <!-- Search Input -->
+        <div>
+            <label for="searchInput" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tìm kiếm</label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 dark:text-gray-500">
+                    <i class="fas fa-search"></i>
+                </div>
+                <input type="text" id="searchInput" class="block w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500" placeholder="Tìm theo bình luận...">
+            </div>
+        </div>
+
+        <!-- Date Range Picker -->
+        <div>
+            <label for="dateRangePicker" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Khoảng thời gian</label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 dark:text-gray-500">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <input type="text" id="dateRangePicker" class="block w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500" placeholder="Chọn khoảng ngày">
+            </div>
+        </div>
+
+        <!-- Rating Range -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phạm vi đánh giá</label>
+            <div class="flex items-center space-x-4">
+                <div class="flex-1">
+                    <div class="flex items-center justify-between mb-1 text-xs text-gray-500 dark:text-gray-400">
+                        <span>Từ</span>
+                        <span id="minRatingValue" class="font-medium text-primary-600 dark:text-primary-400">1</span>
+                    </div>
+                    <input type="range" id="minRatingFilter" min="1" max="5" step="1" value="1" class="w-full h-1.5 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary-600">
+                </div>
+                <div class="flex-1">
+                    <div class="flex items-center justify-between mb-1 text-xs text-gray-500 dark:text-gray-400">
+                        <span>Đến</span>
+                        <span id="maxRatingValue" class="font-medium text-primary-600 dark:text-primary-400">5</span>
+                    </div>
+                    <input type="range" id="maxRatingFilter" min="1" max="5" step="1" value="5" class="w-full h-1.5 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary-600">
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Actions -->
+        <div class="flex items-end space-x-3">
+            <button onclick="resetFilters()" class="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200">
+                <i class="fas fa-undo mr-2"></i>Đặt lại
+            </button>
+            <button onclick="applyFilters()" class="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors duration-200">
+                <i class="fas fa-check mr-2"></i>Áp dụng
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Reviews Table Card -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mb-8">
+    <!-- Table Header -->
+    <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center">
+            <i class="fas fa-list-ol mr-2 text-primary-600"></i>
+            Danh sách đánh giá
+        </h3>
+        <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+            <i class="fas fa-database mr-2"></i>
+            <span>Tổng cộng <span id="totalReviewsCount" class="font-medium text-gray-700 dark:text-gray-300">0</span> đánh giá</span>
+        </div>
+    </div>
+
+    <!-- Table Container -->
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Mã phiếu</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Khách hàng</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Homestay</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Bình luận</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Đánh giá</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ngày</th>
+                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody id="reviewsTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <!-- Data will be loaded here -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="p-8 text-center">
+        <div class="inline-flex items-center">
+            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-primary-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span class="text-gray-600 dark:text-gray-400">Đang tải dữ liệu đánh giá...</span>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden p-8 text-center">
+        <div class="inline-flex flex-col items-center justify-center max-w-xs mx-auto">
+            <div class="p-4 bg-gray-100 dark:bg-gray-700 rounded-full mb-4">
+                <i class="fas fa-comment-slash text-2xl text-gray-400 dark:text-gray-500"></i>
+            </div>
+            <h4 class="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">Không tìm thấy đánh giá</h4>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Không có đánh giá nào phù hợp với tiêu chí tìm kiếm của bạn</p>
+            <button onclick="resetFilters()" class="px-4 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 transition-colors duration-200">
+                <i class="fas fa-redo mr-2"></i>Đặt lại bộ lọc
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Pagination -->
+<div id="pagination" class="flex flex-col sm:flex-row items-center justify-between gap-4 px-2 mb-8">
+    <div class="text-sm text-gray-500 dark:text-gray-400" id="paginationInfo"></div>
+    <div class="flex gap-2" id="paginationButtons"></div>
+</div>
+
+<!-- Review Details Modal -->
+<div id="detailsModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 px-4 py-6 hidden transition-opacity duration-300">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-95 opacity-0" id="modalContent">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center sticky top-0 bg-white dark:bg-gray-800 z-10">
+            <h2 class="text-xl font-bold text-gray-800 dark:text-gray-200 flex items-center">
+                <i class="fas fa-info-circle text-primary-600 mr-2"></i>
+                Chi tiết đánh giá
+            </h2>
+            <button onclick="closeModal('detailsModal')" class="text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 transition-colors duration-200">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <div id="detailsContent" class="space-y-6">
+                <!-- Details will be loaded here -->
+            </div>
+            <div class="mt-6 flex justify-end border-t border-gray-100 dark:border-gray-700 pt-6">
+                <button onclick="closeModal('detailsModal')" class="px-5 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200">
+                    <i class="fas fa-times mr-2"></i>Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.9/dist/flatpickr.min.css" rel="stylesheet">
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+
+        .dark ::-webkit-scrollbar-track {
+            background: #374151;
+        }
+
+        .dark ::-webkit-scrollbar-thumb {
+            background: #4b5563;
+        }
+
+        /* Rating stars */
+        .star-rating {
+            color: #fbbf24;
+            font-size: 1rem;
+        }
+
+        .star-empty {
+            color: #d1d5db;
+        }
+
+        .dark .star-empty {
+            color: #4b5563;
+        }
+
+        /* Rating badges */
+        .rating-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .rating-5, .rating-4 {
+            background-color: rgba(234, 179, 8, 0.1);
+            color: #b45309;
+        }
+
+        .dark .rating-5, .dark .rating-4 {
+            background-color: rgba(234, 179, 8, 0.2);
+            color: #fcd34d;
+        }
+
+        .rating-3 {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #047857;
+        }
+
+        .dark .rating-3 {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+        }
+
+        .rating-2, .rating-1 {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #b91c1c;
+        }
+
+        .dark .rating-2, .dark .rating-1 {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        /* Comment text */
+        .comment-text {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.4;
+        }
+
+        /* Table row hover effect */
+        tbody tr {
+            transition: background-color 0.2s;
+        }
+
+            tbody tr:hover {
+                background-color: #f9fafb !important;
+            }
+
+        .dark tbody tr:hover {
+            background-color: #1f2937 !important;
+        }
+
+        /* Action buttons */
+        .action-btn {
+            transition: all 0.2s;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+            .action-btn:hover {
+                transform: translateY(-1px);
+                background-color: rgba(14, 165, 233, 0.1);
+            }
+
+        .dark .action-btn:hover {
+            background-color: rgba(14, 165, 233, 0.2);
+        }
+
+        /* Modal animation */
+        #modalContent.show {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        /* Card hover effect */
+        .hover-shadow {
+            transition: box-shadow 0.3s ease;
+        }
+
+            .hover-shadow:hover {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+
+        .dark .hover-shadow:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.25), 0 2px 4px -1px rgba(0, 0, 0, 0.15);
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.9/dist/flatpickr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.9/dist/l10n/vn.js"></script>
+
+    <script>
+        // Global variables
+        let currentPage = 1;
+        let totalPages = 1;
+        const pageSize = 10;
+        let totalItems = 0;
+
+        // Modal functions with animations
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('modalContent').classList.add('show');
+            }, 10);
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            document.getElementById('modalContent').classList.remove('show');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }, 300);
+        }
+
+        // Load reviews with filters
+        function loadReviews() {
+            const searchString = document.getElementById('searchInput').value;
+            const dateRange = document.getElementById('dateRangePicker').value;
+            const minRating = document.getElementById('minRatingFilter').value;
+            const maxRating = document.getElementById('maxRatingFilter').value;
+
+            document.getElementById('loadingState').classList.remove('hidden');
+            document.getElementById('emptyState').classList.add('hidden');
+            document.getElementById('reviewsTableBody').innerHTML = '';
+
+            fetch(`/Host/Reviews/GetReviews?searchString=${encodeURIComponent(searchString)}&dateRange=${encodeURIComponent(dateRange)}&minRating=${minRating}&maxRating=${maxRating}&page=${currentPage}&pageSize=${pageSize}`)
+                .then(response => {
+                    if (!navigator.onLine) {
+                        throw new Error('Không có kết nối mạng');
+                    }
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data || typeof data !== 'object') {
+                        throw new Error('Dữ liệu trả về không hợp lệ');
+                    }
+                    if (data.success) {
+                        totalPages = data.totalPages || 1;
+                        totalItems = data.totalItems;
+                        document.getElementById('totalReviewsCount').textContent = totalItems;
+                        renderReviews(data.data);
+                        renderPagination(data.totalPages, data.currentPage);
+                        updateReviewStats(data.stats);
+                        updateLastMonthStats(data.stats.lastMonthTotal || 0);
+                    } else {
+                        showToast(data.message || 'Không thể tải danh sách đánh giá', false);
+                        document.getElementById('emptyState').classList.remove('hidden');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading reviews:', error);
+                    showToast('Lỗi khi tải danh sách đánh giá: ' + error.message, false);
+                    document.getElementById('emptyState').classList.remove('hidden');
+                })
+                .finally(() => {
+                    document.getElementById('loadingState').classList.add('hidden');
+                });
+        }
+
+        // Apply filters with reset to page 1
+        function applyFilters() {
+            currentPage = 1;
+            loadReviews();
+        }
+
+        // Reset all filters
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('dateRangePicker').value = '';
+            document.getElementById('minRatingFilter').value = 1;
+            document.getElementById('maxRatingFilter').value = 5;
+            document.getElementById('minRatingValue').textContent = '1';
+            document.getElementById('maxRatingValue').textContent = '5';
+            currentPage = 1;
+            loadReviews();
+        }
+
+        // Render reviews to table
+        function renderReviews(reviews) {
+            const tableBody = document.getElementById('reviewsTableBody');
+
+            if (!reviews || reviews.length === 0) {
+                document.getElementById('emptyState').classList.remove('hidden');
+                return;
+            }
+
+            tableBody.innerHTML = reviews.map(review => {
+                const ratingClass = `rating-${review.rating}`;
+                const stars = Array(5).fill(0).map((_, i) =>
+                    i < review.rating
+                        ? '<i class="fas fa-star star-rating"></i>'
+                        : '<i class="far fa-star star-empty"></i>'
+                ).join('');
+
+                return `
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-200">${review.iD_DG || '--'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${review.phieuDatPhong || '--'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-600 overflow-hidden">
+                                    ${review.userAvatar ?
+                                        `<img src="${review.userAvatar}" alt="${review.nguoiDung}" class="h-full w-full object-cover" loading="lazy">` :
+                                        `<div class="h-full w-full flex items-center justify-center text-gray-400"><i class="fas fa-user"></i></div>`}
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-gray-900 dark:text-gray-200 font-medium">${review.nguoiDung || 'Khách'}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${review.homestay}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                            <div class="comment-text max-w-xs">${review.binhLuan || 'Không có bình luận'}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <span class="rating-badge ${ratingClass} mr-2 flex items-center justify-center">${review.rating}</span>
+                                <div class="star-rating-container">${stars}</div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${review.ngayDanhGia}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="flex justify-end space-x-1">
+                                <button onclick="showReviewDetails('${encodeURIComponent(review.iD_DG)}')"
+                                    class="action-btn text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300" title="Xem chi tiết">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button onclick="deleteReview('${encodeURIComponent(review.iD_DG)}')"
+                                    class="action-btn text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300" title="Xóa đánh giá">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Update review stats
+        function updateReviewStats(stats) {
+            const total = totalItems;
+            const fiveStar = stats.fiveStarCount;
+            const lowStar = stats.lowStarCount;
+            const avgRating = parseFloat(stats.avgRating) || 0;
+
+            document.getElementById('totalReviews').textContent = total;
+            document.getElementById('fiveStarReviews').textContent = fiveStar;
+            document.getElementById('lowStarReviews').textContent = lowStar;
+            document.getElementById('avgRating').textContent = avgRating.toFixed(1);
+
+            const avgRatingStars = document.getElementById('avgRatingStars');
+            avgRatingStars.innerHTML = Array(5).fill(0).map((_, i) =>
+                i < Math.floor(avgRating)
+                    ? '<i class="fas fa-star star-rating"></i>'
+                    : (i < avgRating ? '<i class="fas fa-star-half-alt star-rating"></i>' : '<i class="far fa-star star-empty"></i>')
+            ).join('');
+
+            document.getElementById('fiveStarChange').textContent = total > 0 ? Math.round((fiveStar / total) * 100) + '%' : '0%';
+            document.getElementById('lowStarChange').textContent = total > 0 ? Math.round((lowStar / total) * 100) + '%' : '0%';
+        }
+
+        // Update last month comparison stats
+        function updateLastMonthStats(lastMonthTotal) {
+            const currentTotal = totalItems;
+            let change = 0;
+
+            if (lastMonthTotal > 0) {
+                change = Math.round(((currentTotal - lastMonthTotal) / lastMonthTotal) * 100);
+            } else if (currentTotal > 0) {
+                change = 100;
+            }
+
+            const changeElement = document.getElementById('reviewsChange');
+            changeElement.textContent = change + '%';
+
+            if (change > 0) {
+                changeElement.innerHTML = '<i class="fas fa-arrow-up mr-1"></i>' + change + '%';
+                changeElement.classList.add('text-green-600', 'dark:text-green-400');
+                changeElement.classList.remove('text-red-600', 'dark:text-red-400', 'text-gray-500', 'dark:text-gray-400');
+            } else if (change < 0) {
+                changeElement.innerHTML = '<i class="fas fa-arrow-down mr-1"></i>' + Math.abs(change) + '%';
+                changeElement.classList.add('text-red-600', 'dark:text-red-400');
+                changeElement.classList.remove('text-green-600', 'dark:text-green-400', 'text-gray-500', 'dark:text-gray-400');
+            } else {
+                changeElement.innerHTML = '0%';
+                changeElement.classList.add('text-gray-500', 'dark:text-gray-400');
+                changeElement.classList.remove('text-green-600', 'dark:text-green-400', 'text-red-600', 'dark:text-red-400');
+            }
+        }
+
+        // Render pagination
+        function renderPagination(totalPagesParam, currentPage) {
+            totalPages = totalPagesParam || 1;
+            const paginationButtons = document.getElementById('paginationButtons');
+            const paginationInfo = document.getElementById('paginationInfo');
+
+            if (totalPages <= 1) {
+                paginationButtons.innerHTML = '';
+                paginationInfo.textContent = '';
+                return;
+            }
+
+            const startItem = (currentPage - 1) * pageSize + 1;
+            const endItem = Math.min(currentPage * pageSize, totalItems);
+            paginationInfo.textContent = `Hiển thị ${startItem}-${endItem} của ${totalItems}`;
+
+            let buttons = [];
+            const maxVisiblePages = 5;
+
+            buttons.push(`
+                <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}
+                    class="inline-flex items-center px-3 py-1.5 rounded-md border ${currentPage === 1 ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600'}">
+                    <i class="fas fa-chevron-left mr-1 text-xs"></i>
+                    <span>Trước</span>
+                </button>
+            `);
+
+            if (currentPage > Math.floor(maxVisiblePages/2) + 1) {
+                buttons.push(`
+                    <button onclick="changePage(1)" class="inline-flex items-center justify-center px-3.5 py-1.5 rounded-md border bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600">1</button>
+                `);
+                if (currentPage > Math.floor(maxVisiblePages/2) + 2) {
+                    buttons.push('<span class="inline-flex items-center px-2 py-1.5 text-gray-500 dark:text-gray-400">...</span>');
+                }
+            }
+
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages/2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                buttons.push(`
+                    <button onclick="changePage(${i})"
+                        class="inline-flex items-center justify-center px-3.5 py-1.5 rounded-md border ${currentPage === i ? 'bg-primary-600 text-white' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600'}">
+                        ${i}
+                    </button>
+                `);
+            }
+
+            if (currentPage < totalPages - Math.floor(maxVisiblePages/2)) {
+                if (currentPage < totalPages - Math.floor(maxVisiblePages/2) - 1) {
+                    buttons.push('<span class="inline-flex items-center px-2 py-1.5 text-gray-500 dark:text-gray-400">...</span>');
+                }
+                buttons.push(`
+                    <button onclick="changePage(${totalPages})" class="inline-flex items-center justify-center px-3.5 py-1.5 rounded-md border bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600">${totalPages}</button>
+                `);
+            }
+
+            buttons.push(`
+                <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}
+                    class="inline-flex items-center px-3 py-1.5 rounded-md border ${currentPage === totalPages ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600'}">
+                    <span>Sau</span>
+                    <i class="fas fa-chevron-right ml-1 text-xs"></i>
+                </button>
+            `);
+
+            paginationButtons.innerHTML = buttons.join('');
+        }
+
+        // Change page
+        function changePage(page) {
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            loadReviews();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Show toast notification
+        function showToast(message, isSuccess) {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                }
+            });
+
+            Toast.fire({
+                icon: isSuccess ? 'success' : 'error',
+                title: message,
+                background: isSuccess ? 'var(--tw-gradient-to)' : '#fef2f2',
+                color: isSuccess ? '#fff' : '#b91c1c'
+            });
+        }
+
+        // Show review details
+        function showReviewDetails(idDG) {
+            idDG = decodeURIComponent(idDG);
+            if (!idDG || typeof idDG !== 'string' || idDG.trim() === '') {
+                showToast('ID đánh giá không hợp lệ', false);
+                return;
+            }
+
+            fetch(`/Host/Reviews/GetReview/${encodeURIComponent(idDG)}`)
+                .then(response => {
+                    if (!navigator.onLine) {
+                        throw new Error('Không có kết nối mạng');
+                    }
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success && data.data) {
+                        renderReviewDetails(data.data);
+                        openModal('detailsModal');
+                    } else {
+                        showToast(data.message || 'Không thể tải chi tiết đánh giá', false);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading review details:', error);
+                    showToast('Lỗi khi tải chi tiết đánh giá: ' + error.message, false);
+                });
+        }
+
+        // Render review details
+        function renderReviewDetails(review) {
+            const detailsContent = document.getElementById('detailsContent');
+            const stars = Array(5).fill(0).map((_, i) =>
+                i < review.rating
+                    ? '<i class="fas fa-star text-yellow-500"></i>'
+                    : '<i class="far fa-star text-gray-300 dark:text-gray-500"></i>'
+            ).join('');
+
+            detailsContent.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">ID Đánh giá</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-200">${review.iD_DG || '--'}</p>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Mã phiếu đặt phòng</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-200">${review.phieuDatPhong || '--'}</p>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Ngày đánh giá</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-200">${review.ngayDanhGia}</p>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Homestay</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-200">${review.homestay}</p>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Khách hàng</p>
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-600 overflow-hidden">
+                            ${review.userAvatar ?
+                                `<img src="${review.userAvatar}" alt="${review.nguoiDung}" class="h-full w-full object-cover" loading="lazy">` :
+                                `<div class="h-full w-full flex items-center justify-center text-gray-400"><i class="fas fa-user text-xl"></i></div>`}
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-gray-900 dark:text-gray-200 font-medium">${review.nguoiDung || 'Khách'}</p>
+                            ${review.userEmail ? `<p class="text-sm text-gray-500 dark:text-gray-400">${review.userEmail}</p>` : ''}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Đánh giá</p>
+                    <div class="flex items-center">
+                        <div class="text-xl mr-3">${stars}</div>
+                        <span class="text-lg font-medium text-gray-800 dark:text-gray-200">${review.rating}/5</span>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Bình luận</p>
+                    <div class="bg-white dark:bg-gray-800 p-3 rounded-md">
+                        <p class="text-gray-800 dark:text-gray-200">${review.binhLuan || 'Không có bình luận'}</p>
+                    </div>
+                </div>
+
+                ${review.hinhAnh ? `
+                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Hình ảnh đính kèm</p>
+                    <div class="flex justify-center">
+                        <img src="${review.hinhAnh}" alt="Hình ảnh đánh giá" class="max-h-64 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600" loading="lazy">
+                    </div>
+                </div>
+                ` : ''}
+            `;
+        }
+
+        // Delete review confirmation
+        function deleteReview(idDG) {
+            idDG = decodeURIComponent(idDG);
+            if (!idDG || typeof idDG !== 'string' || idDG.trim() === '') {
+                showToast('ID đánh giá không hợp lệ', false);
+                return;
+            }
+
+            Swal.fire({
+                title: 'Xác nhận xóa đánh giá',
+                text: 'Bạn có chắc chắn muốn xóa đánh giá này? Thao tác này không thể hoàn tác.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Xóa',
+                cancelButtonText: 'Hủy',
+                background: 'var(--tw-gradient-to)',
+                color: '#fff'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/Host/Reviews/DeleteReview/${encodeURIComponent(idDG)}`, {
+                        method: 'POST',
+                        headers: {
+                            'RequestVerificationToken': document.getElementById('csrfToken').value
+                        }
+                    })
+                    .then(response => {
+                        if (!navigator.onLine) {
+                            throw new Error('Không có kết nối mạng');
+                        }
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            showToast('Đã xóa đánh giá thành công', true);
+                            loadReviews();
+                        } else {
+                            showToast(data.message || 'Không thể xóa đánh giá', false);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error deleting review:', error);
+                        showToast('Lỗi khi xóa đánh giá: ' + error.message, false);
+                    });
+                }
+            });
+        }
+
+        // Initialize range inputs
+        function initRangeInputs() {
+            const minRatingInput = document.getElementById('minRatingFilter');
+            const maxRatingInput = document.getElementById('maxRatingFilter');
+            const minRatingValue = document.getElementById('minRatingValue');
+            const maxRatingValue = document.getElementById('maxRatingValue');
+
+            minRatingInput.addEventListener('input', () => {
+                minRatingValue.textContent = minRatingInput.value;
+                if (parseInt(minRatingInput.value) > parseInt(maxRatingInput.value)) {
+                    maxRatingInput.value = minRatingInput.value;
+                    maxRatingValue.textContent = minRatingInput.value;
+                }
+            });
+
+            maxRatingInput.addEventListener('input', () => {
+                maxRatingValue.textContent = maxRatingInput.value;
+                if (parseInt(maxRatingInput.value) < parseInt(minRatingInput.value)) {
+                    minRatingInput.value = maxRatingInput.value;
+                    minRatingValue.textContent = maxRatingInput.value;
+                }
+            });
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+            flatpickr('#dateRangePicker', {
+                mode: 'range',
+                dateFormat: 'Y-m-d',
+                altInput: true,
+                altFormat: 'd/m/Y',
+                allowInput: true,
+                locale: {
+                    rangeSeparator: ' to '
+                },
+                onChange: function(selectedDates, dateStr) {
+                    console.log(`Selected dateRange: ${dateStr}`);
+                    if (selectedDates.length === 2) {
+                        currentPage = 1;
+                        loadReviews();
+                    }
+                }
+            });
+
+            let searchTimer;
+            document.getElementById('searchInput').addEventListener('input', () => {
+                clearTimeout(searchTimer);
+                searchTimer = setTimeout(() => {
+                    currentPage = 1;
+                    loadReviews();
+                }, 500);
+            });
+
+            initRangeInputs();
+            loadReviews();
+        });
+    </script>
+}

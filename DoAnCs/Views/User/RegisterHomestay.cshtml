@@ -1,0 +1,410 @@
+﻿@model DoAnCs.Models.ViewModels.RegisterHomestayViewModel
+@{
+    ViewData["Title"] = "Đăng ký làm nhà cung cấp homestay";
+}
+
+<div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8" data-aos="fade-up" data-aos-duration="800">
+    <h1 class="text-3xl font-bold text-gray-900 font-lora text-center mb-8 bg-gradient-to-r from-rose-600 to-rose-400 bg-clip-text text-transparent animate-pulse-slow">
+        Đăng ký làm nhà cung cấp homestay
+    </h1>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Form đăng ký -->
+        <div>
+            <form id="registerHomestayForm" enctype="multipart/form-data" class="space-y-6 bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-rose-100">
+                @Html.AntiForgeryToken()
+
+                <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
+                    <!-- Tên homestay -->
+                    <div class="sm:col-span-1">
+                        <label asp-for="Ten_Homestay" class="block text-sm font-medium text-gray-700 mb-1">Tên homestay</label>
+                        <input asp-for="Ten_Homestay" class="block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all duration-200 px-4 py-2" />
+                        <span asp-validation-for="Ten_Homestay" class="text-red-500 text-xs"></span>
+                    </div>
+
+                    <!-- Địa chỉ -->
+                    <div class="sm:col-span-1">
+                        <label asp-for="DiaChi" class="block text-sm font-medium text-gray-700 mb-1">Địa chỉ</label>
+                        <input asp-for="DiaChi" class="block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all duration-200 px-4 py-2" />
+                        <span asp-validation-for="DiaChi" class="text-red-500 text-xs"></span>
+                    </div>
+
+                    <!-- Giá mỗi đêm -->
+                    <div class="sm:col-span-1">
+                        <label asp-for="PricePerNight" class="block text-sm font-medium text-gray-700 mb-1">Giá mỗi đêm (VND)</label>
+                        <input asp-for="PricePerNight" type="number" step="0.01" class="block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all duration-200 px-4 py-2" />
+                        <span asp-validation-for="PricePerNight" class="text-red-500 text-xs"></span>
+                    </div>
+
+                    <!-- Mã khu vực -->
+                    <div class="sm:col-span-1">
+                        <label asp-for="Ma_KV" class="block text-sm font-medium text-gray-700 mb-1">Khu vực</label>
+                        <select asp-for="Ma_KV" id="Ma_KV" name="Ma_KV" class="block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all duration-200 px-4 py-2">
+                            <option value="">Chọn khu vực</option>
+                        </select>
+                        <span asp-validation-for="Ma_KV" class="text-red-500 text-xs"></span>
+                    </div>
+
+                    <!-- Hạng của homestay -->
+                    <div class="sm:col-span-2">
+                        <label asp-for="Hang" class="block text-sm font-medium text-gray-700 mb-1">Hạng của homestay</label>
+                        <div class="star-rating flex items-center space-x-1">
+                            <span class="star" data-value="1"><i class="fas fa-star text-gray-300 hover:text-yellow-400 cursor-pointer"></i></span>
+                            <span class="star" data-value="1.5"><i class="fas fa-star-half-alt text-gray-300 hover:text-yellow-400 cursor-pointer"></i></span>
+                            <span class="star" data-value="2"><i class="fas fa-star text-gray-300 hover:text-yellow-400 cursor-pointer"></i></span>
+                            <span class="star" data-value="2.5"><i class="fas fa-star-half-alt text-gray-300 hover:text-yellow-400 cursor-pointer"></i></span>
+                            <span class="star" data-value="3"><i class="fas fa-star text-gray-300 hover:text-yellow-400 cursor-pointer"></i></span>
+                            <span class="star" data-value="3.5"><i class="fas fa-star-half-alt text-gray-300 hover:text-yellow-400 cursor-pointer"></i></span>
+                            <span class="star" data-value="4"><i class="fas fa-star text-gray-300 hover:text-yellow-400 cursor-pointer"></i></span>
+                            <span class="star" data-value="4.5"><i class="fas fa-star-half-alt text-gray-300 hover:text-yellow-400 cursor-pointer"></i></span>
+                            <span class="star" data-value="5"><i class="fas fa-star text-gray-300 hover:text-yellow-400 cursor-pointer"></i></span>
+                            <span id="rating-value" class="ml-2 text-sm text-gray-600"></span>
+                        </div>
+                        <input asp-for="Hang" type="hidden" id="Hang" name="Hang" value="0" />
+                        <span asp-validation-for="Hang" class="text-red-500 text-xs"></span>
+                    </div>
+
+                    <!-- Mô tả -->
+                    <div class="sm:col-span-2">
+                        <label asp-for="MoTa" class="block text-sm font-medium text-gray-700 mb-1">Mô tả</label>
+                        <textarea asp-for="MoTa" rows="4" class="block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all duration-200 px-4 py-2"></textarea>
+                        <span asp-validation-for="MoTa" class="text-red-500 text-xs"></span>
+                    </div>
+
+                    <!-- Hình ảnh -->
+                    <div class="sm:col-span-2">
+                        <label asp-for="HinhAnh" class="block text-sm font-medium text-gray-700 mb-1">Hình ảnh homestay</label>
+                        <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                            <div class="space-y-1 text-center">
+                                <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                    <path d="M28 8H12a4 4 0 00-4 4v24a4 4 0 004 4h24a4 4 0 004-4V16l-8-8zM36 16h-8a2 2 0 01-2-2V6z" stroke-width="2" />
+                                    <path d="M22 24a5 5 0 11-10 0 5 5 0 0110 0z" stroke-width="2" />
+                                    <path d="M30 28l6 6m-6-6l6-6" stroke-width="2" />
+                                </svg>
+                                <div class="flex text-sm text-gray-600">
+                                    <label for="HinhAnh" class="relative cursor-pointer bg-white rounded-md font-medium text-rose-600 hover:text-rose-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-rose-500">
+                                        <span>Kéo thả ảnh hoặc click để chọn</span>
+                                        <input id="HinhAnh" name="HinhAnh" type="file" accept="image/*" class="sr-only">
+                                    </label>
+                                </div>
+                                <p class="text-xs text-gray-500">PNG, JPG, GIF lên đến 5MB</p>
+                            </div>
+                            <div id="preview" class="mt-4 hidden">
+                                <img id="preview-image" class="max-w-full h-auto rounded-md" alt="Preview">
+                            </div>
+                        </div>
+                        <span asp-validation-for="HinhAnh" class="text-red-500 text-xs"></span>
+                    </div>
+
+                    <!-- Checkbox điều khoản -->
+                    <div class="sm:col-span-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="terms-checkbox" class="rounded border-gray-300 text-rose-600 shadow-sm focus:ring-rose-500" />
+                            <span class="ml-2 text-sm text-gray-700">Tôi đã đồng ý với điều khoản và dịch vụ</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-3">
+                    <a href="@Url.Action("Index", "Home")" class="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 transition-colors duration-200">
+                        Hủy
+                    </a>
+                    <button type="submit" class="inline-flex justify-center rounded-md border border-transparent bg-gradient-to-r from-rose-500 to-rose-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:from-rose-600 hover:to-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 transition-all duration-200">
+                        Gửi đăng ký
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Điều khoản và điều lệ -->
+        <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-rose-100">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Điều khoản và điều lệ hợp đồng</h2>
+            <div class="text-gray-700 text-sm space-y-2">
+                <p>Khi đăng ký homestay lên hệ thống, bạn đồng ý tuân thủ các điều khoản sau:</p>
+                <ul class="list-disc pl-5 space-y-1">
+                    <li>Thông tin homestay (tên, địa chỉ, giá, hình ảnh) phải chính xác và không được trùng lặp với các homestay khác đã đăng ký.</li>
+                    <li>Homestay phải đáp ứng các tiêu chuẩn về vệ sinh, an toàn và pháp lý theo quy định của hệ thống.</li>
+                    <li>Giá mỗi đêm phải hợp lý, không được thay đổi sau khi đăng ký mà không có sự đồng ý từ admin.</li>
+                    <li>Hình ảnh homestay phải rõ ràng, không được sử dụng hình ảnh không thuộc về homestay của bạn.</li>
+                    <li>Hợp đồng sẽ được xem xét trong vòng 3-5 ngày làm việc. Nếu bị từ chối, bạn sẽ nhận được lý do cụ thể.</li>
+                    <li>Trong trường hợp hủy hợp đồng, bạn cần thông báo trước 7 ngày và chịu phí hủy theo quy định.</li>
+                    <li>Hệ thống có quyền xóa hoặc tạm khóa homestay nếu phát hiện vi phạm các điều khoản đã cam kết.</li>
+                    <li>Phí duy trì homestay trên hệ thống sẽ được thông báo sau khi hợp đồng được duyệt.</li>
+                </ul>
+                <p class="mt-2">Việc đăng ký đồng nghĩa với việc bạn đã đọc, hiểu và đồng ý với các điều khoản trên.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Show toast notification
+        function showToast(message, isSuccess) {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                }
+            });
+
+            Toast.fire({
+                icon: isSuccess ? 'success' : 'error',
+                title: message
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            // Kiểm tra thông tin người dùng khi tải trang
+            try {
+                const response = await fetch('@Url.Action("CheckUserProfile", "User")', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const result = await response.json();
+
+                if (!result.success) {
+                    Swal.fire({
+                        title: 'Thông báo',
+                        text: result.message,
+                        icon: 'warning',
+                        confirmButtonText: 'Cập nhật hồ sơ',
+                        confirmButtonColor: '#f43f5e',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false
+                    }).then((result) => {
+                        // Chuyển hướng ngay khi nhấn OK hoặc fallback
+                        window.location.href = result.redirectUrl || '@Url.Action("Profile", "User")';
+                    });
+                    return; // Dừng xử lý nếu thông tin chưa đầy đủ
+                }
+            } catch (error) {
+                showToast('Đã xảy ra lỗi khi kiểm tra thông tin: ' + error.message, false);
+                window.location.href = '@Url.Action("Profile", "User")';
+                return;
+            }
+
+            // Fetch danh sách khu vực
+            fetch('@Url.Action("GetKhuVucs", "Homestay")', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const khuVucSelect = document.getElementById('Ma_KV');
+                    data.data.forEach(khuVuc => {
+                        const option = document.createElement('option');
+                        option.value = khuVuc.ma_KV;
+                        option.textContent = khuVuc.ten_KV;
+                        khuVucSelect.appendChild(option);
+                    });
+                } else {
+                    showToast(data.message || 'Lỗi khi lấy danh sách khu vực.', false);
+                }
+            })
+            .catch(error => {
+                showToast('Lỗi khi fetch khu vực: ' + error.message, false);
+            });
+
+            // Xử lý chọn sao
+            const stars = document.querySelectorAll('.star');
+            const ratingInput = document.getElementById('Hang');
+            const ratingValueDisplay = document.getElementById('rating-value');
+
+            stars.forEach(star => {
+                star.addEventListener('click', function () {
+                    const rating = parseFloat(this.getAttribute('data-value'));
+                    ratingInput.value = rating.toFixed(1);
+                    ratingValueDisplay.textContent = `${rating} sao`;
+
+                    stars.forEach(s => {
+                        const value = parseFloat(s.getAttribute('data-value'));
+                        const icon = s.querySelector('i');
+                        if (value <= rating) {
+                            icon.classList.remove('text-gray-300');
+                            icon.classList.add('text-yellow-400');
+                        } else {
+                            icon.classList.remove('text-yellow-400');
+                            icon.classList.add('text-gray-300');
+                        }
+                    });
+                });
+
+                star.addEventListener('mouseover', function () {
+                    const rating = parseFloat(this.getAttribute('data-value'));
+                    stars.forEach(s => {
+                        const value = parseFloat(s.getAttribute('data-value'));
+                        const icon = s.querySelector('i');
+                        if (value <= rating) {
+                            icon.classList.add('text-yellow-400');
+                        }
+                    });
+                });
+
+                star.addEventListener('mouseout', function () {
+                    const currentRating = parseFloat(ratingInput.value) || 0;
+                    stars.forEach(s => {
+                        const value = parseFloat(s.getAttribute('data-value'));
+                        const icon = s.querySelector('i');
+                        if (value <= currentRating) {
+                            icon.classList.add('text-yellow-400');
+                        } else {
+                            icon.classList.remove('text-yellow-400');
+                            icon.classList.add('text-gray-300');
+                        }
+                    });
+                });
+            });
+
+            // Xử lý gửi form
+            const form = document.getElementById('registerHomestayForm');
+            const termsCheckbox = document.getElementById('terms-checkbox');
+            const fileInput = document.getElementById('HinhAnh');
+            const preview = document.getElementById('preview');
+            const previewImage = document.getElementById('preview-image');
+
+            // Xử lý kéo thả và chọn ảnh
+            const dropZone = fileInput.closest('.border-dashed');
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('border-rose-500', 'bg-rose-50');
+            });
+
+            dropZone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('border-rose-500', 'bg-rose-50');
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('border-rose-500', 'bg-rose-50');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    previewImage.src = URL.createObjectURL(files[0]);
+                    preview.classList.remove('hidden');
+                }
+            });
+
+            fileInput.addEventListener('change', function () {
+                if (fileInput.files && fileInput.files[0]) {
+                    previewImage.src = URL.createObjectURL(fileInput.files[0]);
+                    preview.classList.remove('hidden');
+                }
+            });
+
+            form.addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                // Kiểm tra checkbox điều khoản
+                if (!termsCheckbox.checked) {
+                    showToast('Bạn phải đồng ý với điều khoản và dịch vụ.', false);
+                    return;
+                }
+
+                // Kiểm tra hợp đồng đang chờ duyệt
+                try {
+                    const response = await fetch('@Url.Action("CheckPendingContracts", "User")', {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    const result = await response.json();
+
+                    if (!result.success) {
+                        showToast(result.message || 'Đã xảy ra lỗi khi kiểm tra hợp đồng.', false);
+                        return;
+                    }
+
+                    if (result.hasPendingContract) {
+                        showToast('Vui lòng đợi phản hồi từ hợp đồng trước đó.', false);
+                        return;
+                    }
+                } catch (error) {
+                    showToast('Đã xảy ra lỗi khi kiểm tra hợp đồng: ' + error.message, false);
+                    return;
+                }
+
+                const formData = new FormData(form);
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                try {
+                    const response = await fetch('@Url.Action("RegisterHomestay", "User")', {
+                        method: 'POST',
+                        headers: {
+                            'RequestVerificationToken': token
+                        },
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                     if (result.success) {
+                        showToast(result.message, true); // Hiển thị thông báo thành công
+                        setTimeout(() => {
+                            window.location.href = '@Url.Action("Index", "Home")'; // Chuyển hướng sau 3 giây
+                        }, 3000); // Đồng bộ với timer của showToast
+                    } else {
+                        let errorMessage = result.message || 'Đã xảy ra lỗi khi gửi yêu cầu.';
+                        if (result.errors) {
+                            errorMessage += '\nChi tiết lỗi:\n' + result.errors.join('\n');
+                        }
+                        showToast(errorMessage, false);
+                    }
+                } catch (error) {
+                    let errorMessage = 'Đã xảy ra lỗi khi gửi yêu cầu.';
+                    if (error.response) {
+                        const errorData = await error.response.json();
+                        errorMessage = errorData.message || error.message;
+                        if (errorData.errors) {
+                            errorMessage += '\nChi tiết lỗi:\n' + Object.values(errorData.errors).flat().join('\n');
+                        }
+                    } else {
+                        errorMessage = error.message;
+                    }
+                    showToast(errorMessage, false);
+                }
+            });
+
+            // Đảm bảo AOS đã được tải trước khi khởi tạo
+            if (typeof AOS !== 'undefined') {
+                AOS.init();
+            } else {
+                const aosScript = document.querySelector('script[src*="aos"]');
+                if (aosScript) {
+                    aosScript.addEventListener('load', () => {
+                        AOS.init();
+                    });
+                } else {
+                    console.error('AOS script not found.');
+                }
+            }
+        });
+
+        // Hàm hiển thị modal thành công
+        function showSuccessModal(title, message, callback) {
+            Swal.fire({
+                title: title,
+                text: message,
+                icon: 'success',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#f43f5e'
+            }).then((result) => {
+                if (result.isConfirmed && callback) {
+                    callback();
+                }
+            });
+        }
+    </script>
+}

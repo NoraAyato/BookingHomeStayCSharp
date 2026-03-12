@@ -1,0 +1,923 @@
+﻿@model dynamic
+@{
+    ViewData["Title"] = "Quản lý Hóa đơn";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<!-- CSRF Token -->
+@Html.AntiForgeryToken()
+
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+    <div>
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-200">Quản lý Hóa đơn</h1>
+        <p class="text-gray-600 dark:text-gray-400 mt-1">Xem và quản lý tất cả hóa đơn trong hệ thống</p>
+    </div>
+   
+</div>
+
+<!-- Filters Card -->
+<div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="md:col-span-2">
+            <label for="searchInput" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tìm kiếm</label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-search text-gray-400 dark:text-gray-500"></i>
+                </div>
+                <input type="text" id="searchInput" class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200" placeholder="Mã HD, tên khách hàng...">
+            </div>
+        </div>
+        <div>
+            <label for="statusFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Trạng thái</label>
+            <select id="statusFilter" class="block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200">
+                <option value="all">Tất cả trạng thái</option>
+                <option value="Chưa thanh toán">Chưa thanh toán</option>
+                <option value="Đã thanh toán">Đã thanh toán</option>
+            </select>
+        </div>
+        <div>
+            <label for="dateRangePicker" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Khoảng ngày</label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-calendar-alt text-gray-400 dark:text-gray-500"></i>
+                </div>
+                <input type="text" id="dateRangePicker" class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200" placeholder="Chọn khoảng ngày">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Overview -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Tổng hóa đơn</p>
+                <h3 class="text-2xl font-bold text-gray-800 dark:text-gray-200" id="totalInvoices">--</h3>
+            </div>
+            <div class="p-3 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400">
+                <i class="fas fa-file-invoice text-xl"></i>
+            </div>
+        </div>
+    </div>
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Đã thanh toán</p>
+                <h3 class="text-2xl font-bold text-green-600 dark:text-green-400" id="paidInvoices">--</h3>
+            </div>
+            <div class="p-3 rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400">
+                <i class="fas fa-check-circle text-xl"></i>
+            </div>
+        </div>
+    </div>
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Chưa thanh toán</p>
+                <h3 class="text-2xl font-bold text-red-600 dark:text-red-400" id="unpaidInvoices">--</h3>
+            </div>
+            <div class="p-3 rounded-full bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400">
+                <i class="fas fa-exclamation-circle text-xl"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Invoice Table -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mb-6">
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Mã HD</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Khách hàng</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ngày lập</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tổng tiền</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Trạng thái</th>
+                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody id="invoiceTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <!-- Data will be loaded here -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="p-8 text-center">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary-500 border-t-transparent"></div>
+        <p class="mt-2 text-gray-600 dark:text-gray-400">Đang tải dữ liệu...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden p-8 text-center">
+        <i class="fas fa-file-invoice text-4xl text-gray-300 dark:text-gray-600 mb-2"></i>
+        <p class="text-gray-500 dark:text-gray-400">Không tìm thấy hóa đơn nào</p>
+        <button id="tryAgainBtn" class="mt-4 text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 font-medium">Thử lại</button>
+    </div>
+</div>
+
+<!-- Pagination -->
+<div id="pagination" class="flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="text-sm text-gray-500 dark:text-gray-400" id="paginationInfo"></div>
+    <div class="flex gap-1" id="paginationButtons"></div>
+</div>
+
+
+<!-- Details Modal -->
+<div id="detailsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4 py-6 hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+            <h2 class="text-xl font-bold text-gray-800 dark:text-gray-200">Chi tiết hóa đơn</h2>
+            <button onclick="closeModal('detailsModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <div id="detailsContent" class="space-y-4">
+                <!-- Details will be loaded here -->
+            </div>
+            <div class="mt-6 flex justify-end">
+                <button onclick="closeModal('detailsModal')" class="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Delete Modal -->
+<div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4 py-6 hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+            <h2 class="text-xl font-bold text-gray-800 dark:text-gray-200">Xác nhận xóa</h2>
+            <button onclick="closeModal('deleteModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <p class="text-gray-600 dark:text-gray-400 mb-4">Bạn có chắc chắn muốn xóa hóa đơn này? Hành động này không thể hoàn tác.</p>
+            <div class="mt-6 flex justify-between">
+                <button onclick="closeModal('deleteModal')" class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">Hủy</button>
+                <button onclick="deleteInvoice()" class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition">Xác nhận xóa</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.9/dist/flatpickr.min.css" rel="stylesheet">
+    <style>
+        .modal {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .step {
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+
+            .step:not(.hidden) {
+                display: block;
+            }
+
+        @@keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .step-indicator {
+            transition: all 0.3s ease;
+        }
+
+            .step-indicator.active {
+                background-color: #0ea5e9;
+                color: white;
+            }
+
+        .step-title {
+            transition: all 0.3s ease;
+        }
+
+            .step-title.active {
+                color: #0ea5e9;
+                font-weight: 500;
+            }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-paid {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .status-unpaid {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .action-btn {
+            transition: all 0.2s;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+        }
+
+            .action-btn:hover {
+                transform: translateY(-1px);
+                background-color: rgba(14, 165, 233, 0.1);
+            }
+
+        /* Dark mode styles */
+        .dark .status-paid {
+            background-color: #166534;
+            color: #dcfce7;
+        }
+
+        .dark .status-unpaid {
+            background-color: #991b1b;
+            color: #fee2e2;
+        }
+
+        .dark .action-btn:hover {
+            background-color: rgba(14, 165, 233, 0.2);
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.9/dist/flatpickr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Global variables
+        let currentPage = 1;
+        let totalPages = 1;
+        const pageSize = 10;
+        let totalItems = 0;
+        let currentInvoiceId = null;
+
+        // Modal functions
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+
+            if (modalId === 'addInvoiceModal') {
+                resetAddInvoiceModal();
+            }
+        }
+
+        function resetAddInvoiceModal() {
+            // Reset stepper to step 1
+            document.querySelectorAll('.step').forEach(s => s.classList.add('hidden'));
+            document.querySelector('.step[data-step="1"]').classList.remove('hidden');
+
+            // Reset stepper indicators
+            document.querySelectorAll('.step-indicator').forEach((el, index) => {
+                el.classList.toggle('bg-primary-600', index === 0);
+                el.classList.toggle('bg-gray-200', index > 0);
+                el.classList.toggle('dark:bg-gray-700', index > 0);
+                el.classList.toggle('text-white', index === 0);
+                el.classList.toggle('text-gray-600', index > 0);
+                el.classList.toggle('dark:text-gray-300', index > 0);
+                el.classList.toggle('active', index === 0);
+            });
+
+            // Reset stepper titles
+            document.querySelectorAll('.step-title').forEach((el, index) => {
+                el.classList.toggle('text-primary-600', index === 0);
+                el.classList.toggle('dark:text-primary-400', index === 0);
+                el.classList.toggle('text-gray-500', index > 0);
+                el.classList.toggle('dark:text-gray-400', index > 0);
+                el.classList.toggle('active', index === 0);
+            });
+
+            // Reset form fields
+            document.getElementById('bookingSelect').value = '';
+            document.getElementById('promotionSelect').value = '';
+            document.getElementById('taxInput').value = '10';
+            document.getElementById('bookingDetails').innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-center">Chọn phiếu đặt phòng để xem chi tiết</p>';
+        }
+
+      
+        function showDetails(maHD) {
+            maHD = decodeURIComponent(maHD);
+            currentInvoiceId = maHD;
+
+            fetch(`/Admin/Invoice/Details?id=${maHD}`)
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        renderInvoiceDetails(data.data);
+                        openModal('detailsModal');
+                    } else {
+                        showToast(data.message || 'Không thể tải chi tiết hóa đơn', false);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading invoice details:', error);
+                    showToast('Lỗi khi tải chi tiết hóa đơn: ' + error.message, false);
+                });
+        }
+
+        function openUpdateStatusModal(maHD) {
+            maHD = decodeURIComponent(maHD);
+            currentInvoiceId = maHD;
+            openModal('updateStatusModal');
+        }
+
+        function openDeleteModal(maHD) {
+            maHD = decodeURIComponent(maHD);
+            currentInvoiceId = maHD;
+            openModal('deleteModal');
+        }
+
+        function openPaymentModal(maHD, tongTien) {
+            maHD = decodeURIComponent(maHD);
+            currentInvoiceId = maHD;
+
+            document.getElementById('paymentAmount').value = tongTien || '';
+            document.getElementById('paymentContent').value = `Thanh toán hóa đơn ${maHD}`;
+            openModal('paymentModal');
+        }
+
+        // Stepper functions
+        function nextStep(step) {
+            if (step === 2) {
+                const maPDPhong = document.getElementById('bookingSelect').value;
+                if (!maPDPhong) {
+                    showToast('Vui lòng chọn phiếu đặt phòng', false);
+                    return;
+                }
+                // Show loading state
+                document.getElementById('bookingDetails').innerHTML = `
+                    <div class="flex justify-center items-center h-32">
+                        <div class="animate-spin rounded-full h-8 w-8 border-4 border-primary-500 border-t-transparent"></div>
+                        <span class="ml-2 text-gray-600 dark:text-gray-400">Đang tải thông tin...</span>
+                    </div>
+                `;
+                loadBookingDetails(maPDPhong, () => {
+                    updateStepperUI(step);
+                });
+            } else {
+                updateStepperUI(step);
+            }
+        }
+
+        function updateStepperUI(step) {
+            // Update stepper UI
+            document.querySelectorAll('.step-indicator').forEach(el => {
+                const indicatorStep = parseInt(el.getAttribute('data-step'));
+                el.classList.toggle('bg-primary-600', indicatorStep <= step);
+                el.classList.toggle('bg-gray-200', indicatorStep > step);
+                el.classList.toggle('dark:bg-gray-700', indicatorStep > step);
+                el.classList.toggle('text-white', indicatorStep <= step);
+                el.classList.toggle('text-gray-600', indicatorStep > step);
+                el.classList.toggle('dark:text-gray-300', indicatorStep > step);
+                el.classList.toggle('active', indicatorStep <= step);
+            });
+
+            document.querySelectorAll('.step-title').forEach(el => {
+                const titleStep = parseInt(el.parentElement.querySelector('.step-indicator').getAttribute('data-step'));
+                el.classList.toggle('text-primary-600', titleStep <= step);
+                el.classList.toggle('dark:text-primary-400', titleStep <= step);
+                el.classList.toggle('text-gray-500', titleStep > step);
+                el.classList.toggle('dark:text-gray-400', titleStep > step);
+                el.classList.toggle('active', titleStep <= step);
+            });
+
+            // Show active step
+            document.querySelectorAll('.step').forEach(s => s.classList.add('hidden'));
+            document.querySelector(`.step[data-step="${step}"]`).classList.remove('hidden');
+        }
+
+        function prevStep(step) {
+            updateStepperUI(step);
+        }
+
+        // Format currency with VND
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
+        }
+
+        // Enhanced showToast function
+        function showToast(message, isSuccess) {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                }
+            });
+
+            Toast.fire({
+                icon: isSuccess ? 'success' : 'error',
+                title: message
+            });
+        }
+
+        // Load invoices with filters
+        function loadInvoices(startDate = '', endDate = '') {
+            const searchString = document.getElementById('searchInput').value.trim();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const dateRange = startDate && endDate ? `${startDate} - ${endDate}` : '';
+
+            document.getElementById('loadingState').classList.remove('hidden');
+            document.getElementById('emptyState').classList.add('hidden');
+            document.getElementById('invoiceTableBody').innerHTML = '';
+
+            fetch(`/Admin/Invoice/GetInvoices?searchString=${encodeURIComponent(searchString)}&statusFilter=${statusFilter}&dateRange=${encodeURIComponent(dateRange)}&page=${currentPage}&pageSize=${pageSize}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data || typeof data !== 'object') {
+                        throw new Error('Dữ liệu trả về không hợp lệ');
+                    }
+                    if (data.success) {
+                        totalPages = data.totalPages || 1;
+                        renderInvoices(data.data);
+                        renderPagination(data.totalPages, data.currentPage);
+                        totalItems = data.totalItems;
+                        updateInvoiceStats(data.data);
+                    } else {
+                        showToast(data.message || 'Không thể tải danh sách hóa đơn', false);
+                        document.getElementById('emptyState').classList.remove('hidden');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading invoices:', error);
+                    showToast('Lỗi khi tải danh sách hóa đơn: ' + error.message, false);
+                    document.getElementById('emptyState').classList.remove('hidden');
+                })
+                .finally(() => {
+                    document.getElementById('loadingState').classList.add('hidden');
+                });
+        }
+
+        // Render invoices to table
+        function renderInvoices(invoices) {
+            const tableBody = document.getElementById('invoiceTableBody');
+
+            if (!invoices || invoices.length === 0) {
+                document.getElementById('emptyState').classList.remove('hidden');
+                return;
+            }
+
+            tableBody.innerHTML = invoices.map(invoice => {
+                const maHD = invoice.Ma_HD || invoice.maHD || invoice.ma_HD || 'Không xác định';
+                const isPaid = invoice.trangThai === 'Đã thanh toán';
+
+                return `
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-200">${maHD}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${invoice.customerName || 'Không xác định'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${invoice.ngayLap || 'Không xác định'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-200">${formatCurrency(invoice.tongTien)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="status-badge ${isPaid ? 'status-paid' : 'status-unpaid'}">
+                                ${invoice.trangThai || 'Không xác định'}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="flex justify-end space-x-2">
+                                <button onclick="showDetails('${encodeURIComponent(maHD)}')" class="action-btn text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300" title="Xem chi tiết">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Update invoice stats
+        function updateInvoiceStats(invoices) {
+            const total = invoices.length;
+            const paid = invoices.filter(i => i.trangThai === 'Đã thanh toán').length;
+            const unpaid = total - paid;
+
+            document.getElementById('totalInvoices').textContent = total;
+            document.getElementById('paidInvoices').textContent = paid;
+            document.getElementById('unpaidInvoices').textContent = unpaid;
+        }
+
+        // Render pagination
+        function renderPagination(totalPagesParam, currentPage) {
+            totalPages = totalPagesParam || 1;
+            const paginationButtons = document.getElementById('paginationButtons');
+            const paginationInfo = document.getElementById('paginationInfo');
+
+            if (totalPages <= 1) {
+                paginationButtons.innerHTML = '';
+                paginationInfo.textContent = '';
+                return;
+            }
+
+            // Pagination info
+            const startItem = (currentPage - 1) * pageSize + 1;
+            const endItem = Math.min(currentPage * pageSize, totalItems);
+            paginationInfo.textContent = `Hiển thị ${startItem}-${endItem} của ${totalItems}`;
+
+            // Pagination buttons
+            let buttons = [];
+            const maxVisiblePages = 5;
+
+            // Previous button
+            buttons.push(`
+                <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}
+                    class="px-3 py-1 rounded-md border ${currentPage === 1 ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            `);
+
+            // First page
+            if (currentPage > Math.floor(maxVisiblePages/2) + 1) {
+                buttons.push(`
+                    <button onclick="changePage(1)" class="px-3 py-1 rounded-md border bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">1</button>
+                `);
+                if (currentPage > Math.floor(maxVisiblePages/2) + 2) {
+                    buttons.push('<span class="px-2 py-1 text-gray-500 dark:text-gray-400">...</span>');
+                }
+            }
+
+            // Middle pages
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages/2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                buttons.push(`
+                    <button onclick="changePage(${i})"
+                        class="px-3 py-1 rounded-md border ${currentPage === i ? 'bg-primary-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}">
+                        ${i}
+                    </button>
+                `);
+            }
+
+            // Last page
+            if (currentPage < totalPages - Math.floor(maxVisiblePages/2)) {
+                if (currentPage < totalPages - Math.floor(maxVisiblePages/2) - 1) {
+                    buttons.push('<span class="px-2 py-1 text-gray-500 dark:text-gray-400">...</span>');
+                }
+                buttons.push(`
+                    <button onclick="changePage(${totalPages})" class="px-3 py-1 rounded-md border bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">${totalPages}</button>
+                `);
+            }
+
+            // Next button
+            buttons.push(`
+                <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}
+                    class="px-3 py-1 rounded-md border ${currentPage === totalPages ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            `);
+
+            paginationButtons.innerHTML = buttons.join('');
+        }
+
+        // Change page
+        function changePage(page) {
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            loadInvoices();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Load available bookings
+        function loadAvailableBookings() {
+            fetch('/Admin/Invoice/GetAvailableBookings')
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success && data.data) {
+                        const select = document.getElementById('bookingSelect');
+                        select.innerHTML = '<option value="">Chọn phiếu đặt phòng</option>' +
+                            data.data.map(booking =>
+                                `<option value="${booking.ma_PDPhong}">${booking.ma_PDPhong} - ${booking.customerName}</option>`
+                            ).join('');
+                    } else {
+                        showToast(data.message || 'Không có phiếu đặt phòng nào khả dụng', false);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading bookings:', error);
+                    showToast('Lỗi khi tải danh sách phiếu đặt phòng', false);
+                });
+        }
+
+       
+        // Load booking details
+        function loadBookingDetails(maPDPhong, callback) {
+            if (!maPDPhong) {
+                document.getElementById('bookingDetails').innerHTML = '<p class="text-red-500 text-center">Vui lòng chọn phiếu đặt phòng</p>';
+                showToast('Mã phiếu đặt phòng không hợp lệ', false);
+                return;
+            }
+
+            fetch(`/Admin/Invoice/GetBookingDetails?maPDPhong=${encodeURIComponent(maPDPhong)}`)
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success && data.data) {
+                        renderBookingDetails(data.data);
+                        if (callback) callback();
+                    } else {
+                        document.getElementById('bookingDetails').innerHTML = '<p class="text-red-500 text-center">Không thể tải chi tiết phiếu đặt phòng</p>';
+                        showToast(data.message || 'Không thể tải chi tiết phiếu đặt phòng', false);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading booking details:', error);
+                    document.getElementById('bookingDetails').innerHTML = '<p class="text-red-500 text-center">Lỗi khi tải chi tiết phiếu đặt phòng</p>';
+                    showToast('Lỗi khi tải chi tiết phiếu đặt phòng', false);
+                });
+        }
+
+        // Render booking details
+        function renderBookingDetails(booking) {
+            const detailsContainer = document.getElementById('bookingDetails');
+            if (!booking) {
+                detailsContainer.innerHTML = '<p class="text-red-500 text-center">Không có dữ liệu phiếu đặt phòng</p>';
+                return;
+            }
+
+            // Basic information
+            const basicInfo = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Mã phiếu đặt phòng</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-200">${booking.maPDPhong || 'Không xác định'}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Khách hàng</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-200">${booking.customerName || 'Không xác định'}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Ngày lập</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-200">${booking.ngayLap || 'Không xác định'}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Trạng thái</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-200">${booking.trangThai || 'Không xác định'}</p>
+                    </div>
+                </div>
+            `;
+
+            // Rooms information
+            let roomsHTML = '';
+            if (booking.rooms && booking.rooms.length > 0) {
+                roomsHTML = `
+                    <div class="mb-6">
+                        <h4 class="font-semibold mb-3 text-gray-800 dark:text-gray-200">Danh sách phòng</h4>
+                        <div class="space-y-4">
+                            ${booking.rooms.map(room => `
+                                <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-100 dark:border-gray-600 shadow-sm">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="font-medium text-gray-800 dark:text-gray-200">${room.tenPhong || 'Không xác định'}</span>
+                                        <span class="text-primary-600 dark:text-primary-400 font-medium">${formatCurrency(room.thanhTien)}</span>
+                                    </div>
+                                    <div class="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+                                        <p>Đơn giá: ${formatCurrency(room.donGia)} / đêm</p>
+                                        <p>Ngày đến: ${room.ngayDen || 'Không xác định'}</p>
+                                        <p>Ngày đi: ${room.ngayDi || 'Không xác định'}</p>
+                                        <p>Số đêm: ${room.soNgay || '0'}</p>
+                                        <p>Số người: ${room.soNguoi || '0'}</p>
+                                        <p>Homestay: ${room.homestay?.tenHomestay || 'Không xác định'} (${room.homestay?.diaChi || 'Không xác định'})</p>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            } else {
+                roomsHTML = '<p class="text-gray-500 dark:text-gray-400 mb-6">Không có thông tin phòng</p>';
+            }
+
+            // Services information
+            let servicesHTML = '';
+            if (booking.services && booking.services.length > 0) {
+                servicesHTML = `
+                    <div class="mb-6">
+                        <h4 class="font-semibold mb-3 text-gray-800 dark:text-gray-200">Dịch vụ sử dụng</h4>
+                        <div class="space-y-4">
+                            ${booking.services.map(service => `
+                                <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-100 dark:border-gray-600 shadow-sm">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="font-medium text-gray-800 dark:text-gray-200">${service.tenDV || 'Không xác định'}</span>
+                                        <span class="text-primary-600 dark:text-primary-400 font-medium">${formatCurrency(service.thanhTien)}</span>
+                                    </div>
+                                    <div class="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+                                        <p>Đơn giá: ${formatCurrency(service.donGia)}</p>
+                                        <p>Số lượng: ${service.soLuong || '0'}</p>
+                                        <p>Ngày sử dụng: ${service.ngaySuDung || 'Không xác định'}</p>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            } else {
+                servicesHTML = '<p class="text-gray-500 dark:text-gray-400 mb-6">Không có dịch vụ sử dụng</p>';
+            }
+
+            // Total price
+            const totalPriceHTML = `
+                <div class="flex justify-between items-center pt-4 border-t border-gray-200 dark:border-gray-600">
+                    <p class="text-lg font-semibold text-gray-800 dark:text-gray-200">Tổng cộng:</p>
+                    <p class="text-xl font-bold text-primary-600 dark:text-primary-400">${formatCurrency(booking.totalPrice)}</p>
+                </div>
+            `;
+
+            detailsContainer.innerHTML = `
+                ${basicInfo}
+                ${roomsHTML}
+                ${servicesHTML}
+                ${totalPriceHTML}
+            `;
+        }
+        // Render invoice details
+        function renderInvoiceDetails(invoice) {
+            const detailsContent = document.getElementById('detailsContent');
+
+            let promotionsHTML = '';
+            if (invoice.khuyenMais && invoice.khuyenMais.length > 0) {
+                promotionsHTML = `
+                    <div class="mb-4">
+                        <h4 class="font-semibold mb-2 text-gray-800 dark:text-gray-200">Khuyến mãi áp dụng</h4>
+                        <div class="space-y-2">
+                            ${invoice.khuyenMais.map(km => `
+                                <div class="bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-100 dark:border-gray-600">
+                                    <div class="flex justify-between">
+                                        <span class="font-medium text-gray-800 dark:text-gray-200">${km.noiDung || 'Không xác định'}</span>
+                                        <span class="text-red-500 dark:text-red-400">-${km.chietKhau}%</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            let paymentsHTML = '';
+            if (invoice.thanhToans && invoice.thanhToans.length > 0) {
+                paymentsHTML = `
+                    <div class="mb-4">
+                        <h4 class="font-semibold mb-2 text-gray-800 dark:text-gray-200">Lịch sử thanh toán</h4>
+                        <div class="space-y-2">
+                            ${invoice.thanhToans.map(tt => `
+                                <div class="bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-100 dark:border-gray-600">
+                                    <div class="flex justify-between">
+                                        <span class="font-medium text-gray-800 dark:text-gray-200">${tt.phuongThuc || 'Không xác định'}</span>
+                                        <span class="text-green-600 dark:text-green-400">${formatCurrency(tt.soTien)}</span>
+                                    </div>
+                                    <div class="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                                        <p>${tt.ngayTT || 'Không xác định'} - ${tt.trangThai || 'Không xác định'}</p>
+                                        ${tt.noiDung ? `<p>Nội dung: ${tt.noiDung}</p>` : ''}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            detailsContent.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Mã hóa đơn</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-200">${invoice.ma_HD || invoice.maHD || 'Không xác định'}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Khách hàng</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-200">${invoice.customerName || 'Không xác định'}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Ngày lập</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-200">${invoice.ngayLap || 'Không xác định'}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Trạng thái</p>
+                        <p class="font-medium">
+                            <span class="status-badge ${invoice.trangThai === 'Đã thanh toán' ? 'status-paid' : 'status-unpaid'}">
+                                ${invoice.trangThai || 'Không xác định'}
+                            </span>
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Tổng tiền</p>
+                        <p class="font-medium text-primary-600 dark:text-primary-400">${formatCurrency(invoice.tongTien)}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Thuế</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-200">${invoice.thue || 0}%</p>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h4 class="font-semibold mb-2 text-gray-800 dark:text-gray-200">Phiếu đặt phòng liên quan</h4>
+                    <div class="space-y-2">
+                        ${(invoice.maPDPhongs || []).map(pdp => `
+                            <div class="bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-100 dark:border-gray-600">
+                                <p class="font-medium text-gray-800 dark:text-gray-200">${pdp}</p>
+                            </div>
+                        `).join('')}
+                        ${(invoice.maPDPhongs || []).length === 0 ? '<p class="text-gray-500 dark:text-gray-400">Không có phiếu đặt phòng</p>' : ''}
+                    </div>
+                </div>
+
+                ${promotionsHTML}
+                ${paymentsHTML}
+            `;
+        }
+
+    
+
+      
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize date range picker
+            flatpickr('#dateRangePicker', {
+                mode: 'range',
+                dateFormat: 'd/m/Y',
+                altInput: true,
+                altFormat: 'd/m/Y',
+                allowInput: false,
+                onChange: function(selectedDates, dateStr, instance) {
+                    if (selectedDates.length === 2) {
+                        const startDate = selectedDates[0].toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '/');
+                        const endDate = selectedDates[1].toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '/');
+                        console.log('Selected date range:', `${startDate} to ${endDate}`);
+                        loadInvoices(startDate, endDate);
+                    }
+                }
+            });
+
+            // Event listeners for filters
+            document.getElementById('searchInput').addEventListener('input', () => {
+                currentPage = 1;
+                loadInvoices();
+            });
+
+            document.getElementById('statusFilter').addEventListener('change', () => {
+                currentPage = 1;
+                loadInvoices();
+            });
+
+           
+            // Try again button
+            document.getElementById('tryAgainBtn')?.addEventListener('click', loadInvoices);
+
+            // Load initial data
+            loadInvoices();
+        });
+    </script>
+}

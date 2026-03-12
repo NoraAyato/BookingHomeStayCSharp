@@ -1,0 +1,1411 @@
+﻿@{
+    ViewData["Title"] = "Chi tiết Homestay";
+}
+
+<div class="min-h-screen bg-gray-50">
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-white bg-opacity-90 z-50 flex items-center justify-center">
+        <div class="text-center">
+            <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-rose-600 mx-auto"></div>
+            <p class="mt-4 text-lg font-medium text-gray-700">Đang tải thông tin homestay...</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="contentContainer" class="hidden">
+        <!-- Hero Section -->
+        <div class="relative bg-gray-900 overflow-hidden">
+            <div id="homestayHero" class="h-96 w-full bg-cover bg-center relative">
+                <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/70 to-transparent"></div>
+                <div class="container mx-auto px-4 h-full flex items-end pb-12 relative z-10">
+                    <div class="max-w-3xl">
+                        <div class="flex items-center mb-4">
+                            <div class="flex items-center bg-rose-600 bg-opacity-90 text-white px-3 py-1 rounded-full text-sm font-medium">
+                                <i class="fas fa-star mr-1"></i>
+                                <span id="homestayRating">4.8</span>
+                            </div>
+                            <span id="homestayLocation" class="ml-3 text-white text-sm flex items-center">
+                                <i class="fas fa-map-marker-alt mr-1"></i>
+                                <span>Đang tải...</span>
+                            </span>
+                        </div>
+                        <h1 id="homestayName" class="text-4xl md:text-5xl font-bold text-white mb-4">Tên Homestay</h1>
+                        <p id="homestayAddress" class="text-lg text-gray-300">Địa chỉ homestay</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Container -->
+        <div class="container mx-auto px-4 py-8 -mt-16 relative z-10">
+            <div class="flex flex-col lg:flex-row gap-8">
+                <!-- Left Column (Main Content) -->
+                <div class="lg:w-2/3">
+                    <!-- Image Gallery -->
+                    <div class="bg-white rounded-xl shadow-md overflow-hidden mb-8">
+                        <div class="relative h-96 w-full" id="mainImageContainer">
+                            <img id="mainImage" src="" alt="Homestay image" class="w-full h-full object-cover">
+                            <button id="prevImage" class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white rounded-full p-2 hover:bg-opacity-70 transition">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button id="nextImage" class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white rounded-full p-2 hover:bg-opacity-70 transition">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        <div class="p-4 flex overflow-x-auto space-x-2" id="thumbnailContainer">
+                            <!-- Thumbnails will be added here by JavaScript -->
+                        </div>
+                    </div>
+
+                 
+
+                    <!-- Rooms Section -->
+                    <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-6">Phòng nghỉ</h2>
+                        <div id="roomsContainer">
+                            <!-- Rooms will be loaded here -->
+                            <div class="text-center py-8">
+                                <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-rose-600 mx-auto"></div>
+                                <p class="mt-4 text-gray-600">Đang tải danh sách phòng...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                 
+
+                    <!-- Policies Section -->
+                    <div class="bg-white rounded-xl shadow-md p-6 mb-8" id="policiesSection">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-6">Chính sách</h2>
+                        <div class="space-y-4" id="policiesContainer">
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0 h-6 w-6 text-rose-600 mt-1 mr-3">
+                                    <i class="fas fa-door-open"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-medium text-gray-800">Nhận phòng</h3>
+                                    <p id="checkInPolicy" class="text-gray-600">Đang tải...</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0 h-6 w-6 text-rose-600 mt-1 mr-3">
+                                    <i class="fas fa-door-closed"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-medium text-gray-800">Trả phòng</h3>
+                                    <p id="checkOutPolicy" class="text-gray-600">Đang tải...</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0 h-6 w-6 text-rose-600 mt-1 mr-3">
+                                    <i class="fas fa-utensils"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-medium text-gray-800">Bữa ăn</h3>
+                                    <p id="mealPolicy" class="text-gray-600">Đang tải...</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0 h-6 w-6 text-rose-600 mt-1 mr-3">
+                                    <i class="fas fa-ban"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-medium text-gray-800">Hủy phòng</h3>
+                                    <p id="cancellationPolicy" class="text-gray-600">Đang tải...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reviews Section -->
+                    <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+                        
+                        <div id="reviewsContainer">
+                            <!-- Reviews will be loaded here -->
+                            <div class="text-center py-8">
+                                <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-rose-600 mx-auto"></div>
+                                <p class="mt-4 text-gray-600">Đang tải đánh giá...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column (Booking Widget) -->
+                <div class="lg:w-1/3">
+                    <div class="sticky top-4">
+                        <!-- Booking Widget -->
+                        <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-6">
+                            <div class="p-6">
+                                <h3 class="text-xl font-bold text-gray-800 mb-4">Đặt phòng</h3>
+
+                                <!-- Date Picker -->
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Ngày nhận phòng - Ngày trả phòng</label>
+                                    <div class="relative">
+                                        <input type="text" id="dateRangePicker" class="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-300 focus:border-rose-300" placeholder="Chọn ngày">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <i class="fas fa-calendar-alt text-gray-400"></i>
+                                        </div>
+                                    </div>
+                                </div>
+
+                               
+
+                                <!-- Price Summary -->
+                                <div class="border-t border-gray-200 pt-4 mb-4">
+                                    <div class="flex justify-between mb-2">
+                                        <span class="text-gray-600">Giá phòng/đêm</span>
+                                        <span id="roomPricePerNight" class="font-medium">0 VNĐ</span>
+                                    </div>
+                                    <div class="flex justify-between mb-2">
+                                        <span class="text-gray-600">Phụ thu</span>
+                                        <span id="surcharge" class="font-medium">0 VNĐ</span>
+                                    </div>
+                                    
+                                    <div class="border-t border-gray-200 mt-3 pt-3 flex justify-between text-lg font-bold">
+                                        <span>Tổng cộng</span>
+                                        <span id="totalPrice">0 VNĐ</span>
+                                    </div>
+                                </div>
+
+                                <!-- Book Now Button -->
+                                <button id="bookNowBtn" class="w-full py-3 bg-gradient-to-r from-rose-600 to-rose-500 text-white font-bold rounded-lg hover:from-rose-700 hover:to-rose-600 transition shadow-md">
+                                    Đặt ngay
+                                </button>
+
+                               
+                            </div>
+                        </div>
+
+                        <!-- Map Section -->
+                        <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+                            <div class="p-4">
+                                <h3 class="text-lg font-bold text-gray-800 mb-3">Vị trí</h3>
+                                <div id="mapContainer" class="h-64 rounded-lg overflow-hidden bg-gray-200">
+                                    <!-- Map will be loaded here -->
+                                </div>
+                                <p id="fullAddress" class="mt-3 text-gray-600 text-sm"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Virtual Tour Modal -->
+<div id="virtualTourModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-2">
+    <div class="bg-white rounded-xl w-[95vw] max-h-[95vh] overflow-hidden relative">
+        <button id="closeVirtualTourModal" class="absolute top-4 right-4 bg-white rounded-full p-2 shadow-md text-gray-600 hover:text-gray-900 z-20">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="w-full h-[90vh]">
+            <iframe id="virtualTourIframe"
+                    class="w-full h-full border-0"
+                    src="about:blank"
+                    frameborder="0"
+                    allowfullscreen
+                    allow="xr-spatial-tracking; gyroscope; accelerometer">
+            </iframe>
+        </div>
+    </div>
+</div>
+
+
+<!-- Room Details Modal -->
+<div id="roomModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="relative">
+            <button id="closeRoomModal" class="absolute top-4 right-4 bg-white rounded-full p-2 shadow-md z-10 text-gray-600 hover:text-gray-900">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-0">
+                <!-- Room Images -->
+                <div class="relative">
+                    <div id="roomImageCarousel" class="h-96 w-full bg-gray-200 relative overflow-hidden">
+                        <!-- Room images will be loaded here -->
+                    </div>
+                    <div id="roomThumbnails" class="p-4 flex overflow-x-auto space-x-2 border-t border-gray-200">
+                        <!-- Room thumbnails will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Room Details -->
+                <div class="p-6">
+                    <h3 id="roomName" class="text-2xl font-bold text-gray-800 mb-2">Tên phòng</h3>
+                    <div class="flex items-center mb-4">
+                        <div class="flex items-center text-sm text-gray-600">
+                            <i class="fas fa-user-friends mr-1"></i>
+                            <span id="roomCapacity">2</span> khách
+                        </div>
+                        <span class="mx-2 text-gray-400">•</span>
+                        <div class="flex items-center text-sm text-gray-600">
+                            <i class="fas fa-home mr-1"></i>
+                            <span id="roomType">Phòng đơn</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <span id="roomPrice" class="text-2xl font-bold text-rose-600">0 VNĐ</span>
+                        <span class="text-gray-500">/đêm</span>
+                    </div>
+
+                    <div class="mb-6">
+                        <h4 class="text-lg font-medium text-gray-800 mb-2">Tiện nghi</h4>
+                        <div class="grid grid-cols-2 gap-2" id="roomAmenities">
+                            <!-- Room amenities will be loaded here -->
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <h4 class="text-lg font-medium text-gray-800 mb-2">Mô tả</h4>
+                        <p id="roomDescription" class="text-gray-600">Đang tải mô tả...</p>
+                    </div>
+
+                    <button id="selectRoomBtn" class="w-full py-3 bg-rose-600 text-white font-bold rounded-lg hover:bg-rose-700 transition">
+                        Chọn phòng này
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        /* Custom styles for homestay details page */
+        #homestayHero {
+            transition: background-image 0.5s ease;
+        }
+
+        #virtualTourModal .bg-white {
+            padding: 0; /* Remove padding for full iframe */
+        }
+
+        #virtualTourIframe {
+            display: block; /* Ensure no extra spacing */
+        }
+
+        @@media (max-width: 768px) {
+            #virtualTourModal .bg-white
+
+        {
+            width: 100%;
+            height: 100%;
+            max-height: 100vh;
+        }
+
+        #virtualTourIframe {
+            height: 100%;
+        }
+
+        }
+
+        .thumbnail {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+            .thumbnail:hover, .thumbnail.active {
+                border-color: #e11d48;
+                transform: scale(1.05);
+            }
+
+        .room-card {
+            transition: all 0.3s ease;
+            border-radius: 12px;
+            overflow: hidden;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+            .room-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+            }
+
+        .review-card {
+            border-bottom: 1px solid #f3f4f6;
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+            .review-card:last-child {
+                border-bottom: none;
+                margin-bottom: 0;
+                padding-bottom: 0;
+            }
+
+        .amenity-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 0;
+        }
+
+        .amenity-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.75rem;
+            color: #e11d48;
+        }
+
+        /* Date range picker customization */
+        .daterangepicker {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            border: none;
+        }
+
+            .daterangepicker td.active, .daterangepicker td.active:hover {
+                background-color: #e11d48;
+            }
+
+            .daterangepicker td.in-range {
+                background-color: #fecdd3;
+            }
+
+            .daterangepicker .drp-buttons .btn {
+                border-radius: 8px;
+            }
+
+                .daterangepicker .drp-buttons .btn.applyBtn {
+                    background-color: #e11d48;
+                    border-color: #e11d48;
+                }
+
+            /* Style for booked dates in DateRangePicker */
+            .daterangepicker td.booked-date {
+                background-color: #fee2e2 !important; /* Light red for booked dates */
+                color: #b91c1c !important; /* Dark red text */
+                cursor: not-allowed !important;
+                text-decoration: line-through;
+            }
+
+            /* Ensure disabled dates are visually distinct */
+            .daterangepicker td.off, .daterangepicker td.off.in-range, .daterangepicker td.off.start-date, .daterangepicker td.off.end-date {
+                background-color: #f3f4f6 !important;
+                color: #9ca3af !important;
+                cursor: not-allowed !important;
+            }
+
+        /* Shake animation for invalid action */
+        @@keyframes shake {
+            0%
+
+        {
+            transform: translateX(0);
+        }
+
+        25% {
+            transform: translateX(-5px);
+        }
+
+        50% {
+            transform: translateX(5px);
+        }
+
+        75% {
+            transform: translateX(-5px);
+        }
+
+        100% {
+            transform: translateX(0);
+        }
+
+        }
+
+        .animate-shake {
+            animation: shake 0.5s;
+        }
+
+        /* Star rating */
+        .star-rating {
+            unicode-bidi: bidi-override;
+            color: #d1d5db;
+            font-size: 1.5rem;
+            position: relative;
+            margin: 0;
+            padding: 0;
+        }
+
+            .star-rating .fill-ratings {
+                color: #f59e0b;
+                padding: 0;
+                position: absolute;
+                z-index: 1;
+                display: block;
+                top: 0;
+                left: 0;
+                overflow: hidden;
+            }
+
+            .star-rating .empty-ratings {
+                padding: 0;
+                display: block;
+                z-index: 0;
+            }
+
+        /* Virtual tour button */
+        .virtual-tour-btn {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            z-index: 10;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+            .virtual-tour-btn:hover {
+                background-color: rgba(0, 0, 0, 0.9);
+                transform: translateY(-2px);
+            }
+
+        /* Image carousel */
+        .carousel-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+            .carousel-image.active {
+                opacity: 1;
+            }
+
+        /* Responsive adjustments */
+        @@media (max-width: 1024px) {
+            #mainImageContainer
+
+        {
+            height: 70vh;
+        }
+
+        }
+
+        @@media (max-width: 768px) {
+            #mainImageContainer
+
+        {
+            height: 60vh;
+        }
+
+        #homestayName {
+            font-size: 2rem;
+        }
+
+        }
+
+        @@media (max-width: 640px) {
+            #mainImageContainer
+
+        {
+            height: 50vh;
+        }
+
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            // Get homestay ID from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const homestayId = urlParams.get('id');
+
+            if (!homestayId) {
+                window.location.href = '/Homestay';
+                return;
+            }
+
+            // Initialize elements
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const contentContainer = document.getElementById('contentContainer');
+            const homestayName = document.getElementById('homestayName');
+            const homestayAddress = document.getElementById('homestayAddress');
+            const homestayRating = document.getElementById('homestayRating');
+            const homestayLocation = document.getElementById('homestayLocation');
+            const homestayHero = document.getElementById('homestayHero');
+            const mainImage = document.getElementById('mainImage');
+            const thumbnailContainer = document.getElementById('thumbnailContainer');
+            const prevImageBtn = document.getElementById('prevImage');
+            const nextImageBtn = document.getElementById('nextImage');
+            const roomsContainer = document.getElementById('roomsContainer');
+            const reviewsContainer = document.getElementById('reviewsContainer');
+            const fullAddress = document.getElementById('fullAddress');
+            const mapContainer = document.getElementById('mapContainer');
+            const checkInPolicy = document.getElementById('checkInPolicy');
+            const checkOutPolicy = document.getElementById('checkOutPolicy');
+            const mealPolicy = document.getElementById('mealPolicy');
+            const cancellationPolicy = document.getElementById('cancellationPolicy');
+            const policiesSection = document.getElementById('policiesSection');
+
+            // Booking elements
+            const dateRangePicker = document.getElementById('dateRangePicker');
+            const roomPricePerNight = document.getElementById('roomPricePerNight');
+            const surcharge = document.getElementById('surcharge');
+            const totalPrice = document.getElementById('totalPrice');
+            const bookNowBtn = document.getElementById('bookNowBtn');
+           
+
+            // Room modal elements
+            const roomModal = document.getElementById('roomModal');
+            const closeRoomModal = document.getElementById('closeRoomModal');
+            const roomImageCarousel = document.getElementById('roomImageCarousel');
+            const roomThumbnails = document.getElementById('roomThumbnails');
+            const roomName = document.getElementById('roomName');
+            const roomCapacity = document.getElementById('roomCapacity');
+            const roomType = document.getElementById('roomType');
+            const roomPrice = document.getElementById('roomPrice');
+            const roomAmenities = document.getElementById('roomAmenities');
+            const roomDescription = document.getElementById('roomDescription');
+            const selectRoomBtn = document.getElementById('selectRoomBtn');
+
+            // State variables
+            let currentHomestay = null;
+            let currentImages = [];
+            let currentImageIndex = 0;
+            let selectedRoom = null;
+            let selectedServices = [];
+            let checkInDate = null;
+            let checkOutDate = null;
+            let numberOfNights = 0;
+            let servicesData = [];
+            let reviewsData = [];
+            let policyData = null;
+            let bookedDates = []; // Lưu trữ các khoảng thời gian đã đặt
+            let datePickerInstance = null;
+
+            // Function to initialize or reinitialize DateRangePicker
+            function initDateRangePicker() {
+                if (datePickerInstance) {
+                    datePickerInstance.remove(); // Remove old instance to avoid conflicts
+                }
+                datePickerInstance = $(dateRangePicker).daterangepicker({
+                    opens: 'left',
+                    autoUpdateInput: false,
+                    locale: {
+                        cancelLabel: 'Xóa',
+                        applyLabel: 'Áp dụng',
+                        fromLabel: 'Từ',
+                        toLabel: 'Đến',
+                        customRangeLabel: 'Tùy chọn',
+                        daysOfWeek: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'],
+                        monthNames: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'],
+                        firstDay: 1
+                    },
+                    minDate: moment().startOf('day').toDate(),
+                    maxDate: moment().add(1, 'month').endOf('day').toDate(),
+                    isInvalidDate: function (date) {
+                        if (date.isBefore(moment().startOf('day'))) {
+                            return true;
+                        }
+                        return bookedDates.some(range =>
+                            date.isSameOrAfter(moment(range.start).startOf('day')) &&
+                            date.isSameOrBefore(moment(range.end).startOf('day'))
+                        );
+                    }
+                }).data('daterangepicker');
+
+                // Highlight booked dates and refresh calendar
+                $(dateRangePicker).on('showCalendar.daterangepicker', function (ev, picker) {
+                    // Clear previous booked-date classes
+                    picker.container.find('td').removeClass('booked-date');
+                    // Apply booked-date class to booked dates
+                    bookedDates.forEach(range => {
+                        let currentDate = moment(range.start).startOf('day');
+                        const endDate = moment(range.end).startOf('day');
+                        while (currentDate.isSameOrBefore(endDate)) {
+                            const dayElement = picker.container.find(`td[data-date="${currentDate.format('YYYY-MM-DD')}"]`);
+                            if (dayElement.length) {
+                                dayElement.addClass('booked-date');
+                            }
+                            currentDate.add(1, 'day');
+                        }
+                    });
+                });
+
+                // Prevent DateRangePicker from opening if no room is selected
+                $(dateRangePicker).on('click focus', function (e) {
+                    if (!selectedRoom) {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        const toast = document.createElement('div');
+                        toast.className = 'fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center';
+                        toast.innerHTML = `
+                            <i class="fas fa-exclamation-circle mr-2"></i>
+                            <span>Vui lòng chọn phòng trước khi chọn ngày</span>
+                        `;
+                        document.body.appendChild(toast);
+
+                        setTimeout(() => {
+                            toast.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                            setTimeout(() => toast.remove(), 300);
+                        }, 3000);
+
+                        dateRangePicker.classList.add('animate-shake');
+                        setTimeout(() => dateRangePicker.classList.remove('animate-shake'), 500);
+                    }
+                });
+
+                // Handle date selection
+                $(dateRangePicker).on('apply.daterangepicker', async function (ev, picker) {
+                   
+                    if (!selectedRoom) {
+                      
+                        const toast = document.createElement('div');
+                        toast.className = 'fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center';
+                        toast.innerHTML = `
+                            <i class="fas fa-exclamation-circle mr-2"></i>
+                            <span>Vui lòng chọn phòng trước khi áp dụng ngày</span>
+                        `;
+                        document.body.appendChild(toast);
+                        setTimeout(() => {
+                            toast.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                            setTimeout(() => toast.remove(), 300);
+                        }, 3000);
+                        return;
+                    }
+
+                    try {
+                        const startDate = picker.startDate;
+                        const endDate = picker.endDate;
+                      
+                        $(this).val(startDate.format('DD/MM/YYYY') + ' - ' + endDate.format('DD/MM/YYYY'));
+                        checkInDate = startDate.toDate();
+                        checkOutDate = endDate.toDate();
+                        numberOfNights = endDate.diff(startDate, 'days');
+                     
+                        // Lấy phụ thu từ API
+                        const phuThuResponse = await fetch(`/Homestay/GetPhuThu?maPhong=${selectedRoom.maPhong}&checkInDate=${startDate.format('YYYY-MM-DD')}&checkOutDate=${endDate.format('YYYY-MM-DD')}`);
+                        const phuThuResult = await phuThuResponse.json();
+
+                        if (phuThuResult.success && phuThuResult.data) {
+                            selectedRoom.totalPhuThu = phuThuResult.data.phuThu; // Cập nhật phụ thu vào selectedRoom
+                          
+                        } else {
+                            console.warn('Không lấy được phụ thu:', phuThuResult.message);
+                            selectedRoom.totalPhuThu = 0; // Đặt phụ thu về 0 nếu lỗi
+                            const toast = document.createElement('div');
+                            toast.className = 'fixed bottom-4 right-4 bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center';
+                            toast.innerHTML = `
+                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                <span>${phuThuResult.message || 'Không thể tính phụ thu'}</span>
+                            `;
+                            document.body.appendChild(toast);
+                            setTimeout(() => {
+                                toast.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                                setTimeout(() => toast.remove(), 300);
+                            }, 3000);
+                        }
+
+                        updatePriceSummary();
+
+                        const toast = document.createElement('div');
+                        toast.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center';
+                        toast.innerHTML = `
+                            <i class="fas fa-check-circle mr-2"></i>
+                            <span>Đã chọn ngày từ ${startDate.format('DD/MM/YYYY')} đến ${endDate.format('DD/MM/YYYY')}</span>
+                        `;
+                        document.body.appendChild(toast);
+                        setTimeout(() => {
+                            toast.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                            setTimeout(() => toast.remove(), 300);
+                        }, 3000);
+                    } catch (error) {
+                        console.error('Error in apply.daterangepicker:', error);
+                        selectedRoom.totalPhuThu = 0; // Đặt phụ thu về 0 nếu lỗi
+                        updatePriceSummary();
+                        const toast = document.createElement('div');
+                        toast.className = 'fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center';
+                        toast.innerHTML = `
+                            <i class="fas fa-exclamation-circle mr-2"></i>
+                            <span>Lỗi khi áp dụng ngày: Vui lòng thử lại</span>
+                        `;
+                        document.body.appendChild(toast);
+                        setTimeout(() => {
+                            toast.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                            setTimeout(() => toast.remove(), 300);
+                        }, 3000);
+                    }
+                });
+            }
+
+            // Initialize DateRangePicker on page load
+            initDateRangePicker();
+
+            // Fetch booked dates for a room
+            async function fetchBookedDates(roomId) {
+                try {
+                    const response = await fetch(`/Homestay/GetBookedDatesForRoom?maPhong=${roomId}`);
+                    const result = await response.json();
+                   
+                    if (result.success && result.data) {
+                        const today = moment().startOf('day');
+                        bookedDates = result.data
+                            .filter(d => d.ngayDen && d.ngayDi && moment(d.ngayDi).isSameOrAfter(today))
+                            .map(d => ({
+                                start: new Date(d.ngayDen),
+                                end: new Date(d.ngayDi)
+                            }))
+                            .filter(range => !isNaN(range.start.getTime()) && !isNaN(range.end.getTime()));
+
+                        // Reinitialize DateRangePicker with updated booked dates
+                        initDateRangePicker();
+
+                        // Clear previous selection to avoid conflicts
+                        $(dateRangePicker).val('');
+                        checkInDate = null;
+                        checkOutDate = null;
+                        numberOfNights = 0;
+                        updatePriceSummary();
+
+                        // Force calendar to refresh
+                        if (datePickerInstance) {
+                            datePickerInstance.hide(); // Hide if open
+                            datePickerInstance.show(); // Reopen to refresh calendar
+                        }
+                    } else {
+                        console.warn('Không tìm thấy dữ liệu ngày đã đặt hoặc có lỗi:', result.message);
+                        bookedDates = [];
+                        initDateRangePicker();
+
+                        // Clear previous selection
+                        $(dateRangePicker).val('');
+                        checkInDate = null;
+                        checkOutDate = null;
+                        numberOfNights = 0;
+                        updatePriceSummary();
+
+                        // Force calendar to refresh
+                        if (datePickerInstance) {
+                            datePickerInstance.hide();
+                            datePickerInstance.show();
+                        }
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi lấy dữ liệu ngày đã đặt:', error);
+                    bookedDates = [];
+                    initDateRangePicker();
+
+                    // Clear previous selection
+                    $(dateRangePicker).val('');
+                    checkInDate = null;
+                    checkOutDate = null;
+                    numberOfNights = 0;
+                    updatePriceSummary();
+
+                    // Force calendar to refresh
+                    if (datePickerInstance) {
+                        datePickerInstance.hide();
+                        datePickerInstance.show();
+                    }
+                }
+            }
+
+            // Fetch homestay details
+            async function fetchHomestayDetails() {
+                try {
+                    loadingOverlay.classList.remove('hidden');
+                    contentContainer.classList.add('hidden');
+
+                    const [homestayResponse, servicesResponse, reviewsResponse, policyResponse] = await Promise.all([
+                        fetch(`/Homestay/GetHomestayDetails?id=${homestayId}`),
+                        fetch(`/Homestay/GetDichVusByHomestay?idHomestay=${homestayId}`),
+                        fetch(`/Homestay/GetDanhGiaByHomestayId?homestayId=${homestayId}`),
+                        fetch(`/Homestay/GetChinhSach?homestayId=${homestayId}`)
+                    ]);
+
+                    const homestayResult = await homestayResponse.json();
+                    const servicesResult = await servicesResponse.json();
+                    const reviewsResult = await reviewsResponse.json();
+                    const policyResult = await policyResponse.json();
+
+                    if (homestayResult.success && homestayResult.data) {
+                        currentHomestay = homestayResult.data;
+                        servicesData = servicesResult.success ? servicesResult.data : [];
+                        reviewsData = reviewsResult.success ? reviewsResult.danhGias : [];
+                        policyData = policyResult.success ? policyResult.data : null;
+
+                        renderHomestayDetails();
+                        renderRooms();
+                        renderReviews();
+                        renderPolicies();
+                        initMap();
+                    } else {
+                        throw new Error('Không tìm thấy thông tin homestay');
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi lấy chi tiết homestay:', error);
+                    contentContainer.innerHTML = `
+                        <div class="text-center py-8">
+                            <i class="fas fa-exclamation-circle text-4xl text-red-500 mb-4"></i>
+                            <h3 class="text-xl font-medium text-gray-700 mb-2">Lỗi tải thông tin</h3>
+                            <p class="text-gray-500">Không thể tải thông tin homestay. Vui lòng thử lại sau.</p>
+                        </div>
+                    `;
+                } finally {
+                    loadingOverlay.classList.add('hidden');
+                    contentContainer.classList.remove('hidden');
+                }
+            }
+
+            // Render homestay details
+            function renderHomestayDetails() {
+                homestayName.textContent = currentHomestay.tenHomestay;
+                homestayAddress.textContent = currentHomestay.diaChi;
+                homestayRating.textContent = currentHomestay.hang ? currentHomestay.hang.toFixed(1) : 'Chưa có';
+                homestayLocation.querySelector('span').textContent = currentHomestay.tenKV || 'Không xác định';
+                fullAddress.textContent = currentHomestay.diaChi;
+
+                currentImages = [currentHomestay.hinhAnh];
+                homestayHero.style.backgroundImage = `url('${currentImages[0] || '/images/placeholder.jpg'}')`;
+                renderImageGallery();
+            }
+
+            // Render image gallery
+            function renderImageGallery() {
+                if (currentImages.length === 0) {
+                    mainImage.src = '/images/placeholder.jpg';
+                    thumbnailContainer.innerHTML = '';
+                    return;
+                }
+
+                mainImage.src = currentImages[0];
+                thumbnailContainer.innerHTML = '';
+
+                currentImages.forEach((image, index) => {
+                    const thumbnail = document.createElement('img');
+                    thumbnail.src = image;
+                    thumbnail.className = 'thumbnail' + (index === 0 ? ' active' : '');
+                    thumbnail.alt = `Thumbnail ${index + 1}`;
+                    thumbnail.addEventListener('click', () => {
+                        mainImage.src = image;
+                        document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+                        thumbnail.classList.add('active');
+                        currentImageIndex = index;
+                    });
+                    thumbnailContainer.appendChild(thumbnail);
+                });
+
+                prevImageBtn.style.display = currentImages.length > 1 ? 'block' : 'none';
+                nextImageBtn.style.display = currentImages.length > 1 ? 'block' : 'none';
+            }
+
+            // Navigation for image gallery
+            prevImageBtn.addEventListener('click', function () {
+                currentImageIndex = (currentImageIndex - 1 + currentImages.length) % currentImages.length;
+                mainImage.src = currentImages[currentImageIndex];
+                document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+                thumbnailContainer.children[currentImageIndex].classList.add('active');
+            });
+
+            nextImageBtn.addEventListener('click', function () {
+                currentImageIndex = (currentImageIndex + 1) % currentImages.length;
+                mainImage.src = currentImages[currentImageIndex];
+                document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+                thumbnailContainer.children[currentImageIndex].classList.add('active');
+            });
+
+            // Render rooms
+            function renderRooms() {
+                if (!currentHomestay.rooms || currentHomestay.rooms.length === 0) {
+                    roomsContainer.innerHTML = `
+                        <div class="text-center py-8">
+                            <i class="fas fa-bed text-4xl text-gray-300 mb-4"></i>
+                            <h3 class="text-xl font-medium text-gray-700 mb-2">Không có phòng nào</h3>
+                            <p class="text-gray-500">Homestay này hiện không có phòng nào khả dụng.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                roomsContainer.innerHTML = currentHomestay.rooms.map(room => `
+                    <div class="room-card mb-6">
+                        <div class="flex flex-col md:flex-row">
+                            <div class="md:w-1/3 relative">
+                                <img src="${room.hinhAnhs.length > 0 ? room.hinhAnhs[0].urlAnh : '/images/placeholder-room.jpg'}"
+                                     alt="${room.tenPhong}"
+                                     class="w-full h-48 md:h-full object-cover">
+                                ${room.virtualTours ? `
+                                <button class="virtual-tour-btn" onclick="openVirtualTour('${room.virtualTours}')">
+                                    <i class="fas fa-vr-cardboard mr-2"></i> Virtual Tour
+                                </button>
+                                ` : ''}
+                            </div>
+                            <div class="md:w-2/3 p-4">
+                                <div class="flex justify-between items-start mb-2">
+                                    <h3 class="text-xl font-bold text-gray-800">${room.tenPhong}</h3>
+                                    <span class="text-lg font-bold text-rose-600">${room.donGia.toLocaleString('vi-VN')} VNĐ</span>
+                                </div>
+
+                                <div class="flex items-center text-sm text-gray-600 mb-4">
+                                    <i class="fas fa-user-friends mr-1"></i>
+                                    <span class="mr-4">${room.soNguoi} khách</span>
+                                    <i class="fas fa-home mr-1"></i>
+                                    <span>${room.tenLoai}</span>
+                                </div>
+
+                                <div class="mb-4">
+                                    <h4 class="text-sm font-medium text-gray-700 mb-1">Tiện nghi chính</h4>
+                                    <div class="flex flex-wrap gap-2">
+                                        ${room.tienNghis.slice(0, 4).map(tn => `
+                                            <span class="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">${tn.tenTienNghi}</span>
+                                        `).join('')}
+                                        ${room.tienNghis.length > 4 ? `<span class="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">+${room.tienNghis.length - 4} khác</span>` : ''}
+                                    </div>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-4">
+                                    <button class="view-room-details px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+                                            data-room-id="${room.maPhong}">
+                                        <i class="fas fa-info-circle mr-2"></i> Xem chi tiết
+                                    </button>
+                                    <button class="select-room px-4 py-2 text-sm bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition"
+                                            data-room-id="${room.maPhong}">
+                                        <i class="fas fa-check mr-2"></i> Chọn phòng
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                document.querySelectorAll('.view-room-details').forEach(button => {
+                    button.addEventListener('click', function () {
+                        const roomId = this.dataset.roomId;
+                        openRoomDetailsModal(roomId);
+                    });
+                });
+
+                document.querySelectorAll('.select-room').forEach(button => {
+                    button.addEventListener('click', function () {
+                        const roomId = this.dataset.roomId;
+                        selectRoom(roomId);
+                    });
+                });
+            }
+
+            // Open room details modal
+            function openRoomDetailsModal(roomId) {
+                const room = currentHomestay.rooms.find(r => r.maPhong === roomId);
+                if (!room) return;
+
+                roomName.textContent = room.tenPhong;
+                roomCapacity.textContent = room.soNguoi;
+                roomType.textContent = room.tenLoai;
+                roomPrice.textContent = room.donGia.toLocaleString('vi-VN');
+                roomDescription.textContent = room.moTa || 'Không có mô tả chi tiết.';
+
+                roomAmenities.innerHTML = room.tienNghis.map(tn => `
+                    <div class="flex items-center">
+                        <div class="amenity-icon">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <span class="text-gray-700">${tn.tenTienNghi} (${tn.soLuong})</span>
+                    </div>
+                `).join('');
+
+                roomImageCarousel.innerHTML = '';
+                roomThumbnails.innerHTML = '';
+
+                if (room.hinhAnhs.length === 0) {
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'h-full w-full flex items-center justify-center bg-gray-100';
+                    placeholder.innerHTML = '<i class="fas fa-image text-4xl text-gray-300"></i>';
+                    roomImageCarousel.appendChild(placeholder);
+                } else {
+                    room.hinhAnhs.forEach((image, index) => {
+                        const img = document.createElement('img');
+                        img.src = image.urlAnh;
+                        img.alt = image.moTa || room.tenPhong;
+                        img.className = 'carousel-image' + (index === 0 ? ' active' : '');
+                        roomImageCarousel.appendChild(img);
+
+                        const thumb = document.createElement('img');
+                        thumb.src = image.urlAnh;
+                        thumb.alt = `Thumbnail ${index + 1}`;
+                        thumb.className = 'thumbnail h-16 w-16 object-cover' + (index === 0 ? ' active' : '');
+                        thumb.addEventListener('click', () => {
+                            document.querySelectorAll('.carousel-image').forEach(img => img.classList.remove('active'));
+                            img.classList.add('active');
+                            document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+                            thumb.classList.add('active');
+                        });
+                        roomThumbnails.appendChild(thumb);
+                    });
+                }
+
+                const existingVirtualTourBtn = roomModal.querySelector('.virtual-tour-btn');
+                if (existingVirtualTourBtn) existingVirtualTourBtn.remove();
+                if (room.virtualTours) {
+                    const virtualTourBtn = document.createElement('button');
+                    virtualTourBtn.className = 'virtual-tour-btn mt-4';
+                    virtualTourBtn.innerHTML = '<i class="fas fa-vr-cardboard mr-2"></i> Xem Tour Ảo';
+                    virtualTourBtn.addEventListener('click', () => openVirtualTour(room.virtualTours));
+                    roomModal.querySelector('.p-6').appendChild(virtualTourBtn);
+                }
+
+                selectRoomBtn.dataset.roomId = room.maPhong;
+                selectRoomBtn.addEventListener('click', function () {
+                    selectRoom(room.maPhong);
+                    roomModal.classList.add('hidden');
+                });
+
+                roomModal.classList.remove('hidden');
+            }
+
+            // Close room modal
+            closeRoomModal.addEventListener('click', function () {
+                roomModal.classList.add('hidden');
+            });
+
+            // Select a room
+            async function selectRoom(roomId) {
+                const room = currentHomestay.rooms.find(r => r.maPhong === roomId);
+                if (!room) return;
+
+                // Lưu phòng mới
+                selectedRoom = room;
+                // Đặt lại trạng thái ngày và phụ thu
+                checkInDate = null;
+                checkOutDate = null;
+                numberOfNights = 0;
+                selectedRoom.totalPhuThu = 0; // Đặt lại phụ thu
+                $(dateRangePicker).val(''); // Xóa giá trị input
+                updatePriceSummary();
+
+                // Lấy danh sách ngày đã đặt cho phòng mới
+                await fetchBookedDates(roomId);
+
+                // Khởi tạo lại DateRangePicker để làm mới lịch
+                initDateRangePicker();
+
+                // Thông báo chọn phòng thành công
+                const selectToast = document.createElement('div');
+                selectToast.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center';
+                selectToast.innerHTML = `
+                    <i class="fas fa-check-circle mr-2"></i>
+                    <span>Đã chọn phòng ${room.tenPhong}</span>
+                `;
+                document.body.appendChild(selectToast);
+                setTimeout(() => {
+                    selectToast.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                    setTimeout(() => selectToast.remove(), 300);
+                }, 3000);
+
+                // Thông báo yêu cầu chọn lại ngày
+                const remindToast = document.createElement('div');
+                remindToast.className = 'fixed bottom-4 right-4 mt-16 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center';
+                remindToast.innerHTML = `
+                    <i class="fas fa-info-circle mr-2"></i>
+                    <span>Vui lòng chọn lại ngày nhận và trả phòng</span>
+                `;
+                document.body.appendChild(remindToast);
+                setTimeout(() => {
+                    remindToast.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                    setTimeout(() => remindToast.remove(), 300);
+                }, 3000);
+            }
+       
+        let currentReviewPage = 1;
+        const reviewsPerPage = 2;
+
+            // Render reviews
+           function renderReviews() {
+            const reviewsContainer = document.getElementById('reviewsContainer');
+            if (!reviewsData || reviewsData.length === 0) {
+                reviewsContainer.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fas fa-comment-alt text-4xl text-gray-300 mb-4"></i>
+                        <h3 class="text-xl font-medium text-gray-700 mb-2">Chưa có đánh giá</h3>
+                        <p class="text-gray-500">Hãy là người đầu tiên đánh giá homestay này.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const totalRatings = reviewsData.reduce((sum, review) => sum + review.rating, 0);
+            const averageRating = totalRatings / reviewsData.length;
+
+            const startIndex = (currentReviewPage - 1) * reviewsPerPage;
+            const endIndex = startIndex + reviewsPerPage;
+            const currentReviews = reviewsData.slice(startIndex, endIndex);
+
+            let reviewsHtml = `
+                <div class="flex items-center mb-6">
+                    <div class="star-rating mr-4">
+                        <div class="fill-ratings" style="width: ${(averageRating / 5) * 100}%">
+                            <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+                        </div>
+                        <div class="empty-ratings">
+                            <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+                        </div>
+                    </div>
+                    <div class="text-gray-700">
+                        <span class="font-bold">${averageRating.toFixed(1)}</span> trên 5 (${reviewsData.length} đánh giá)
+                    </div>
+                </div>
+                <div class="space-y-6">
+                    ${currentReviews.map(review => `
+                        <div class="review-card">
+                            <div class="flex items-start mb-3">
+                                <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
+                                    <i class="fas fa-user text-gray-500"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-800">${review.tenNguoiDung || 'Khách hàng'}</h4>
+                                    <div class="flex items-center text-sm text-gray-500">
+                                        <div class="flex text-yellow-400 mr-2">
+                                            ${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}
+                                        </div>
+                                        <span>• ${new Date(review.ngayDanhGia).toLocaleDateString('vi-VN')}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-gray-700">${review.binhLuan || 'Không có bình luận'}</p>
+                            ${review.hinhAnh ? `
+                            <div class="mt-3 flex flex-wrap gap-2">
+                                <img src="${review.hinhAnh}" alt="Review image" class="w-20 h-20 object-cover rounded-lg">
+                            </div>
+                            ` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            const totalPages = Math.ceil(reviewsData.length / reviewsPerPage);
+            if (totalPages > 1) {
+                reviewsHtml += `
+                    <div class="flex justify-between items-center mt-4">
+                        <button onclick="changeReviewPage(-1)" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-sm rounded" ${currentReviewPage === 1 ? 'disabled' : ''}>Trước</button>
+                        <span class="text-sm text-gray-600">Trang ${currentReviewPage} / ${totalPages}</span>
+                        <button onclick="changeReviewPage(1)" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-sm rounded" ${currentReviewPage === totalPages ? 'disabled' : ''}>Sau</button>
+                    </div>
+                `;
+            }
+
+            reviewsContainer.innerHTML = reviewsHtml;
+        }
+
+        function changeReviewPage(delta) {
+            const totalPages = Math.ceil(reviewsData.length / reviewsPerPage);
+            currentReviewPage += delta;
+            if (currentReviewPage < 1) currentReviewPage = 1;
+            if (currentReviewPage > totalPages) currentReviewPage = totalPages;
+            renderReviews();
+        }
+
+
+            // Render policies
+            function renderPolicies() {
+                if (!policyData) {
+                    policiesSection.classList.add('hidden');
+                    return;
+                }
+
+                checkInPolicy.textContent = policyData.nhanPhong || '14:00';
+                checkOutPolicy.textContent = policyData.traPhong || '12:00';
+                mealPolicy.textContent = policyData.buaAn || 'Không bao gồm bữa ăn';
+                cancellationPolicy.textContent = policyData.huyPhong || 'Hủy miễn phí trước 7 ngày';
+            }
+
+            // Initialize map
+            async function initMap() {
+                if (!currentHomestay.diaChi) {
+                    mapContainer.innerHTML = `
+                        <div class="h-full w-full flex items-center justify-center bg-gray-200">
+                            <div class="text-center">
+                                <i class="fas fa-map-marked-alt text-4xl text-gray-400 mb-2"></i>
+                                <p class="text-gray-600">Không có địa chỉ để hiển thị</p>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/Homestay/GetGoogleMapsApiKey');
+                    const result = await response.json();
+
+                    if (!result.success || !result.data) {
+                        throw new Error(result.message || 'Không thể lấy API Key');
+                    }
+
+                    const apiKey = result.data;
+                    const encodedAddress = encodeURIComponent(currentHomestay.diaChi);
+
+                    mapContainer.innerHTML = `
+                        <iframe
+                            class="w-full h-full"
+                            frameborder="0"
+                            style="border:0;"
+                            referrerpolicy="no-referrer-when-downgrade"
+                            src="https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${encodedAddress}"
+                            allowfullscreen>
+                        </iframe>
+                    `;
+                } catch (error) {
+                    console.error('Lỗi khi khởi tạo bản đồ:', error);
+                    mapContainer.innerHTML = `
+                        <div class="h-full w-full flex items-center justify-center bg-gray-200">
+                            <div class="text-center">
+                                <i class="fas fa-exclamation-circle text-4xl text-red-500 mb-2"></i>
+                                <p class="text-gray-600">Lỗi tải bản đồ: ${error.message}</p>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            // Update price summary
+            function updatePriceSummary() {
+             
+                if (!selectedRoom) {
+                 
+                    roomPricePerNight.textContent = '0 VNĐ';
+                    surcharge.textContent = '0 VNĐ';
+                    totalPrice.textContent = '0 VNĐ';
+                    return;
+                }
+
+                const roomPrice = selectedRoom.donGia;
+                const surchargeAmount = selectedRoom.totalPhuThu || 0;
+
+              
+                roomPricePerNight.textContent = roomPrice.toLocaleString('vi-VN') + ' VNĐ';
+                surcharge.textContent = surchargeAmount.toLocaleString('vi-VN') + ' VNĐ';
+
+                const total = (roomPrice + surchargeAmount) * (numberOfNights || 1);
+            
+                totalPrice.textContent = total.toLocaleString('vi-VN') + ' VNĐ';
+            }
+           function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            let bgColor = 'bg-green-500'; // Mặc định: success
+
+            if (type === 'error') bgColor = 'bg-red-500';
+            if (type === 'warning') bgColor = 'bg-yellow-500';
+
+            toast.className = `fixed bottom-4 right-4 ${bgColor} text-white px-4 py-2 rounded-lg shadow-lg flex items-center z-50`;
+            toast.innerHTML = `
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} mr-2"></i>
+                <span>${message}</span>
+            `;
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+            // Book now button
+
+            bookNowBtn.addEventListener('click', function () {
+            if (!selectedRoom) {
+                showToast('Vui lòng chọn phòng trước khi đặt');
+                return;
+            }
+
+            if (!checkInDate || !checkOutDate) {
+                showToast('Vui lòng chọn ngày nhận phòng và ngày trả phòng');
+                return;
+            }
+
+            // Kiểm tra hồ sơ người dùng trước khi tiếp tục
+            fetch('/User/CheckUserProfile')
+                .then(response => response.json())
+                .then(result => {
+                    if (!result.success) {
+                        showToast(result.message,'error');
+
+                        // Nếu có redirect URL, chuyển hướng sau 2.5 giây
+                        if (result.redirectUrl) {
+                            setTimeout(() => {
+                                window.location.href = result.redirectUrl;
+                            }, 2500);
+                        }
+
+                        return;
+                    }
+
+                    // Nếu hồ sơ hợp lệ => tiếp tục đặt phòng
+                    const formattedCheckInDate = moment(checkInDate).format('YYYY-MM-DD');
+                    const formattedCheckOutDate = moment(checkOutDate).format('YYYY-MM-DD');
+
+                    const params = new URLSearchParams({
+                        maPhong: selectedRoom.maPhong,
+                        checkInDate: formattedCheckInDate,
+                        checkOutDate: formattedCheckOutDate,
+                        homestayId: homestayId,
+                        selectedRoomIds: selectedRoom.maPhong
+                    });
+
+                    window.location.href = `/Booking/Create?${params.toString()}`;
+                })
+                .catch(err => {
+                    console.error(err);
+                    showToast('Đã xảy ra lỗi khi kiểm tra thông tin người dùng.');
+                });
+        });
+
+
+           
+            // Open virtual tour
+            window.openVirtualTour = function (url) {
+                if (!url || !/^https?:\/\//i.test(url)) {
+                    const toast = document.createElement('div');
+                    toast.className = 'fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center';
+                    toast.innerHTML = `
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        <span>URL tour ảo không hợp lệ</span>
+                    `;
+                    document.body.appendChild(toast);
+                    setTimeout(() => {
+                        toast.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                        setTimeout(() => toast.remove(), 300);
+                    }, 3000);
+                    return;
+                }
+
+                const virtualTourModal = document.getElementById('virtualTourModal');
+                const virtualTourIframe = document.getElementById('virtualTourIframe');
+                virtualTourIframe.src = url;
+                virtualTourModal.classList.remove('hidden');
+            };
+
+            // Close virtual tour modal
+            document.getElementById('closeVirtualTourModal').addEventListener('click', function () {
+                const virtualTourModal = document.getElementById('virtualTourModal');
+                const virtualTourIframe = document.getElementById('virtualTourIframe');
+                virtualTourIframe.src = 'about:blank';
+                virtualTourModal.classList.add('hidden');
+            });
+
+            // Start by fetching homestay details
+            fetchHomestayDetails();
+        });
+    </script>
+}

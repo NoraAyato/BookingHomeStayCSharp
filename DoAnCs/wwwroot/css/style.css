@@ -1,0 +1,600 @@
+﻿/* Custom Styles */
+
+:root {
+    --primary-gradient: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+    --gold-gradient: linear-gradient(135deg, #facc15 0%, #eab308 100%);
+    --glass-bg: rgba(255, 255, 255, 0.15);
+}
+
+body {
+    font-family: 'SF Pro Display', system-ui, sans-serif;
+    background-color: #fafafa;
+    color: #333;
+    overflow-x: hidden;
+}
+.transform-gpu {
+    transform: translateZ(0);
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
+}
+/* Glassmorphism Effect */
+
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+}
+/* Neumorphism Effect */
+
+.neumorphism {
+    border-radius: 16px;
+    background: #fafafa;
+    box-shadow: 8px 8px 16px #e0e0e0, -8px -8px 16px #ffffff;
+    transition: all 0.3s ease;
+}
+
+    .neumorphism:hover {
+        box-shadow: 12px 12px 24px #d0d0d0, -12px -12px 24px #ffffff;
+        transform: translateY(-5px);
+    }
+/* Gradient Text */
+
+.gradient-text {
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    background-image: var(--primary-gradient);
+}
+/* Floating Animation */
+
+.floating {
+    animation: float 6s ease-in-out infinite;
+}
+/* Hero Section Background */
+
+.hero-bg {
+    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80') no-repeat center center/cover;
+    position: relative;
+    overflow: hidden;
+}
+
+    .hero-bg::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 200px;
+        background: linear-gradient(to top, #fafafa, transparent);
+        z-index: 1;
+    }
+/* Particle Background */
+
+.particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 0;
+}
+
+    .particles li {
+        position: absolute;
+        display: block;
+        list-style: none;
+        width: 20px;
+        height: 20px;
+        background: rgba(255, 255, 255, 0.2);
+        animation: animate 25s linear infinite;
+        bottom: -150px;
+        border-radius: 50%;
+    }
+
+        .particles li:nth-child(1) {
+            left: 25%;
+            width: 80px;
+            height: 80px;
+            animation-delay: 0s;
+        }
+
+        .particles li:nth-child(2) {
+            left: 10%;
+            width: 20px;
+            height: 20px;
+            animation-delay: 2s;
+            animation-duration: 12s;
+        }
+
+        .particles li:nth-child(3) {
+            left: 70%;
+            width: 20px;
+            height: 20px;
+            animation-delay: 4s;
+        }
+
+        .particles li:nth-child(4) {
+            left: 40%;
+            width: 60px;
+            height: 60px;
+            animation-delay: 0s;
+            animation-duration: 18s;
+        }
+
+        .particles li:nth-child(5) {
+            left: 65%;
+            width: 20px;
+            height: 20px;
+            animation-delay: 0s;
+        }
+
+        .particles li:nth-child(6) {
+            left: 75%;
+            width: 110px;
+            height: 110px;
+            animation-delay: 3s;
+        }
+
+        .particles li:nth-child(7) {
+            left: 35%;
+            width: 150px;
+            height: 150px;
+            animation-delay: 7s;
+        }
+
+        .particles li:nth-child(8) {
+            left: 50%;
+            width: 25px;
+            height: 25px;
+            animation-delay: 15s;
+            animation-duration: 45s;
+        }
+
+        .particles li:nth-child(9) {
+            left: 20%;
+            width: 15px;
+            height: 15px;
+            animation-delay: 2s;
+            animation-duration: 35s;
+        }
+
+        .particles li:nth-child(10) {
+            left: 85%;
+            width: 150px;
+            height: 150px;
+            animation-delay: 0s;
+            animation-duration: 11s;
+        }
+
+@keyframes animate {
+    0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(-1000px) rotate(720deg);
+        opacity: 0;
+    }
+}
+/* Custom Scrollbar */
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #f43f5e, #e11d48);
+    border-radius: 10px;
+}
+/* Glow Effect */
+
+.glow {
+    box-shadow: 0 0 15px rgba(244, 63, 94, 0.5);
+}
+
+    .glow:hover {
+        box-shadow: 0 0 25px rgba(244, 63, 94, 0.8);
+    }
+/* Wave Animation */
+
+.wave-animation {
+    animation: wave 8s linear infinite;
+    transform-origin: 70% 70%;
+    display: inline-block;
+}
+/* Custom Checkbox */
+
+.custom-checkbox {
+    position: relative;
+    padding-left: 30px;
+    cursor: pointer;
+}
+
+    .custom-checkbox input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        height: 0;
+        width: 0;
+    }
+
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 20px;
+    width: 20px;
+    background-color: white;
+    border: 2px solid #f43f5e;
+    border-radius: 4px;
+}
+
+.custom-checkbox:hover input ~ .checkmark {
+    background-color: #fecdd3;
+}
+
+.custom-checkbox input:checked ~ .checkmark {
+    background-color: #f43f5e;
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.custom-checkbox input:checked ~ .checkmark:after {
+    display: block;
+}
+
+.custom-checkbox .checkmark:after {
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+/* Custom Radio Button */
+
+.custom-radio {
+    position: relative;
+    padding-left: 30px;
+    cursor: pointer;
+}
+
+    .custom-radio input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        height: 0;
+        width: 0;
+    }
+
+.radiomark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 20px;
+    width: 20px;
+    background-color: white;
+    border: 2px solid #f43f5e;
+    border-radius: 50%;
+}
+
+.custom-radio:hover input ~ .radiomark {
+    background-color: #fecdd3;
+}
+
+.custom-radio input:checked ~ .radiomark {
+    background-color: white;
+}
+
+.radiomark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.custom-radio input:checked ~ .radiomark:after {
+    display: block;
+}
+
+.custom-radio .radiomark:after {
+    top: 4px;
+    left: 4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #f43f5e;
+}
+/* Custom Toggle Switch */
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+}
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+
+input:checked + .slider {
+    background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+}
+
+    input:checked + .slider:before {
+        transform: translateX(26px);
+    }
+/* Custom Tooltip */
+
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+    .tooltip .tooltiptext {
+        visibility: hidden;
+        width: 200px;
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 8px;
+        position: absolute;
+        z-index: 1;
+        bottom: 125%;
+        left: 50%;
+        transform: translateX(-50%);
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+
+    .tooltip:hover .tooltiptext {
+        visibility: visible;
+        opacity: 1;
+    }
+/* Animation for floating elements */
+/* Animations */
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(-20px) rotate(2deg);
+    }
+}
+
+.animate-float {
+    animation: float 8s ease-in-out infinite;
+}
+
+.animation-delay-2000 {
+    animation-delay: 2s;
+}
+/* Count animation */
+
+.animate-count {
+    display: inline-block;
+}
+/* Rating animation */
+
+.animate-rating i {
+    transform: scale(0.8);
+    opacity: 0.7;
+    transition: all 0.3s ease;
+}
+
+.animate-rating:hover i {
+    transform: scale(1);
+    opacity: 1;
+    animation: bounce 0.5s ease;
+}
+
+    .animate-rating:hover i:nth-child(2) {
+        animation-delay: 0.1s;
+    }
+
+    .animate-rating:hover i:nth-child(3) {
+        animation-delay: 0.2s;
+    }
+
+    .animate-rating:hover i:nth-child(4) {
+        animation-delay: 0.3s;
+    }
+
+    .animate-rating:hover i:nth-child(5) {
+        animation-delay: 0.4s;
+    }
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+/* Thêm vào phần style */
+
+.card-hover-effect {
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+    .card-hover-effect:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(244, 63, 94, 0.2);
+        border-color: rgba(244, 63, 94, 0.3);
+    }
+
+        .card-hover-effect:hover::after {
+            opacity: 1;
+        }
+
+    .card-hover-effect::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to bottom, rgba(244, 63, 94, 0.1), transparent);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+.btn-hover-effect {
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+    .btn-hover-effect::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: 0.5s;
+        z-index: -1;
+    }
+
+    .btn-hover-effect:hover::before {
+        left: 100%;
+    }
+
+    .btn-hover-effect:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(244, 63, 94, 0.3);
+    }
+
+.img-zoom-effect {
+    overflow: hidden;
+}
+
+    .img-zoom-effect img {
+        transition: transform 0.8s cubic-bezier(0.25, 0.45, 0.45, 0.95);
+    }
+
+    .img-zoom-effect:hover img {
+        transform: scale(1.1);
+    }
+
+.shadow-hover-effect {
+    transition: box-shadow 0.4s ease, transform 0.4s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+    .shadow-hover-effect:hover {
+        box-shadow: 0 25px 50px -12px rgba(244, 63, 94, 0.25);
+        transform: translateY(-5px);
+    }
+
+.border-hover-effect {
+    position: relative;
+}
+
+    .border-hover-effect::before {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: linear-gradient(to right, #f43f5e, #e11d48);
+        transition: width 0.4s ease;
+    }
+
+    .border-hover-effect:hover::before {
+        width: 100%;
+    }
+
+.nav-link-hover {
+    position: relative;
+}
+
+    .nav-link-hover::after {
+        content: '';
+        position: absolute;
+        bottom: -5px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: #f43f5e;
+        transition: width 0.3s ease, left 0.3s ease;
+    }
+
+    .nav-link-hover:hover::after {
+        width: 100%;
+        left: 0;
+    }
+
+.icon-hover-effect {
+    transition: all 0.3s ease;
+}
+
+    .icon-hover-effect:hover {
+        transform: rotate(10deg) scale(1.2);
+        color: #f43f5e;
+    }
+

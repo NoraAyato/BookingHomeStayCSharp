@@ -1,0 +1,217 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Rose Homestay - Trải Nghiệm Nghỉ Dưỡng Đẳng Cấp</title>
+    <link rel="icon" type="image/png" href="~/images/Logo.jpg">
+    <!-- Preload tài nguyên quan trọng -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&display=swap" as="style">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
+    <link rel="preload" href="~/css/Style.css" as="style">
+    <link rel="stylesheet" type="text/css" href="~/css/Style.css" />
+    <!-- Tailwind CSS với custom config -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        rose: {
+                            50: '#fff1f2',
+                            100: '#ffe4e6',
+                            200: '#fecdd3',
+                            300: '#fda4af',
+                            400: '#fb7185',
+                            500: '#f43f5e',
+                            600: '#e11d48',
+                            700: '#be123c',
+                            800: '#9f1239',
+                            900: '#881337',
+                        },
+                        gold: {
+                            400: '#facc15',
+                            500: '#eab308',
+                            600: '#ca8a04',
+                        }
+                    },
+                    fontFamily: {
+                        lora: ['Lora', 'serif'],
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 6s infinite',
+                        'wave': 'wave 8s linear infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': {
+                                transform: 'translateY(0)'
+                            },
+                            '50%': {
+                                transform: 'translateY(-20px)'
+                            },
+                        },
+                        wave: {
+                            '0%': {
+                                transform: 'rotate(0deg)'
+                            },
+                            '10%': {
+                                transform: 'rotate(14deg)'
+                            },
+                            '20%': {
+                                transform: 'rotate(-8deg)'
+                            },
+                            '30%': {
+                                transform: 'rotate(14deg)'
+                            },
+                            '40%': {
+                                transform: 'rotate(-4deg)'
+                            },
+                            '50%': {
+                                transform: 'rotate(10deg)'
+                            },
+                            '60%': {
+                                transform: 'rotate(0deg)'
+                            },
+                            '100%': {
+                                transform: 'rotate(0deg)'
+                            },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Lora Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <!-- Splide JS (Carousel) - Chỉ tải CSS, JS sẽ được lazy load -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@splidejs/splide@4.1.4/dist/css/splide.min.css">
+
+    <!-- jQuery and jQuery UI - Thêm defer -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" ></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js" ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js" ></script>
+
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    @await Html.PartialAsync("_Header")
+    <div id="notification-center" class="fixed bottom-4 right-4 z-50 w-80 space-y-2"></div>
+    <main class="content">
+        @RenderBody()
+    </main>
+
+    @await Html.PartialAsync("_Footer")
+
+    <!-- Scripts -->
+    
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/min/moment.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js" defer></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js" defer></script>
+    <script src="~/js/auth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Lazy load Splide JS -->
+    <script>
+        function loadSplide() {
+            const splideScript = document.createElement('script');
+            splideScript.src = 'https://cdn.jsdelivr.net/npm/@@splidejs/splide@4.1.4/dist/js/splide.min.js';
+            splideScript.onload = () => {
+                if (document.querySelector('.splide')) {
+                    new Splide('.splide').mount();
+                }
+            };
+            document.head.appendChild(splideScript);
+        }
+
+        window.addEventListener('scroll', () => {
+            if (document.querySelector('.splide')?.getBoundingClientRect().top < window.innerHeight) {
+                loadSplide();
+                window.removeEventListener('scroll', this);
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (document.querySelector('.splide')?.getBoundingClientRect().top < window.innerHeight) {
+                loadSplide();
+            }
+        });
+            function hideSuccessModal() {
+            const modal = document.getElementById('successModal');
+            modal.classList.add('hidden');
+        }
+    </script>
+
+    @if (ViewBag.ShowLoginModal == true || ViewBag.RequiresAuth == true)
+    {
+        <script>
+            window.addEventListener('DOMContentLoaded', function () {
+            @* Nếu cần hiện login modal *@
+            @if (ViewBag.ShowLoginModal == true)
+            {
+                @:showAuthModal('login');
+            }
+
+            @* Nếu cần cảnh báo yêu cầu đăng nhập *@
+            @if (ViewBag.RequiresAuth == true)
+            {
+                @:showSuccessModal('Yêu cầu đăng nhập', 'Vui lòng đăng nhập để tiếp tục.', () => showAuthModal('login'));
+            }
+
+            });
+        </script>
+    }
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const khuVucDropdown = document.getElementById('khuVucDropdown');
+            const noKhuVucMessage = document.getElementById('noKhuVuc');
+
+            const fetchKhuVuc = async () => {
+                try {
+                    const response = await fetch('/Homestay/GetAllKhuVuc');
+                    const result = await response.json();
+
+                    if (result.success && result.data.length > 0) {
+                        renderKhuVuc(result.data);
+                    } else {
+                        noKhuVucMessage.classList.remove('hidden');
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi lấy danh sách khu vực:', error);
+                    noKhuVucMessage.classList.remove('hidden');
+                }
+            };
+                  
+            const renderKhuVuc = (khuVucs) => {
+                // Lấy khuVucName hiện tại từ query parameter
+                const urlParams = new URLSearchParams(window.location.search);
+                const currentKhuVucName = urlParams.get('khuVucName')?.toLowerCase();
+
+                khuVucDropdown.innerHTML = khuVucs.map(khuVuc => {
+                    const isActive = currentKhuVucName && khuVuc.tenKv.toLowerCase() === currentKhuVucName;
+                    return `
+                        <a href="/Homestay/Index?khuVucName=${encodeURIComponent(khuVuc.tenKv)}"
+                           class="flex items-center px-4 py-2 text-gray-700 hover:bg-rose-50 transition-colors duration-200 ${isActive ? 'bg-rose-50 text-rose-600' : ''}">
+                            <i class="fas fa-map-marker-alt mr-3 text-rose-500 w-5 text-center"></i>
+                            ${khuVuc.tenKv}
+                        </a>
+                    `;
+                }).join('');
+            };
+
+            fetchKhuVuc();
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

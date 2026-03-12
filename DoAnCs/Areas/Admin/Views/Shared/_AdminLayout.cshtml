@@ -1,0 +1,440 @@
+﻿<!DOCTYPE html>
+<html lang="vi" class="h-full">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+
+    <!-- Favicon -->
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        secondary: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    transitionDuration: {
+                        '200': '200ms',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+ 
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --sidebar-width: 260px;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'Inter', 'sans-serif';
+        }
+
+        /* Smooth transitions */
+        .transition-all {
+            transition-property: all;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 150ms;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: #a8a8a8;
+            }
+
+        /* Active link indicator animation */
+        .active-indicator {
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        /* Sidebar link hover effect */
+        .sidebar-link:not(.active):hover {
+            transform: translateX(4px);
+        }
+
+        
+    </style>
+
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
+    <div class="flex h-full overflow-hidden gap-0">
+        <!-- Mobile sidebar backdrop (hidden by default) -->
+        <div id="mobile-sidebar-backdrop" class="fixed inset-0 z-20 bg-black bg-opacity-50 hidden md:hidden"></div>
+
+        <!-- Sidebar -->
+        <aside id="sidebar" class="hidden md:flex flex-col w-64 h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transform -translate-x-full md:translate-x-0 transition-transform duration-200 ease-in-out fixed md:relative z-30">
+            <!-- Logo -->
+            <div class="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex items-center">
+                    <div class="w-8 h-8 rounded-md bg-primary-600 flex items-center justify-center mr-2">
+                        <i class="fas fa-home text-white"></i>
+                    </div>
+                    <h1 class="text-xl font-bold text-primary-600 dark:text-primary-400">
+                        <span class="whitespace-nowrap">ROSE HOMESTAY</span>
+                    </h1>
+                </div>
+                <button id="sidebar-close-btn" class="md:hidden text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
+                @{
+                    var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
+                }
+
+                <!-- Dashboard -->
+                <div class="px-3 pt-2 pb-1">
+                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">Tổng quan</h3>
+                </div>
+
+                <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index"
+                   class="sidebar-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative
+                   @(currentController == "Dashboard" ? "active bg-primary-50 text-primary-600 dark:bg-gray-700 dark:text-primary-400" : "text-gray-600 hover:bg-primary-50 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-primary-400")">
+                    @if (currentController == "Dashboard")
+                    {
+                        <span class="active-indicator absolute left-0 top-1 bottom-1 w-1 bg-primary-600 rounded-r dark:bg-primary-400"></span>
+                    }
+                    <i class="fas fa-chart-pie w-5 mr-3 @(currentController == "Dashboard" ? "text-primary-500 dark:text-primary-400" : "text-gray-400 group-hover:text-primary-500 dark:text-gray-400 dark:group-hover:text-primary-400")"></i>
+                    <span class="truncate">Dashboard</span>
+                   
+                </a>
+
+                <!-- Quản lý -->
+                <div class="px-3 pt-4 pb-1">
+                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">Quản lý</h3>
+                </div>
+
+                <a asp-area="Admin" asp-controller="User" asp-action="Index"
+                   class="sidebar-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative
+                   @(currentController == "User" ? "active bg-primary-50 text-primary-600 dark:bg-gray-700 dark:text-primary-400" : "text-gray-600 hover:bg-primary-50 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-primary-400")">
+                    @if (currentController == "User")
+                    {
+                        <span class="active-indicator absolute left-0 top-1 bottom-1 w-1 bg-primary-600 rounded-r dark:bg-primary-400"></span>
+                    }
+                    <i class="fas fa-users w-5 mr-3 @(currentController == "User" ? "text-primary-500 dark:text-primary-400" : "text-gray-400 group-hover:text-primary-500 dark:text-gray-400 dark:group-hover:text-primary-400")"></i>
+                    <span class="truncate">Người dùng</span>
+                </a>
+
+                <a asp-area="Admin" asp-controller="Homestay" asp-action="Index"
+                   class="sidebar-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative
+                   @(currentController == "Homestay" ? "active bg-primary-50 text-primary-600 dark:bg-gray-700 dark:text-primary-400" : "text-gray-600 hover:bg-primary-50 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-primary-400")">
+                    @if (currentController == "Homestay")
+                    {
+                        <span class="active-indicator absolute left-0 top-1 bottom-1 w-1 bg-primary-600 rounded-r dark:bg-primary-400"></span>
+                    }
+                    <i class="fas fa-home w-5 mr-3 @(currentController == "Homestay" ? "text-primary-500 dark:text-primary-400" : "text-gray-400 group-hover:text-primary-500 dark:text-gray-400 dark:group-hover:text-primary-400")"></i>
+                    <span class="truncate">Homestay</span>
+                   
+                </a>
+
+                <a asp-area="Admin" asp-controller="Booking" asp-action="Index"
+                   class="sidebar-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative
+                   @(currentController == "Booking" ? "active bg-primary-50 text-primary-600 dark:bg-gray-700 dark:text-primary-400" : "text-gray-600 hover:bg-primary-50 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-primary-400")">
+                    @if (currentController == "Booking")
+                    {
+                        <span class="active-indicator absolute left-0 top-1 bottom-1 w-1 bg-primary-600 rounded-r dark:bg-primary-400"></span>
+                    }
+                    <i class="fas fa-calendar-check w-5 mr-3 @(currentController == "Booking" ? "text-primary-500 dark:text-primary-400" : "text-gray-400 group-hover:text-primary-500 dark:text-gray-400 dark:group-hover:text-primary-400")"></i>
+                    <span class="truncate">Đặt phòng</span>
+                
+                </a>
+
+                <a asp-area="Admin" asp-controller="Invoice" asp-action="Index"
+                   class="sidebar-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative
+                   @(currentController == "Invoice" ? "active bg-primary-50 text-primary-600 dark:bg-gray-700 dark:text-primary-400" : "text-gray-600 hover:bg-primary-50 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-primary-400")">
+                    @if (currentController == "Invoice")
+                    {
+                        <span class="active-indicator absolute left-0 top-1 bottom-1 w-1 bg-primary-600 rounded-r dark:bg-primary-400"></span>
+                    }
+                    <i class="fas fa-file-invoice w-5 mr-3 @(currentController == "Invoice" ? "text-primary-500 dark:text-primary-400" : "text-gray-400 group-hover:text-primary-500 dark:text-gray-400 dark:group-hover:text-primary-400")"></i>
+                    <span class="truncate">Hóa đơn</span>
+                </a>
+
+                <a asp-area="Admin" asp-controller="Surcharge" asp-action="Index"
+                   class="sidebar-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative
+                   @(currentController == "Surcharge" ? "active bg-primary-50 text-primary-600 dark:bg-gray-700 dark:text-primary-400" : "text-gray-600 hover:bg-primary-50 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-primary-400")">
+                    @if (currentController == "Surcharge")
+                    {
+                        <span class="active-indicator absolute left-0 top-1 bottom-1 w-1 bg-primary-600 rounded-r dark:bg-primary-400"></span>
+                    }
+                    <i class="fas fa-money-bill-wave w-5 mr-3 @(currentController == "Surcharge" ? "text-primary-500 dark:text-primary-400" : "text-gray-400 group-hover:text-primary-500 dark:text-gray-400 dark:group-hover:text-primary-400")"></i>
+                    <span class="truncate">Phụ thu</span>
+                </a>
+
+                <a asp-area="Admin" asp-controller="Contract" asp-action="Index"
+                   class="sidebar-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative
+                   @(currentController == "Contract" ? "active bg-primary-50 text-primary-600 dark:bg-gray-700 dark:text-primary-400" : "text-gray-600 hover:bg-primary-50 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-primary-400")">
+                    @if (currentController == "Contract")
+                    {
+                        <span class="active-indicator absolute left-0 top-1 bottom-1 w-1 bg-primary-600 rounded-r dark:bg-primary-400"></span>
+                    }
+                    <i class="fas fa-file-signature w-5 mr-3 @(currentController == "Contract" ? "text-primary-500 dark:text-primary-400" : "text-gray-400 group-hover:text-primary-500 dark:text-gray-400 dark:group-hover:text-primary-400")"></i>
+                    <span class="truncate">Hợp đồng</span>
+                </a>
+
+                <!-- Khác -->
+                <div class="px-3 pt-4 pb-1">
+                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">Khác</h3>
+                </div>
+
+                <a asp-area="Admin" asp-controller="Reviews" asp-action="Index"
+                   class="sidebar-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative
+                   @(currentController == "Reviews" ? "active bg-primary-50 text-primary-600 dark:bg-gray-700 dark:text-primary-400" : "text-gray-600 hover:bg-primary-50 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-primary-400")">
+                    @if (currentController == "Reviews")
+                    {
+                        <span class="active-indicator absolute left-0 top-1 bottom-1 w-1 bg-primary-600 rounded-r dark:bg-primary-400"></span>
+                    }
+                    <i class="fas fa-star w-5 mr-3 @(currentController == "Reviews" ? "text-primary-500 dark:text-primary-400" : "text-gray-400 group-hover:text-primary-500 dark:text-gray-400 dark:group-hover:text-primary-400")"></i>
+                    <span class="truncate">Đánh giá</span>
+                  
+                </a>
+
+                <a asp-area="Admin" asp-controller="Promotion" asp-action="Index"
+                   class="sidebar-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative
+                   @(currentController == "Promotion" ? "active bg-primary-50 text-primary-600 dark:bg-gray-700 dark:text-primary-400" : "text-gray-600 hover:bg-primary-50 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-primary-400")">
+                    @if (currentController == "Promotion")
+                    {
+                        <span class="active-indicator absolute left-0 top-1 bottom-1 w-1 bg-primary-600 rounded-r dark:bg-primary-400"></span>
+                    }
+                    <i class="fas fa-percentage w-5 mr-3 @(currentController == "Promotion" ? "text-primary-500 dark:text-primary-400" : "text-gray-400 group-hover:text-primary-500 dark:text-gray-400 dark:group-hover:text-primary-400")"></i>
+                    <span class="truncate">Khuyến mãi</span>
+                </a>
+
+                <a asp-area="Admin" asp-controller="News" asp-action="Index"
+                   class="sidebar-link group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative
+                   @(currentController == "News" ? "active bg-primary-50 text-primary-600 dark:bg-gray-700 dark:text-primary-400" : "text-gray-600 hover:bg-primary-50 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-primary-400")">
+                    @if (currentController == "News")
+                    {
+                        <span class="active-indicator absolute left-0 top-1 bottom-1 w-1 bg-primary-600 rounded-r dark:bg-primary-400"></span>
+                    }
+                    <i class="fas fa-newspaper w-5 mr-3 @(currentController == "News" ? "text-primary-500 dark:text-primary-400" : "text-gray-400 group-hover:text-primary-500 dark:text-gray-400 dark:group-hover:text-primary-400")"></i>
+                    <span class="truncate">Tin tức</span>
+                </a>
+            </nav>
+
+          
+        </aside>
+        <!-- User profile -->
+        @using Microsoft.AspNetCore.Identity
+        @inject UserManager<ApplicationUser> UserManager
+        @{
+            var user = await UserManager.GetUserAsync(User);
+            var profilePicture = user?.ProfilePicture ?? "/img/default-avatar.jpg";
+            var userName = user?.FullName ?? user?.UserName ?? "Admin";
+            var roles = user != null ? await UserManager.GetRolesAsync(user) : new List<string>();
+            var roleDisplay = roles.Any() ? roles.First() : "Quản trị viên";
+        }
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden ml-0 pl-0">
+            <!-- Header -->
+            <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between px-4 py-3">
+                    <!-- Left side: Mobile menu button and breadcrumb -->
+                    <div class="flex items-center">
+                        <button id="mobile-menu-button" class="mr-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 md:hidden">
+                            <i class="fas fa-bars text-lg"></i>
+                        </button>
+
+                        <!-- Breadcrumb -->
+                        <nav class="hidden md:flex" aria-label="Breadcrumb">
+                            <ol class="inline-flex items-center space-x-2">
+                                <li class="inline-flex items-center">
+                                    <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary-600 dark:text-gray-400 dark:hover:text-white">
+                                        <i class="fas fa-home mr-2"></i>
+                                        Dashboard
+                                    </a>
+                                </li>
+                                @if (!string.IsNullOrEmpty(currentController) && currentController != "Dashboard")
+                                {
+                                    <li>
+                                        <div class="flex items-center">
+                                            <i class="fas fa-chevron-right text-gray-400 mx-2 text-xs"></i>
+                                            <span class="text-sm font-medium text-gray-500 dark:text-gray-300 capitalize">@currentController</span>
+                                        </div>
+                                    </li>
+                                }
+                            </ol>
+                        </nav>
+                    </div>
+
+                    <!-- Right side: Search, notifications, user dropdown -->
+                    <div class="flex items-center space-x-3">
+                        <!-- Dark mode toggle -->
+                        <button id="dark-mode-toggle" class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                            <i class="fas fa-moon dark:hidden"></i>
+                            <i class="fas fa-sun hidden dark:block"></i>
+                        </button>
+
+
+                        <!-- User dropdown -->
+                        <div class="relative">
+                            <button id="user-dropdown-button" class="flex items-center space-x-2 focus:outline-none">
+                                <span class="hidden md:inline text-sm font-medium text-gray-700 dark:text-gray-200">@userName</span>
+                                <img class="h-8 w-8 rounded-full" src="@profilePicture" alt="User avatar">
+                                <i class="fas fa-chevron-down text-xs text-gray-400"></i>
+                            </button>
+                            <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg dark:bg-gray-800 border border-gray-200 dark:border-gray-700 z-10">
+                                <div class="py-1">
+                                    <a asp-area="default" asp-controller="User" asp-action="Profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">Hồ sơ cá nhân</a>
+                                    <form asp-area="default" asp-controller="Account" asp-action="Logout" method="post">
+                                        <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+                                            Đăng xuất
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <main class="flex-1 overflow-y-auto px-0 bg-gray-50 dark:bg-gray-900 ml-0 pl-0">
+                <div class="bg-white dark:bg-gray-800 rounded-r-lg overflow-hidden w-full">
+                    @RenderBody()
+                </div>
+            </main>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile sidebar toggle
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarCloseBtn = document.getElementById('sidebar-close-btn');
+            const mobileSidebarBackdrop = document.getElementById('mobile-sidebar-backdrop');
+
+            mobileMenuButton.addEventListener('click', function() {
+                sidebar.classList.remove('hidden');
+                sidebar.classList.remove('-translate-x-full');
+                mobileSidebarBackdrop.classList.remove('hidden');
+                setTimeout(() => {
+                    sidebar.classList.add('translate-x-0');
+                }, 10);
+            });
+
+            sidebarCloseBtn.addEventListener('click', function() {
+                sidebar.classList.add('-translate-x-full');
+                sidebar.classList.remove('translate-x-0');
+                mobileSidebarBackdrop.classList.add('hidden');
+            });
+
+            mobileSidebarBackdrop.addEventListener('click', function() {
+                sidebar.classList.add('-translate-x-full');
+                sidebar.classList.remove('translate-x-0');
+                mobileSidebarBackdrop.classList.add('hidden');
+            });
+
+            // Dark mode toggle
+            const darkModeToggle = document.getElementById('dark-mode-toggle');
+
+            // Check for saved user preference or use system preference
+            if (localStorage.getItem('darkMode') === 'true' ||
+                (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+
+            darkModeToggle.addEventListener('click', function() {
+                document.documentElement.classList.toggle('dark');
+                localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
+            });
+
+            
+            // User dropdown
+            const userDropdownButton = document.getElementById('user-dropdown-button');
+            const userDropdown = document.getElementById('user-dropdown');
+
+            userDropdownButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                userDropdown.classList.toggle('hidden');
+            });
+
+          
+
+            userDropdown.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+
+            // Active link highlighting
+            const currentController = '@currentController';
+            const sidebarLinks = document.querySelectorAll('.sidebar-link');
+
+            sidebarLinks.forEach(link => {
+                if (link.id.includes(currentController.toLowerCase())) {
+                    link.classList.add('active', 'bg-primary-50', 'text-primary-600', 'dark:bg-gray-700', 'dark:text-primary-400');
+
+                    const indicator = document.createElement('span');
+                    indicator.className = 'active-indicator absolute left-0 top-1 bottom-1 w-1 bg-primary-600 rounded-r dark:bg-primary-400';
+                    link.prepend(indicator);
+
+                    const icon = link.querySelector('i');
+                    if (icon) {
+                        icon.classList.add('text-primary-500', 'dark:text-primary-400');
+                        icon.classList.remove('text-gray-400', 'dark:text-gray-400');
+                    }
+                }
+            });
+        });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

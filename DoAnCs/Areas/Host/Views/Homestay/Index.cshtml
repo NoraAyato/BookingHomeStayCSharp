@@ -1,0 +1,467 @@
+﻿@using DoAnCs.Models
+@{
+    ViewData["Title"] = "Quản lý Homestay của bạn";
+}
+
+<!-- Main Content -->
+<div class="flex flex-col h-full">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 px-6 pt-4">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-200">Quản lý Homestay của bạn</h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-1 text-sm md:text-base">
+                Tổng số homestay: <span id="totalHomestays" class="font-semibold text-primary-600 dark:text-primary-400">0</span>
+            </p>
+        </div>
+        
+    </div>
+
+    <!-- Advanced Filters -->
+    <div class="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mx-6 mb-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Bộ lọc nâng cao</h3>
+            <button id="resetFilters" class="text-sm text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 flex items-center gap-1 transition-colors">
+                <i class="fas fa-redo mr-1"></i>
+                Đặt lại
+            </button>
+        </div>
+
+        <div id="filterForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Search Input -->
+            <div>
+                <label for="searchInput" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tìm kiếm</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-gray-400 dark:text-gray-500"></i>
+                    </div>
+                    <input type="text" id="searchInput" name="searchString" placeholder="Tìm theo tên, địa chỉ..."
+                           class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm transition duration-150">
+                </div>
+            </div>
+
+            <!-- Location Filter -->
+            <div>
+                <label for="locationFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Khu vực</label>
+                <div class="relative">
+                    <select id="locationFilter" name="locationFilter" class="w-full pl-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none text-sm">
+                        <option value="all">Tất cả địa điểm</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                        <i class="fas fa-chevron-down text-gray-400 dark:text-gray-500"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Filter -->
+            <div>
+                <label for="statusFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Trạng thái</label>
+                <div class="relative">
+                    <select id="statusFilter" name="statusFilter" class="w-full pl-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none text-sm">
+                        <option value="all">Tất cả trạng thái</option>
+                        <option value="Hoạt động">Hoạt động</option>
+                        <option value="Ngừng hoạt động">Ngừng hoạt động</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                        <i class="fas fa-chevron-down text-gray-400 dark:text-gray-500"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sort By -->
+            <div>
+                <label for="sortBy" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sắp xếp</label>
+                <div class="relative">
+                    <select id="sortBy" name="sortOrder" class="w-full pl-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none text-sm">
+                        <option value="Date">Cũ nhất</option>
+                        <option value="date_desc">Mới nhất</option>
+                        <option value="price_desc">Giá cao đến thấp</option>
+                        <option value="Price">Giá thấp đến cao</option>
+                        <option value="rating_desc">Đánh giá hạng cao nhất</option>
+                        <option value="rating_asc">Đánh giá hạng thấp nhất</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                        <i class="fas fa-chevron-down text-gray-400 dark:text-gray-500"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="flex-1 overflow-y-auto px-6 pb-6">
+        <!-- Homestay Cards Grid -->
+        <div id="homestayGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Cards will be loaded here dynamically -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="bg-white dark:bg-gray-800 rounded-xl p-8 text-center border border-gray-200 dark:border-gray-700 mt-6 hidden">
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-gray-100 dark:bg-gray-700 mb-4">
+                <i class="fas fa-home text-2xl text-gray-400 dark:text-gray-500"></i>
+            </div>
+            <h3 class="mt-2 text-lg font-medium text-gray-900 dark:text-gray-200">Không tìm thấy homestay nào</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Thử thay đổi tiêu chí tìm kiếm </p>
+            
+        </div>
+
+        <!-- Pagination -->
+        <div id="paginationContainer" class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mt-6 hidden">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <span class="text-xs md:text-sm text-gray-500 dark:text-gray-400">
+                    Hiển thị <span id="showingCount" class="font-medium">0</span> đến
+                    <span id="totalCount" class="font-medium">0</span> của
+                    <span id="totalHomestaysCount" class="font-medium">0</span> kết quả
+                </span>
+                <div id="paginationControls" class="flex items-center gap-1">
+                    <!-- Pagination buttons will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Policy Navigation Modal -->
+<div id="policyModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" aria-modal="true" role="dialog">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-purple-100 dark:bg-purple-900 sm:mx-0 sm:h-10 sm:w-10">
+                        <i class="fas fa-file-contract text-purple-600 dark:text-purple-400"></i>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-200" id="modal-title">Quản lý chính sách</h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Bạn có muốn chuyển đến trang quản lý chính sách của homestay này để xem hoặc cập nhật chính sách không?</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button type="button" onclick="confirmPolicyNavigation()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-purple-600 text-base font-medium text-white hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                    Xác nhận
+                </button>
+                <button type="button" onclick="closePolicyModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-600 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                    Hủy bỏ
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Enhanced showToast function
+        function showToast(message, isSuccess) {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                }
+            });
+
+            Toast.fire({
+                icon: isSuccess ? 'success' : 'error',
+                title: message,
+                background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#fff',
+                color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827'
+            });
+        }
+
+        let currentPage = 1;
+        let pageSize = 8;
+        let totalCount = 0;
+        let totalPages = 1;
+        let searchString = '';
+        let locationFilter = 'all';
+        let statusFilter = 'all';
+        let sortOrder = 'Date';
+        let khuVucList = [];
+
+        // Load initial data
+        $(document).ready(function () {
+            // Load dropdown data
+            loadKhuVucList();
+            // Load initial homestay data
+            fetchHomestays();
+
+            // Bind filter events
+            $('#searchInput, #locationFilter, #statusFilter, #sortBy').change(function () {
+                searchString = $('#searchInput').val();
+                locationFilter = $('#locationFilter').val();
+                statusFilter = $('#statusFilter').val();
+                sortOrder = $('#sortBy').val();
+                currentPage = 1;
+                fetchHomestays();
+            });
+
+            // Reset filters
+            $('#resetFilters').click(function () {
+                $('#searchInput').val('');
+                $('#locationFilter').val('all');
+                $('#statusFilter').val('all');
+                $('#sortBy').val('Date');
+                searchString = '';
+                locationFilter = 'all';
+                statusFilter = 'all';
+                sortOrder = 'Date';
+                currentPage = 1;
+                fetchHomestays();
+            });
+        });
+
+        // Load Khu Vuc List
+        function loadKhuVucList() {
+            fetch('/Host/Homestay/GetKhuVucList')
+                .then(response => response.json())
+                .then(response => {
+                    if (response.success) {
+                        khuVucList = response.data;
+                        // Populate location filter dropdown
+                        const locationFilter = $('#locationFilter');
+                        locationFilter.empty();
+                        locationFilter.append('<option value="all">Tất cả địa điểm</option>');
+                        khuVucList.forEach(item => {
+                            locationFilter.append(`<option value="${item.value}">${item.text}</option>`);
+                        });
+                    } else {
+                        showToast(response.message || 'Không thể tải danh sách khu vực', false);
+                    }
+                })
+                .catch(error => {
+                    showToast('Có lỗi xảy ra khi tải danh sách khu vực', false);
+                    console.error(error);
+                });
+        }
+
+        // Fetch Homestays
+        function fetchHomestays() {
+            const params = new URLSearchParams({
+                page: currentPage,
+                pageSize: pageSize,
+                searchString: searchString,
+                locationFilter: locationFilter,
+                statusFilter: statusFilter,
+                sortOrder: sortOrder
+            });
+
+            fetch(`/Host/Homestay/GetHomestaysFiltered?${params.toString()}`)
+                .then(response => response.json())
+                .then(response => {
+                    if (response.success) {
+                        const data = response.data;
+                        totalCount = data.totalCount;
+                        totalPages = data.totalPages;
+                        currentPage = data.currentPage;
+                        pageSize = data.pageSize;
+
+                        // Update total count
+                        $('#totalHomestays').text(totalCount);
+                        $('#totalHomestaysCount').text(totalCount);
+                        $('#showingCount').text((currentPage - 1) * pageSize + 1);
+                        $('#totalCount').text(Math.min(currentPage * pageSize, totalCount));
+
+                        // Render homestays
+                        const homestayGrid = $('#homestayGrid');
+                        homestayGrid.empty();
+                        if (data.homestays.length === 0) {
+                            $('#emptyState').removeClass('hidden');
+                            $('#paginationContainer').addClass('hidden');
+                        } else {
+                            $('#emptyState').addClass('hidden');
+                            $('#paginationContainer').removeClass('hidden');
+                            data.homestays.forEach(homestay => {
+                                const starsHtml = generateStarsHtml(homestay.hang || 0);
+                                const homestayStatus = homestay.trangThai === 'Hoạt động';
+                                const cardHtml = `
+                            <div class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 dark:border-gray-700 group">
+                                <div class="relative h-52 overflow-hidden">
+                                    <img src="${homestay.hinhAnh || '/img/default-homestay.jpg'}"
+                                         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                         alt="${homestay.tenHomestay}">
+                                    <div class="absolute top-3 right-3 px-2.5 py-1 rounded-full text-xs font-semibold shadow-sm
+                                                ${homestay.trangThai === 'Hoạt động' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'}">
+                                        ${homestay.trangThai}
+                                    </div>
+                                    <div class="absolute bottom-3 left-3 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-sm">
+                                        <span class="font-bold text-primary-600 dark:text-primary-400">${homestay.pricePerNight.toLocaleString('vi-VN')} VNĐ</span>
+                                        <span class="text-xs text-gray-500 dark:text-gray-400">/đêm</span>
+                                    </div>
+                                </div>
+                                <div class="p-4">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <h3 class="text-lg font-bold text-gray-900 dark:text-gray-200 truncate">${homestay.tenHomestay}</h3>
+                                        <div class="flex items-center bg-blue-50 dark:bg-blue-900 px-2 py-1 rounded-full">
+                                            ${starsHtml}
+                                            <span class="text-xs font-medium ml-1">${(homestay.hang || 0).toFixed(1)}</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start text-gray-600 dark:text-gray-400 mb-3">
+                                        <i class="fas fa-map-marker-alt text-gray-400 dark:text-gray-500 mt-0.5 mr-1.5 text-sm"></i>
+                                        <span class="text-xs line-clamp-2">${homestay.diaChi}</span>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-3 mb-4">
+                                        <div class="flex items-center">
+                                            <div class="bg-blue-100 dark:bg-blue-900 p-1.5 rounded-lg mr-2 flex-shrink-0">
+                                                <i class="fas fa-door-open text-blue-600 dark:text-blue-400 text-sm"></i>
+                                            </div>
+                                            <div class="overflow-hidden">
+                                                <p class="text-xs text-gray-500 dark:text-gray-400 truncate">Số phòng</p>
+                                                <p class="text-sm font-medium truncate text-gray-900 dark:text-white">${homestay.phongsCount}</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div class="bg-purple-100 dark:bg-purple-900 p-1.5 rounded-lg mr-2 flex-shrink-0">
+                                                <i class="fas fa-tag text-purple-600 dark:text-purple-400 text-sm"></i>
+                                            </div>
+                                            <div class="overflow-hidden">
+                                                <p class="text-xs text-gray-500 dark:text-gray-400 truncate">Loại hình</p>
+                                                <p class="text-sm font-medium truncate text-gray-900 dark:text-white">Homestay</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div class="bg-orange-100 dark:bg-orange-900 p-1.5 rounded-lg mr-2 flex-shrink-0">
+                                                <i class="fas fa-map-marked-alt text-orange-600 dark:text-orange-400 text-sm"></i>
+                                            </div>
+                                            <div class="overflow-hidden">
+                                                <p class="text-xs text-gray-500 dark:text-gray-400 truncate">Khu vực</p>
+                                                <p class="text-sm font-medium truncate text-gray-900 dark:text-white">${homestay.khuVuc?.tenKV || 'N/A'}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between border-t border-gray-200 dark:border-gray-700 pt-3">
+                                        <div class="flex gap-2 flex-wrap ${homestayStatus ? '' : 'hidden'}">
+                                            <a href="/Host/Room?homestayId=${homestay.idHomestay}"
+                                               class="inline-flex items-center px-3 py-1.5 bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition-colors text-xs">
+                                                <i class="fas fa-plus mr-1 text-xs"></i>
+                                                Thêm phòng
+                                            </a>
+                                            <a href="/Host/Service/Index?homestayId=${homestay.idHomestay}"
+                                               class="inline-flex items-center px-3 py-1.5 bg-green-50 dark:bg-green-900 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-100 dark:hover:bg-green-800 transition-colors text-xs">
+                                                <i class="fas fa-concierge-bell mr-1 text-xs"></i>
+                                                Dịch vụ
+                                            </a>
+                                            <button onclick="openPolicyModal('${homestay.idHomestay}')"
+                                                    class="inline-flex items-center px-3 py-1.5 bg-purple-50 dark:bg-purple-900 text-purple-600 dark:text-purple-400 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-800 transition-colors text-xs">
+                                                <i class="fas fa-file-contract mr-1 text-xs"></i>
+                                                Chính sách
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>`;
+                                homestayGrid.append(cardHtml);
+                            });
+                        }
+
+                        // Render pagination
+                        renderPagination();
+                    } else {
+                        showToast(response.message || 'Không thể tải danh sách homestay', false);
+                    }
+                })
+                .catch(error => {
+                    showToast('Có lỗi xảy ra khi tải danh sách homestay', false);
+                    console.error(error);
+                });
+        }
+
+        // Generate star rating HTML
+        function generateStarsHtml(rating) {
+            let starsHtml = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= rating) {
+                    starsHtml += `<i class="fas fa-star text-yellow-400 text-xs"></i>`;
+                } else if (i - 0.5 <= rating && rating < i) {
+                    starsHtml += `<i class="fas fa-star-half-alt text-yellow-400 text-xs"></i>`;
+                } else {
+                    starsHtml += `<i class="far fa-star text-yellow-400 text-xs"></i>`;
+                }
+            }
+            return starsHtml;
+        }
+
+        // Render Pagination
+        function renderPagination() {
+            const paginationControls = $('#paginationControls');
+            paginationControls.empty();
+
+            if (currentPage > 1) {
+                paginationControls.append(`
+                    <button onclick="changePage(${currentPage - 1})" id="prevPage" class="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 transition-colors flex items-center text-sm">
+                        <i class="fas fa-chevron-left mr-1 text-xs"></i>
+                        Trước
+                    </button>
+                `);
+            } else {
+                paginationControls.append(`
+                    <span class="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 flex items-center text-sm cursor-not-allowed">
+                        <i class="fas fa-chevron-left mr-1 text-xs"></i>
+                        Trước
+                    </span>
+                `);
+            }
+
+            const pageButtons = $('<div class="flex gap-1"></div>');
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === currentPage) {
+                    pageButtons.append(`<span class="px-3 py-1.5 rounded-lg bg-primary-600 text-white text-sm">${i}</span>`);
+                } else {
+                    pageButtons.append(`<button onclick="changePage(${i})" class="px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm transition-colors">${i}</button>`);
+                }
+            }
+            paginationControls.append(pageButtons);
+
+            if (currentPage < totalPages) {
+                paginationControls.append(`
+                    <button onclick="changePage(${currentPage + 1})" id="nextPage" class="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 transition-colors flex items-center text-sm">
+                        Sau
+                        <i class="fas fa-chevron-right ml-1 text-xs"></i>
+                    </button>
+                `);
+            } else {
+                paginationControls.append(`
+                    <span class="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 flex items-center text-sm cursor-not-allowed">
+                        Sau
+                        <i class="fas fa-chevron-right ml-1 text-xs"></i>
+                    </span>
+                `);
+            }
+        }
+
+        // Change page
+        function changePage(page) {
+            currentPage = page;
+            fetchHomestays();
+        }
+
+        // Policy Modal Functions
+        let currentHomestayId = null;
+
+        function openPolicyModal(id) {
+            currentHomestayId = id;
+            $('#policyModal').removeClass('hidden');
+        }
+
+        function closePolicyModal() {
+            currentHomestayId = null;
+            $('#policyModal').addClass('hidden');
+        }
+
+        function confirmPolicyNavigation() {
+            if (!currentHomestayId) {
+                showToast('Không xác định được homestay để chuyển hướng', false);
+                return;
+            }
+            window.location.href = `/Host/Homestay/Policy/${currentHomestayId}`;
+        }
+    </script>
+}

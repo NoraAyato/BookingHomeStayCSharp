@@ -1,0 +1,600 @@
+﻿@model DoAnCs.Models.TinTuc
+@{
+    ViewData["Title"] = Model.TieuDe + " - Rose Homestay";
+    ViewData["Description"] = Model.TieuDe + " - " + (Model.NoiDung.Length > 150 ? Model.NoiDung.Substring(0, 150) + "..." : Model.NoiDung);
+    ViewData["Keywords"] = Model.TieuDe + ", rose homestay news, " + Model.ChuDe?.TenChuDe;
+
+    // Ép kiểu ViewBag.Comments thành IEnumerable<BinhLuan>
+    var comments = ViewBag.Comments as IEnumerable<BinhLuan> ?? new List<BinhLuan>();
+}
+
+<!-- Hero Section -->
+<section class="relative bg-rose-600 text-white py-20 md:py-32">
+    <div class="absolute inset-0 bg-black/30 z-0"></div>
+    <div class="container mx-auto px-4 relative z-10">
+        <div class="text-center max-w-3xl mx-auto" data-aos="fade-up">
+            <h1 class="text-4xl md:text-5xl font-bold mb-6 leading-tight">
+                <span class="inline-block">@Model.TieuDe</span>
+            </h1>
+            <div class="flex flex-wrap justify-center items-center gap-4 text-sm md:text-base">
+                <span class="inline-flex items-center">
+                    <i class="far fa-calendar-alt mr-1"></i> @Model.NgayDang.ToString("dd/MM/yyyy")
+                </span>
+                <span class="inline-flex items-center">
+                    <i class="far fa-user mr-1"></i> @Model.TacGia
+                </span>
+                <a href="#" class="inline-flex items-center bg-white/20 px-3 py-1 rounded-full hover:bg-white/30 transition-colors">
+                    <i class="far fa-folder mr-1"></i> @Model.ChuDe?.TenChuDe
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- News Detail Section -->
+<section class="py-16 bg-white">
+    <div class="container mx-auto px-4">
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Main Content -->
+            <div class="lg:w-2/3">
+                <!-- Breadcrumb -->
+                <nav class="flex mb-8" aria-label="Breadcrumb">
+                    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                        <li class="inline-flex items-center">
+                            <a asp-action="Index" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-rose-600 transition-colors">
+                                <i class="fas fa-home mr-2"></i> Trang chủ
+                            </a>
+                        </li>
+                        <li>
+                            <div class="flex items-center">
+                                <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                                <a asp-action="News" class="text-sm font-medium text-gray-700 hover:text-rose-600 transition-colors">Tin tức</a>
+                            </div>
+                        </li>
+                        <li aria-current="page">
+                            <div class="flex items-center">
+                                <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                                <span class="text-sm font-medium text-gray-500">@Model.TieuDe</span>
+                            </div>
+                        </li>
+                    </ol>
+                </nav>
+
+                <!-- News Content -->
+                <article class="prose max-w-none">
+                    @if (!string.IsNullOrEmpty(Model.HinhAnh))
+                    {
+                        <div class="mb-8 rounded-xl overflow-hidden shadow-lg">
+                            <img src="@Model.HinhAnh" alt="@Model.TieuDe" class="w-full h-auto object-cover">
+                        </div>
+                    }
+
+                    <div class="text-gray-700">
+                        @Html.Raw(Model.NoiDung)
+                    </div>
+                </article>
+
+                <!-- Tags -->
+                <div class="mt-8 flex flex-wrap gap-2">
+                    <a href="#" class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm hover:bg-gray-200 transition-colors">
+                        <i class="fas fa-tag mr-1"></i> @Model.ChuDe?.TenChuDe
+                    </a>
+                    <a href="#" class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm hover:bg-gray-200 transition-colors">
+                        <i class="fas fa-tag mr-1"></i> Homestay
+                    </a>
+                    <a href="#" class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm hover:bg-gray-200 transition-colors">
+                        <i class="fas fa-tag mr-1"></i> Nghỉ dưỡng
+                    </a>
+                </div>
+
+                <!-- Author Info -->
+                <div class="mt-8 bg-gray-50 rounded-xl p-6">
+                    <div class="flex items-center">
+                        <div class="w-16 h-16 rounded-full bg-rose-100 flex items-center justify-center overflow-hidden mr-4">
+                            <i class="fas fa-user text-rose-600 text-2xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-800">@Model.TacGia</h4>
+                            <p class="text-gray-600 text-sm">Tác giả bài viết</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comments Section -->
+                <div class="mt-12">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-6 pb-2 border-b border-gray-200">Bình luận (@comments.Count())</h3>
+
+                    <!-- Comment Form -->
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <div class="mb-8">
+                            <form id="commentForm" class="space-y-4">
+                                @if (Model != null && !string.IsNullOrEmpty(Model.Ma_TinTuc))
+                                {
+                                    <input type="hidden" name="maTinTuc" value="@Model.Ma_TinTuc" />
+                                }
+                                else
+                                {
+                                    <p class="text-red-600">Lỗi: Mã tin tức không tồn tại.</p>
+                                }
+                                @Html.AntiForgeryToken()
+                                <div>
+                                    <label for="commentContent" class="block text-sm font-medium text-gray-700 mb-1">Bình luận của bạn</label>
+                                    <textarea id="commentContent" name="commentContent" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all" placeholder="Viết bình luận..."></textarea>
+                                </div>
+                                <div class="flex justify-end">
+                                    <button type="submit" class="bg-rose-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-rose-700 transition-colors">
+                                        <i class="fas fa-paper-plane mr-2"></i> Gửi bình luận
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="bg-rose-50 border border-rose-200 rounded-lg p-4 mb-8">
+                            <p class="text-gray-700 mb-3">Bạn cần đăng nhập để bình luận</p>
+                            <button onclick="auth.showLogin burocratic()" class="bg-rose-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-rose-700 transition-colors">
+                                <i class="fas fa-sign-in-alt mr-1"></i> Đăng nhập ngay
+                            </button>
+                        </div>
+                    }
+
+                    <!-- Comments List -->
+                    <div id="commentsContainer" class="space-y-6">
+                        @foreach (var comment in comments.Where(c => c.BinhLuanChaId == null))
+                        {
+                            <div class="comment-item bg-white rounded-lg shadow-sm p-4 border border-gray-100" data-comment-id="@comment.Ma_BinhLuan">
+                                <div class="flex items-start">
+                                    <div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center overflow-hidden mr-3 flex-shrink-0">
+                                        @if (!string.IsNullOrEmpty(comment.User?.ProfilePicture))
+                                        {
+                                            <img src="@comment.User.ProfilePicture" alt="@comment.User.UserName" class="w-full h-full object-cover">
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-user text-rose-600"></i>
+                                        }
+                                    </div>
+                                    <div class="flex-grow">
+                                        <div class="flex items-center justify-between mb-1">
+                                            <h4 class="font-semibold text-gray-800">@comment.User?.UserName</h4>
+                                            <span class="text-xs text-gray-500">@comment.NgayTao.ToString("dd/MM/yyyy HH:mm")</span>
+                                        </div>
+                                        <p class="text-gray-700 mb-2">@comment.NoiDung</p>
+                                        <div class="flex items-center space-x-4">
+                                            @if (User.Identity.IsAuthenticated)
+                                            {
+                                                <button class="reply-btn text-xs text-rose-600 hover:text-rose-700 transition-colors" data-comment-id="@comment.Ma_BinhLuan">
+                                                    <i class="fas fa-reply mr-1"></i> Trả lời
+                                                </button>
+                                            }
+                                            @if (User.Identity.IsAuthenticated && (User.IsInRole("Admin") || User.Identity.Name == comment.User?.UserName))
+                                            {
+                                                <button class="delete-comment-btn text-xs text-red-600 hover:text-red-700 transition-colors" data-comment-id="@comment.Ma_BinhLuan">
+                                                    <i class="fas fa-trash-alt mr-1"></i> Xóa
+                                                </button>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Reply Form (hidden by default) -->
+                                @if (User.Identity.IsAuthenticated)
+                                {
+                                    <div class="reply-form mt-4 pl-14 hidden">
+                                        <form class="space-y-3">
+                                            @if (Model != null && !string.IsNullOrEmpty(Model.Ma_TinTuc))
+                                            {
+                                                <input type="hidden" name="maTinTuc" value="@Model.Ma_TinTuc" />
+                                            }
+                                            else
+                                            {
+                                                <p class="text-red-600">Lỗi: Mã tin tức không tồn tại.</p>
+                                            }
+                                            <input type="hidden" name="parentCommentId" value="@comment.Ma_BinhLuan" />
+                                            @Html.AntiForgeryToken()
+                                            <textarea name="commentContent" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm" placeholder="Viết phản hồi..."></textarea>
+                                            <div class="flex justify-end space-x-2">
+                                                <button type="button" class="cancel-reply-btn px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition-colors">Hủy</button>
+                                                <button type="submit" class="px-3 py-1 bg-rose-600 text-white rounded-lg text-sm hover:bg-rose-700 transition-colors">Gửi</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                }
+
+                                <!-- Replies -->
+                                <div class="replies pl-10 mt-4 space-y-4 border-l-2 border-rose-100">
+                                    @foreach (var reply in comments.Where(c => c.BinhLuanChaId == comment.Ma_BinhLuan))
+                                    {
+                                        <div class="reply-item bg-gray-50 rounded-lg p-3" data-comment-id="@reply.Ma_BinhLuan">
+                                            <div class="flex items-start">
+                                                <div class="w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center overflow-hidden mr-2 flex-shrink-0">
+                                                    @if (!string.IsNullOrEmpty(reply.User?.ProfilePicture))
+                                                    {
+                                                        <img src="@reply.User.ProfilePicture" alt="@reply.User.UserName" class="w-full h-full object-cover">
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="fas fa-user text-rose-600 text-xs"></i>
+                                                    }
+                                                </div>
+                                                <div class="flex-grow">
+                                                    <div class="flex items-center justify-between mb-1">
+                                                        <h4 class="font-semibold text-gray-800 text-sm">@reply.User?.UserName</h4>
+                                                        <span class="text-xs text-gray-500">@reply.NgayTao.ToString("dd/MM/yyyy HH:mm")</span>
+                                                    </div>
+                                                    <p class="text-gray-700 text-sm mb-2">@reply.NoiDung</p>
+                                                    @if (User.Identity.IsAuthenticated && (User.IsInRole("Admin") || User.Identity.Name == reply.User?.UserName))
+                                                    {
+                                                        <button class="delete-comment-btn text-xs text-red-600 hover:text-red-700 transition-colors" data-comment-id="@reply.Ma_BinhLuan">
+                                                            <i class="fas fa-trash-alt mr-1"></i> Xóa
+                                                        </button>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="lg:w-1/3">
+                <!-- Related News -->
+                <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">Tin liên quan</h3>
+                    <div class="space-y-4">
+                        @foreach (var relatedNews in ViewBag.RelatedNews)
+                        {
+                            <div class="flex gap-4 group">
+                                <div class="w-20 h-20 flex-shrink-0 overflow-hidden rounded-lg shadow-md">
+                                    <a asp-action="NewsDetail" asp-route-id="@relatedNews.Ma_TinTuc">
+                                        <img src="@relatedNews.HinhAnh" alt="@relatedNews.TieuDe" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500">
+                                    </a>
+                                </div>
+                                <div>
+                                    <a asp-action="NewsDetail" asp-route-id="@relatedNews.Ma_TinTuc" class="block">
+                                        <h4 class="font-semibold text-gray-800 mb-1 group-hover:text-rose-600 transition-colors line-clamp-2">@relatedNews.TieuDe</h4>
+                                    </a>
+                                    <div class="flex items-center text-xs text-gray-500">
+                                        <span><i class="far fa-calendar mr-1"></i> @relatedNews.NgayDang.ToString("dd/MM/yyyy")</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Categories -->
+                <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">Chủ đề</h3>
+                    <ul class="space-y-2">
+                        @foreach (var category in ViewBag.Categories)
+                        {
+                            <li>
+                                <a asp-action="News" asp-route-categoryId="@category.ID_ChuDe" class="flex items-center justify-between text-gray-700 hover:text-rose-600 transition-colors">
+                                    <span>@category.TenChuDe</span>
+                                    <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">@(category.TinTucs?.Count ?? 0)</span>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+
+               
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        // Kích hoạt AOS animation
+        document.addEventListener('DOMContentLoaded', function() {
+             if (typeof AOS !== 'undefined') {
+                 AOS.init({
+                     duration: 600,
+                     easing: 'ease-out-cubic',
+                     once: true,
+                     offset: 100
+                 });
+             }
+
+             // Smooth scroll for anchor links
+             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                 anchor.addEventListener('click', function(e) {
+                     e.preventDefault();
+                     document.querySelector(this.getAttribute('href')).scrollIntoView({
+                         behavior: 'smooth'
+                     });
+                 });
+             });
+         });
+
+        $(document).ready(function() {
+            // Debug: Kiểm tra giá trị maTinTuc và token ban đầu
+            console.log('Initial maTinTuc:', $('input[name="maTinTuc"]').val());
+            console.log('Initial AntiForgeryToken:', $('input[name="__RequestVerificationToken"]').val());
+            console.log('Reply forms count:', $('.reply-form form').length);
+
+            // Xử lý gửi bình luận chính
+            $('#commentForm').on('submit', function(e) {
+                e.preventDefault();
+
+                const formData = {
+                    maTinTuc: $('input[name="maTinTuc"]').val(),
+                    commentContent: $('#commentContent').val(),
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                };
+
+                console.log('Comment Form Data:', formData);
+
+                if (!formData.commentContent.trim()) {
+                    showNotification('error', 'Vui lòng nhập nội dung bình luận');
+                    return;
+                }
+
+                if (!formData.maTinTuc) {
+                    showNotification('error', 'Lỗi: Mã tin tức không được để trống');
+                    return;
+                }
+
+                $.ajax({
+                    url: '@Url.Action("AddComment", "Home")',
+                    type: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        console.log('AddComment Success:', response);
+                        if (response.success) {
+                            // Lấy token từ form chính để sử dụng trong HTML động
+                            const antiForgeryToken = $('input[name="__RequestVerificationToken"]').val();
+
+                            // Thêm bình luận mới vào đầu danh sách
+                            const commentHtml = `
+                                <div class="comment-item bg-white rounded-lg shadow-sm p-4 border border-gray-100" data-comment-id="${response.commentId}">
+                                    <div class="flex items-start">
+                                        <div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center overflow-hidden mr-3 flex-shrink-0">
+                                            ${response.avatar ?
+                                                `<img src="${response.avatar}" alt="${response.userName}" class="w-full h-full object-cover">` :
+                                                `<i class="fas fa-user text-rose-600"></i>`}
+                                        </div>
+                                        <div class="flex-grow">
+                                            <div class="flex items-center justify-between mb-1">
+                                                <h4 class="font-semibold text-gray-800">${response.userName}</h4>
+                                                <span class="text-xs text-gray-500">${response.createdDate}</span>
+                                            </div>
+                                            <p class="text-gray-700 mb-2">${response.content}</p>
+                                            <div class="flex items-center space-x-4">
+                                                <button class="reply-btn text-xs text-rose-600 hover:text-rose-700 transition-colors" data-comment-id="${response.commentId}">
+                                                    <i class="fas fa-reply mr-1"></i> Trả lời
+                                                </button>
+                                                <button class="delete-comment-btn text-xs text-red-600 hover:text-red-700 transition-colors" data-comment-id="${response.commentId}">
+                                                    <i class="fas fa-trash-alt mr-1"></i> Xóa
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="reply-form mt-4 pl-14 hidden">
+                                        <form class="space-y-3">
+                                            <input type="hidden" name="maTinTuc" value="@Model.Ma_TinTuc" />
+                                            <input type="hidden" name="parentCommentId" value="${response.commentId}" />
+                                            <input type="hidden" name="__RequestVerificationToken" value="${antiForgeryToken}" />
+                                            <textarea name="commentContent" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm" placeholder="Viết phản hồi..."></textarea>
+                                            <div class="flex justify-end space-x-2">
+                                                <button type="button" class="cancel-reply-btn px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition-colors">Hủy</button>
+                                                <button type="submit" class="px-3 py-1 bg-rose-600 text-white rounded-lg text-sm hover:bg-rose-700 transition-colors">Gửi</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="replies pl-10 mt-4 space-y-4 border-l-2 border-rose-100"></div>
+                                </div>
+                            `;
+
+                            $('#commentsContainer').prepend(commentHtml);
+                            $('#commentContent').val('');
+
+                            // Cập nhật số lượng bình luận
+                            const commentCount = parseInt($('.text-2xl.font-bold.text-gray-800.mb-6.pb-2.border-b.border-gray-200').text().match(/\d+/)[0]) + 1;
+                            $('.text-2xl.font-bold.text-gray-800.mb-6.pb-2.border-b.border-gray-200').text(`Bình luận (${commentCount})`);
+
+                            showNotification('success', 'Bình luận đã được đăng thành công');
+                        } else {
+                            showNotification('error', response.message || 'Có lỗi xảy ra khi đăng bình luận');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AddComment Error:', {
+                            status: status,
+                            error: error,
+                            responseText: xhr.responseText,
+                            statusCode: xhr.status
+                        });
+                        showNotification('error', `Lỗi kết nối máy chủ: ${xhr.status} - ${xhr.responseText || error}`);
+                    }
+                });
+            });
+
+            // Xử lý nút trả lời bình luận
+            $(document).on('click', '.reply-btn', function() {
+                const commentId = $(this).data('comment-id');
+                console.log('Reply button clicked, commentId:', commentId);
+                const replyForm = $(this).closest('.comment-item').find('.reply-form');
+                replyForm.removeClass('hidden').find('textarea').focus();
+                console.log('Reply form visible:', replyForm.is(':visible'));
+            });
+
+            // Xử lý hủy trả lời
+            $(document).on('click', '.cancel-reply-btn', function() {
+                console.log('Cancel reply clicked');
+                $(this).closest('.reply-form').addClass('hidden').find('textarea').val('');
+            });
+
+            // Xử lý gửi phản hồi
+            $(document).on('submit', '.reply-form form', function(e) {
+                e.preventDefault();
+                console.log('Reply form submitted');
+
+                const form = $(this);
+                const formData = {
+                    maTinTuc: form.find('input[name="maTinTuc"]').val(),
+                    commentContent: form.find('textarea[name="commentContent"]').val(),
+                    parentCommentId: form.find('input[name="parentCommentId"]').val(),
+                    __RequestVerificationToken: form.find('input[name="__RequestVerificationToken"]').val()
+                };
+
+                console.log('Reply Form Data:', formData);
+
+                if (!formData.commentContent.trim()) {
+                    showNotification('error', 'Vui lòng nhập nội dung phản hồi');
+                    return;
+                }
+
+                if (!formData.maTinTuc) {
+                    showNotification('error', 'Lỗi: Mã tin tức không được để trống');
+                    return;
+                }
+
+                if (!formData.__RequestVerificationToken) {
+                    showNotification('error', 'Lỗi: Token chống giả mạo không hợp lệ');
+                    return;
+                }
+
+                $.ajax({
+                    url: '@Url.Action("AddComment", "Home")',
+                    type: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        console.log('AddReply Success:', response);
+                        if (response.success) {
+                            // Thêm phản hồi vào danh sách
+                            const replyHtml = `
+                                <div class="reply-item bg-gray-50 rounded-lg p-3" data-comment-id="${response.commentId}">
+                                    <div class="flex items-start">
+                                        <div class="w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center overflow-hidden mr-2 flex-shrink-0">
+                                            ${response.avatar ?
+                                                `<img src="${response.avatar}" alt="${response.userName}" class="w-full h-full object-cover">` :
+                                                `<i class="fas fa-user text-rose-600 text-xs"></i>`}
+                                        </div>
+                                        <div class="flex-grow">
+                                            <div class="flex items-center justify-between mb-1">
+                                                <h4 class="font-semibold text-gray-800 text-sm">${response.userName}</h4>
+                                                <span class="text-xs text-gray-500">${response.createdDate}</span>
+                                            </div>
+                                            <p class="text-gray-700 text-sm mb-2">${response.content}</p>
+                                            <button class="delete-comment-btn text-xs text-red-600 hover:text-red-700 transition-colors" data-comment-id="${response.commentId}">
+                                                <i class="fas fa-trash-alt mr-1"></i> Xóa
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+
+                            const repliesContainer = form.closest('.comment-item').find('.replies');
+                            if (repliesContainer.children().length === 0) {
+                                repliesContainer.append(replyHtml);
+                            } else {
+                                repliesContainer.prepend(replyHtml);
+                            }
+
+                            form.find('textarea').val('');
+                            form.addClass('hidden');
+
+                            // Cập nhật số lượng bình luận
+                            const commentCount = parseInt($('.text-2xl.font-bold.text-gray-800.mb-6.pb-2.border-b.border-gray-200').text().match(/\d+/)[0]) + 1;
+                            $('.text-2xl.font-bold.text-gray-800.mb-6.pb-2.border-b.border-gray-200').text(`Bình luận (${commentCount})`);
+
+                            showNotification('success', 'Phản hồi đã được đăng thành công');
+                        } else {
+                            showNotification('error', response.message || 'Có lỗi xảy ra khi đăng phản hồi');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AddReply Error:', {
+                            status: status,
+                            error: error,
+                            responseText: xhr.responseText,
+                            statusCode: xhr.status
+                        });
+                        showNotification('error', `Lỗi kết nối máy chủ: ${xhr.status} - ${xhr.responseText || error}`);
+                    }
+                });
+            });
+
+            // Xử lý xóa bình luận
+            $(document).on('click', '.delete-comment-btn', function() {
+                if (!confirm('Bạn có chắc chắn muốn xóa bình luận này?')) {
+                    return;
+                }
+
+                const commentId = $(this).data('comment-id');
+                console.log('Delete comment clicked, commentId:', commentId);
+                const commentElement = $(`[data-comment-id="${commentId}"]`);
+
+                $.ajax({
+                    url: '@Url.Action("DeleteComment", "Home")',
+                    type: 'POST',
+                    data: {
+                        commentId: commentId,
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(response) {
+                        console.log('DeleteComment Success:', response);
+                        if (response.success) {
+                            commentElement.remove();
+
+                            // Cập nhật số lượng bình luận
+                            const commentCount = parseInt($('.text-2xl.font-bold.text-gray-800.mb-6.pb-2.border-b.border-gray-200').text().match(/\d+/)[0]) - 1;
+                            $('.text-2xl.font-bold.text-gray-800.mb-6.pb-2.border-b.border-gray-200').text(`Bình luận (${commentCount})`);
+
+                            showNotification('success', 'Bình luận đã được xóa thành công');
+                        } else {
+                            showNotification('error', response.message || 'Có lỗi xảy ra khi xóa bình luận');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('DeleteComment Error:', {
+                            status: status,
+                            error: error,
+                            responseText: xhr.responseText,
+                            statusCode: xhr.status
+                        });
+                        showNotification('error', `Lỗi kết nối máy chủ: ${xhr.status} - ${xhr.responseText || error}`);
+                    }
+                });
+            });
+
+            // Hàm hiển thị thông báo
+            function showNotification(type, message) {
+                const notification = $(`
+                    <div class="notification ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white px-4 py-3 rounded-lg shadow-lg flex items-start">
+                        <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} mr-2 mt-1"></i>
+                        <span>${message}</span>
+                        <button class="ml-auto pl-2">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `);
+
+                $('#notification-center').prepend(notification);
+
+                // Tự động đóng thông báo sau 5 giây
+                setTimeout(() => {
+                    notification.fadeOut(300, function() {
+                        $(this).remove();
+                    });
+                }, 5000);
+
+                // Đóng thông báo khi click
+                notification.find('button').on('click', function() {
+                    notification.fadeOut(300, function() {
+                        $(this).remove();
+                    });
+                });
+            }
+        });
+    </script>
+}

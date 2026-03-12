@@ -1,0 +1,785 @@
+﻿@{
+    ViewData["Title"] = "Quản lý Đặt phòng";
+}
+
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+    <div>
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">Quản lý Đặt phòng</h1>
+        <div class="flex flex-wrap items-center gap-3 mt-2">
+            <div class="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-300">
+                <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                <span>Tổng đơn: <span id="totalBookings" class="font-semibold">0</span></span>
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+                <span class="px-2.5 py-1 text-xs rounded-full bg-green-100/80 text-green-800 dark:bg-green-900/50 dark:text-green-200 flex items-center gap-1">
+                    <i class="fas fa-check-circle text-xs"></i>
+                    <span>Đã xác nhận: <span id="confirmedCount" class="font-medium">0</span></span>
+                </span>
+                <span class="px-2.5 py-1 text-xs rounded-full bg-yellow-100/80 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-200 flex items-center gap-1">
+                    <i class="fas fa-clock text-xs"></i>
+                    <span>Chờ xác nhận: <span id="pendingCount" class="font-medium">0</span></span>
+                </span>
+                <span class="px-2.5 py-1 text-xs rounded-full bg-red-100/80 text-red-800 dark:bg-red-900/50 dark:text-red-200 flex items-center gap-1">
+                    <i class="fas fa-ban text-xs"></i>
+                    <span>Đã hủy: <span id="cancelledCount" class="font-medium">0</span></span>
+                </span>
+                <span class="px-2.5 py-1 text-xs rounded-full bg-purple-100/80 text-purple-800 dark:bg-purple-900/50 dark:text-purple-200 flex items-center gap-1">
+                    <i class="fas fa-flag-checkered text-xs"></i>
+                    <span>Hoàn thành: <span id="completedCount" class="font-medium">0</span></span>
+                </span>
+            </div>
+            
+        </div>
+       
+    </div>
+    <div class="flex gap-2">
+
+        <a href="/Admin/Booking/Cancellation" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2">
+            <i class="fas fa-ban"></i> Quản lý hủy phòng
+        </a>
+    </div>
+</div>
+
+<!-- Filter Card -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5 mb-6 border border-gray-200 dark:border-gray-700">
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fas fa-search text-gray-400"></i>
+            </div>
+            <input type="text" id="searchInput" class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-700 dark:text-white" placeholder="Tìm kiếm...">
+        </div>
+        <div>
+            <select id="statusFilter" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-700 dark:text-white">
+                <option value="all">Tất cả trạng thái</option>
+                <option value="Đã xác nhận">Đã xác nhận</option>
+                <option value="Chờ xác nhận">Chờ xác nhận</option>
+                <option value="Đã hủy">Đã hủy</option>
+                <option value="Hoàn thành">Hoàn thành</option>
+            </select>
+        </div>
+        <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fas fa-calendar-alt text-gray-400"></i>
+            </div>
+            <input type="text" id="dateRangePicker" class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-700 dark:text-white" placeholder="Chọn khoảng ngày">
+        </div>
+        <div>
+            <select id="sortBy" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-700 dark:text-white">
+                <option value="newest">Mới nhất trước</option>
+                <option value="oldest">Cũ nhất trước</option>
+            </select>
+        </div>
+        <div>
+            <select id="pageSize" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-700 dark:text-white">
+                <option value="5">5 mỗi trang</option>
+                <option value="10">10 mỗi trang</option>
+                <option value="20">20 mỗi trang</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<!-- Booking Cards -->
+<div id="bookingCardsContainer" class="grid grid-cols-1 gap-4">
+    <!-- Skeleton Loading -->
+    <div class="animate-pulse bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-200 dark:border-gray-700">
+        <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-3/4 mb-2"></div>
+        <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-1/2 mb-4"></div>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="h-3 bg-gray-200 dark:bg-gray-600 rounded"></div>
+            <div class="h-3 bg-gray-200 dark:bg-gray-600 rounded"></div>
+            <div class="h-3 bg-gray-200 dark:bg-gray-600 rounded"></div>
+            <div class="h-3 bg-gray-200 dark:bg-gray-600 rounded"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Pagination -->
+<div class="mt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+    <div class="text-sm text-gray-600 dark:text-gray-300">
+        Hiển thị <span id="startItem" class="font-medium">1</span> - <span id="endItem" class="font-medium">5</span> của <span id="totalResults" class="font-medium">0</span> kết quả
+    </div>
+    <div class="flex items-center gap-1.5">
+        <button id="prevPage" class="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" disabled>
+            <i class="fas fa-chevron-left mr-1"></i> Trước
+        </button>
+        <div id="pageNumbers" class="flex gap-1"></div>
+        <button id="nextPage" class="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" disabled>
+            Sau <i class="fas fa-chevron-right ml-1"></i>
+        </button>
+    </div>
+</div>
+
+<!-- Details Modal -->
+<div id="detailsModal" class="fixed z-50 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true"></span>
+        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl w-full">
+            <div id="detailsModalContent"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Status Update Modal -->
+<div id="statusModal" class="fixed z-50 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true"></span>
+        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md w-full">
+            <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/50 sm:mx-0 sm:h-10 sm:w-10">
+                        <i class="fas fa-exchange-alt text-blue-600 dark:text-blue-400"></i>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title">
+                            Cập nhật trạng thái
+                        </h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                                Chọn trạng thái mới cho đơn đặt phòng này
+                            </p>
+                            <select id="statusSelect" class="mt-3 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border transition-all dark:bg-gray-800 dark:text-white">
+                                <option value="Chờ xác nhận">Chờ xác nhận</option>
+                                <option value="Đã xác nhận">Đã xác nhận</option>
+                                <option value="Đã hủy">Đã hủy</option>
+                                <option value="Hoàn thành">Hoàn thành</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button onclick="confirmStatusUpdate()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                    Cập nhật
+                </button>
+                <button onclick="closeStatusModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-600 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                    Hủy
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed z-50 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true"></span>
+        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md w-full">
+            <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/50 sm:mx-0 sm:h-10 sm:w-10">
+                        <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400"></i>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title">
+                            Xác nhận xóa
+                        </h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                                Bạn có chắc chắn muốn xóa phiếu đặt phòng này? Hành động này không thể hoàn tác.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button onclick="confirmDelete()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                    Xác nhận xóa
+                </button>
+                <button onclick="closeDeleteModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-600 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                    Hủy
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Booking Modal -->
+<div id="cancelModal" class="fixed z-50 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true"></span>
+        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
+            <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/50 sm:mx-0 sm:h-10 sm:w-10">
+                        <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400"></i>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title">
+                            Hủy đặt phòng
+                        </h3>
+                        <div class="mt-2">
+                            <form id="cancelForm">
+                                <input type="hidden" id="cancel_Ma_PDPhong" name="Ma_PDPhong">
+                                <div class="mb-4">
+                                    <label for="cancel_LyDo" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Lý do hủy</label>
+                                    <textarea id="cancel_LyDo" name="LyDo" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-800 dark:text-white" required></textarea>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button type="button" onclick="submitCancel()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                    Xác nhận hủy
+                </button>
+                <button type="button" onclick="closeCancelModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-600 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                    Quay lại
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadBookings();
+            initializeDateRangePicker();
+            setupEventListeners();
+        });
+
+        let currentPage = 1;
+        let pageSize = 5;
+        let totalPages = 1;
+        let currentBookingId = null;
+        const cache = new Map(); // Lưu trữ cache cho dữ liệu đặt phòng
+        const detailsCache = new Map(); // Lưu trữ cache cho chi tiết đặt phòng
+
+        function setupEventListeners() {
+            document.getElementById('searchInput').addEventListener('input', debounce(loadBookings, 300));
+            document.getElementById('statusFilter').addEventListener('change', loadBookings);
+            document.getElementById('sortBy').addEventListener('change', loadBookings);
+            document.getElementById('pageSize').addEventListener('change', (e) => {
+                pageSize = parseInt(e.target.value);
+                currentPage = 1;
+                loadBookings();
+            });
+            document.getElementById('prevPage').addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    loadBookings();
+                }
+            });
+            document.getElementById('nextPage').addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    loadBookings();
+                }
+            });
+        }
+
+        function initializeDateRangePicker() {
+            flatpickr("#dateRangePicker", {
+                mode: "range",
+                dateFormat: "d/m/Y",
+                locale: { firstDayOfWeek: 1 },
+                onClose: (selectedDates, dateStr, instance) => {
+                    if (selectedDates.length !== 2) {
+                        showToast('error', 'Vui lòng chọn cả ngày bắt đầu và ngày kết thúc');
+                        instance.clear();
+                        return;
+                    }
+                    if (selectedDates[0] > selectedDates[1]) {
+                        showToast('error', 'Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày kết thúc');
+                        instance.clear();
+                        return;
+                    }
+                    const formattedStr = selectedDates.map(date => {
+                        const d = date.getDate().toString().padStart(2, '0');
+                        const m = (date.getMonth() + 1).toString().padStart(2, '0');
+                        const y = date.getFullYear();
+                        return `${d}/${m}/${y}`;
+                    }).join(' - ');
+                    instance.element.value = formattedStr;
+                    loadBookings();
+                }
+            });
+        }
+
+        function validateDateRange(dateRange) {
+            if (!dateRange) return true;
+            const regex = /^(\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*(\d{1,2}\/\d{1,2}\/\d{4})$/;
+            return regex.test(dateRange.trim());
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function() {
+                const context = this;
+                const args = arguments;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(context, args), wait);
+            };
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return 'Không xác định';
+            const date = new Date(dateStr);
+            return isNaN(date.getTime()) ? 'Không xác định' : date.toLocaleDateString('vi-VN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>"']/g, match => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            })[match]);
+        }
+
+
+        function showToast(type, message) {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 px-4 py-3 rounded-lg shadow-lg text-white flex items-center gap-2 animate-slide-in ${
+                type === 'success' ? 'bg-green-500' :
+                type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+            }`;
+
+            const icon = document.createElement('i');
+            icon.className = type === 'success' ? 'fas fa-check-circle' :
+                             type === 'error' ? 'fas fa-exclamation-circle' : 'fas fa-info-circle';
+            toast.appendChild(icon);
+
+            const text = document.createElement('span');
+            text.textContent = message;
+            toast.appendChild(text);
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('animate-slide-out');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function generateCacheKey(searchQuery, statusFilter, dateRange, page, pageSize, sortBy) {
+            return `${searchQuery}|${statusFilter}|${dateRange}|${page}|${pageSize}|${sortBy}`;
+        }
+
+        async function loadBookings() {
+            const searchQuery = document.getElementById('searchInput').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            let dateRange = document.getElementById('dateRangePicker').value;
+            const sortBy = document.getElementById('sortBy').value;
+
+            if (dateRange && !validateDateRange(dateRange)) {
+                showToast('error', 'Định dạng khoảng ngày không hợp lệ. Vui lòng chọn lại.');
+                document.getElementById('dateRangePicker').value = '';
+                dateRange = '';
+            }
+
+            const cacheKey = generateCacheKey(searchQuery, statusFilter, dateRange, currentPage, pageSize, sortBy);
+            if (cache.has(cacheKey)) {
+                const cached = cache.get(cacheKey);
+                renderBookings(cached.data, cached.totalCount);
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Admin/Booking/GetBookings?searchQuery=${encodeURIComponent(searchQuery)}&statusFilter=${encodeURIComponent(statusFilter)}&dateRange=${encodeURIComponent(dateRange)}&page=${currentPage}&pageSize=${pageSize}&sortBy=${sortBy}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    cache.set(cacheKey, { data: result.data, totalCount: result.totalCount });
+                    renderBookings(result.data, result.totalCount);
+                } else {
+                    showToast('error', result.message || 'Không thể tải danh sách đặt phòng');
+                }
+            } catch (error) {
+                showToast('error', 'Lỗi khi tải danh sách đặt phòng');
+                console.error(error);
+            }
+        }
+
+        function renderBookings(bookings, totalCount) {
+            const container = document.getElementById('bookingCardsContainer');
+            container.innerHTML = '';
+
+            if (!bookings || bookings.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8 text-center border border-gray-200 dark:border-gray-700">
+                        <i class="fas fa-clipboard-list text-gray-300 dark:text-gray-500 text-4xl mb-3"></i>
+                        <p class="text-gray-500 dark:text-gray-400">Không có đơn đặt phòng nào</p>
+                    </div>
+                `;
+                updatePagination(0);
+                return;
+            }
+
+            // Batch render để giảm reflow
+            let index = 0;
+            function renderBatch() {
+                const fragment = document.createDocumentFragment();
+                const batchSize = 5; // Render 5 thẻ mỗi lần
+                for (let i = 0; i < batchSize && index < bookings.length; i++, index++) {
+                    const card = createBookingCard(bookings[index]);
+                    fragment.appendChild(card);
+                }
+                container.appendChild(fragment);
+                if (index < bookings.length) {
+                    requestAnimationFrame(renderBatch);
+                }
+            }
+            requestAnimationFrame(renderBatch);
+
+            const confirmedCount = bookings.filter(b => b.trangThai === 'Đã xác nhận').length;
+            const pendingCount = bookings.filter(b => b.trangThai === 'Chờ xác nhận').length;
+            const cancelledCount = bookings.filter(b => b.trangThai === 'Đã hủy').length;
+            const completedCount = bookings.filter(b => b.trangThai === 'Hoàn thành').length;
+
+            document.getElementById('totalBookings').textContent = totalCount;
+            document.getElementById('confirmedCount').textContent = confirmedCount;
+            document.getElementById('pendingCount').textContent = pendingCount;
+            document.getElementById('cancelledCount').textContent = cancelledCount;
+            document.getElementById('completedCount').textContent = completedCount;
+
+            updatePagination(totalCount);
+        }
+
+        function createBookingCard(booking) {
+            const card = document.createElement('div');
+            card.className = 'bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5 hover:shadow-md transition-shadow duration-200 border border-gray-200 dark:border-gray-700';
+
+            const statusColor = {
+                'Đã xác nhận': 'bg-green-100/80 text-green-800 dark:bg-green-900/50 dark:text-green-200',
+                'Chờ xác nhận': 'bg-yellow-100/80 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-200',
+                'Đã hủy': 'bg-red-100/80 text-red-800 dark:bg-red-900/50 dark:text-red-200',
+                'Hoàn thành': 'bg-purple-100/80 text-purple-800 dark:bg-purple-900/50 dark:text-purple-200'
+            };
+
+            const statusIcon = {
+                'Đã xác nhận': 'fa-check-circle',
+                'Chờ xác nhận': 'fa-clock',
+                'Đã hủy': 'fa-ban',
+                'Hoàn thành': 'fa-flag-checkered'
+            };
+
+            const isConfirmed = booking.trangThai === 'Đã xác nhận';
+            card.innerHTML = `
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">${escapeHtml(booking.customerName)}</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Mã đơn: <span class="font-mono">${escapeHtml(booking.ma_PDPhong)}</span></p>
+                    </div>
+                    <span class="px-3 py-1 text-xs font-medium rounded-full ${statusColor[booking.trangThai] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'} flex items-center gap-1">
+                        <i class="fas ${statusIcon[booking.trangThai] || 'fa-question'}"></i>
+                        <span>${escapeHtml(booking.trangThai)}</span>
+                    </span>
+                </div>
+                <div class="space-y-3 mb-4">
+                    ${booking.rooms.map(room => `
+                        <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300">${escapeHtml(room.homestayName)} - ${escapeHtml(room.roomName)}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">${room.dateRange} (${formatCurrency(room.roomPrice)}/đêm)</p>
+                            ${room.services && room.services.length > 0 ? `
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Dịch vụ: ${room.services.map(s => `${escapeHtml(s.name)} (x${s.quantity}, ${formatCurrency(s.price)})`).join(', ')}</p>
+                            ` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="flex justify-between items-center pt-3 border-t border-gray-200 dark:border-gray-700">
+                    <p class="text-sm font-semibold text-gray-900 dark:text-white">Tổng: ${formatCurrency(booking.totalPrice)}</p>
+                    <div class="flex gap-2">
+                        <button onclick="openDetailsModal('${escapeHtml(booking.ma_PDPhong)}')" class="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors" title="Xem chi tiết">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button onclick="openStatusModal('${escapeHtml(booking.ma_PDPhong)}', '${escapeHtml(booking.trangThai)}')" class="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors ${isConfirmed ? 'hidden' : ''}" title="Đổi trạng thái">
+                            <i class="fas fa-exchange-alt"></i>
+                        </button>
+                        <button onclick="openCancelModal('${escapeHtml(booking.ma_PDPhong)}')" class="p-2 text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 rounded-lg transition-colors" title="Hủy đơn">
+                            <i class="fas fa-ban"></i>
+                        </button>
+                        <button onclick="openDeleteModal('${escapeHtml(booking.ma_PDPhong)}')" class="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors ${isConfirmed ? 'hidden' : ''}" title="Xóa đơn">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        function updatePagination(totalCount) {
+            totalPages = Math.ceil(totalCount / pageSize);
+            const pageNumbers = document.getElementById('pageNumbers');
+            pageNumbers.innerHTML = '';
+
+            const startItem = (currentPage - 1) * pageSize + 1;
+            const endItem = Math.min(currentPage * pageSize, totalCount);
+
+            document.getElementById('startItem').textContent = startItem;
+            document.getElementById('endItem').textContent = endItem;
+            document.getElementById('totalResults').textContent = totalCount;
+
+            document.getElementById('prevPage').disabled = currentPage === 1;
+            document.getElementById('nextPage').disabled = currentPage === totalPages;
+
+            const maxPagesToShow = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+            let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+            if (endPage - startPage + 1 < maxPagesToShow) {
+                startPage = Math.max(1, endPage - maxPagesToShow + 1);
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const button = document.createElement('button');
+                button.className = `px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium ${
+                    i === currentPage ? 'bg-blue-600 text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
+                } transition-colors`;
+                button.textContent = i;
+                button.addEventListener('click', () => {
+                    currentPage = i;
+                    loadBookings();
+                });
+                pageNumbers.appendChild(button);
+            }
+        }
+
+        async function openDetailsModal(maPDPhong) {
+            try {
+                const modalContent = document.getElementById('detailsModalContent');
+                modalContent.innerHTML = '<div class="p-6 text-center"><i class="fas fa-spinner fa-spin text-blue-600"></i> Đang tải...</div>';
+                document.getElementById('detailsModal').classList.remove('hidden');
+
+                if (detailsCache.has(maPDPhong)) {
+                    const cachedData = detailsCache.get(maPDPhong);
+                    renderDetailsModal(cachedData);
+                    return;
+                }
+
+                const response = await fetch(`/Admin/Booking/Details/${encodeURIComponent(maPDPhong)}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    detailsCache.set(maPDPhong, result.data);
+                    renderDetailsModal(result.data);
+                } else {
+                    showToast('error', result.message || 'Không thể tải chi tiết đặt phòng');
+                    document.getElementById('detailsModal').classList.add('hidden');
+                }
+            } catch (error) {
+                showToast('error', 'Lỗi khi tải chi tiết đặt phòng');
+                console.error(error);
+                document.getElementById('detailsModal').classList.add('hidden');
+            }
+        }
+
+        function renderDetailsModal(data) {
+            const modalContent = document.getElementById('detailsModalContent');
+            modalContent.innerHTML = `
+                <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">Chi tiết đặt phòng</h3>
+                            <div class="space-y-4">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">Mã đơn</p>
+                                        <p class="text-sm font-medium text-gray-900 dark:text-white">${escapeHtml(data.ma_PDPhong)}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">Ngày lập</p>
+                                        <p class="text-sm font-medium text-gray-900 dark:text-white">${formatDate(data.ngayLap)}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">Trạng thái</p>
+                                        <p class="text-sm font-medium text-gray-900 dark:text-white">${escapeHtml(data.trangThai)}</p>
+                                    </div>
+                                </div>
+
+                                <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                                    <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Thông tin khách hàng</h4>
+                                    <div class="flex items-center gap-3">
+                                        <img class="h-10 w-10 rounded-full" src="${escapeHtml(data.customerImage) || '/images/default-avatar.png'}" alt="">
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white">${escapeHtml(data.customerName)}</p>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400">${escapeHtml(data.customerEmail)}</p>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400">${data.customerPhone ? escapeHtml(data.customerPhone) : 'Không có'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Chi tiết phòng</h4>
+                                    ${data.rooms.map(room => `
+                                        <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg mb-3">
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white">${escapeHtml(room.homestayName || 'Không xác định')} - ${escapeHtml(room.roomName || 'Không xác định')}</p>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">${formatDate(room.checkinDate)} - ${formatDate(room.checkoutDate)} (${formatCurrency(room.roomPrice)}/đêm)</p>
+                                            ${room.services && room.services.length > 0 ? `
+                                                <div class="mt-2">
+                                                    <p class="text-xs text-gray-500 dark:text-gray-400">Dịch vụ:</p>
+                                                    <ul class="text-xs text-gray-500 dark:text-gray-400 list-disc list-inside pl-4">
+                                                        ${room.services.map(s => `<li>${escapeHtml(s.name)} (x${s.quantity}, ${formatCurrency(s.price)})</li>`).join('')}
+                                                    </ul>
+                                                </div>
+                                            ` : ''}
+                                            ${room.surcharges && room.surcharges.length > 0 ? `
+                                                <div class="mt-2">
+                                                    <p class="text-xs text-gray-500 dark:text-gray-400">Phụ thu:</p>
+                                                    <ul class="text-xs text-gray-500 dark:text-gray-400 list-disc list-inside pl-4">
+                                                        ${room.surcharges.map(s => `<li>${escapeHtml(s.description)} (${formatCurrency(s.amount)}) - ${formatDate(s.appliedDate)}</li>`).join('')}
+                                                    </ul>
+                                                </div>
+                                            ` : ''}
+                                        </div>
+                                    `).join('')}
+                                </div>
+
+                                <div class="pt-3 border-t border-gray-200 dark:border-gray-700">
+                                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Tổng cộng: <span class="float-right font-bold text-blue-600 dark:text-blue-400">${formatCurrency(data.totalPrice)}</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button onclick="closeDetailsModal()" class="w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-600 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                        Đóng
+                    </button>
+                </div>
+            `;
+        }
+
+        function closeDetailsModal() {
+            document.getElementById('detailsModal').classList.add('hidden');
+        }
+
+        function openStatusModal(maPDPhong, currentStatus) {
+            currentBookingId = maPDPhong;
+            const statusSelect = document.getElementById('statusSelect');
+            statusSelect.value = currentStatus;
+            document.getElementById('statusModal').classList.remove('hidden');
+        }
+
+        function closeStatusModal() {
+            document.getElementById('statusModal').classList.add('hidden');
+            currentBookingId = null;
+        }
+
+        async function confirmStatusUpdate() {
+            if (!currentBookingId) return;
+
+            const newStatus = document.getElementById('statusSelect').value;
+
+            try {
+                const response = await fetch('/Admin/Booking/UpdateStatus', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ MaPDPhong: currentBookingId, TrangThai: newStatus })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast('success', 'Cập nhật trạng thái thành công');
+                    closeStatusModal();
+                    cache.clear(); // Xóa cache khi trạng thái thay đổi
+                    loadBookings();
+                } else {
+                    showToast('error', result.message || 'Không thể cập nhật trạng thái');
+                }
+            } catch (error) {
+                showToast('error', 'Lỗi khi cập nhật trạng thái');
+                console.error(error);
+            }
+        }
+
+        function openDeleteModal(maPDPhong) {
+            currentBookingId = maPDPhong;
+            document.getElementById('deleteModal').classList.remove('hidden');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.add('hidden');
+            currentBookingId = null;
+        }
+
+        async function confirmDelete() {
+            if (!currentBookingId) return;
+
+            try {
+                const response = await fetch(`/Admin/Booking/Delete/${encodeURIComponent(currentBookingId)}`, {
+                    method: 'POST'
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast('success', 'Xóa phiếu đặt phòng thành công');
+                    closeDeleteModal();
+                    cache.clear(); // Xóa cache khi xóa
+                    loadBookings();
+                } else {
+                    showToast('error', result.message || 'Không thể xóa phiếu đặt phòng');
+                }
+            } catch (error) {
+                showToast('error', 'Lỗi khi xóa phiếu đặt phòng');
+                console.error(error);
+            }
+        }
+
+        function openCancelModal(maPDPhong) {
+            currentBookingId = maPDPhong;
+            document.getElementById('cancel_Ma_PDPhong').value = maPDPhong;
+            document.getElementById('cancel_LyDo').value = '';
+            document.getElementById('cancelModal').classList.remove('hidden');
+        }
+
+        function closeCancelModal() {
+            document.getElementById('cancelModal').classList.add('hidden');
+            currentBookingId = null;
+        }
+
+        async function submitCancel() {
+            const maPDPhong = document.getElementById('cancel_Ma_PDPhong').value;
+            const lyDo = document.getElementById('cancel_LyDo').value;
+
+            if (!lyDo) {
+                showToast('error', 'Vui lòng nhập lý do hủy');
+                return;
+            }
+
+            try {
+                const response = await fetch('/Admin/Booking/CancelBooking', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ Ma_PDPhong: maPDPhong, LyDo: lyDo })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast('success', 'Hủy đặt phòng thành công');
+                    closeCancelModal();
+                    cache.clear(); // Xóa cache khi hủy
+                    loadBookings();
+                } else {
+                    showToast('error', result.message || 'Không thể hủy đặt phòng');
+                }
+            } catch (error) {
+                showToast('error', 'Lỗi khi hủy đặt phòng');
+                console.error(error);
+            }
+        }
+    </script>
+}

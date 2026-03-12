@@ -1,0 +1,845 @@
+﻿@{
+    ViewData["Title"] = "Quản lý Hợp đồng";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker@3.1.0/daterangepicker.css" />
+    <style>
+        .contract-card {
+            transition: all 0.3s ease;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+            .contract-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            }
+
+        .status-badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .dark .status-pending {
+            background-color: rgba(253, 230, 138, 0.2);
+            color: #fef08a;
+        }
+
+        .status-approved {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .dark .status-approved {
+            background-color: rgba(134, 239, 172, 0.2);
+            color: #86efac;
+        }
+
+        .status-rejected {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .dark .status-rejected {
+            background-color: rgba(252, 165, 165, 0.2);
+            color: #fca5a5;
+        }
+
+        .status-cancelled {
+            background-color: #e5e7eb;
+            color: #374151;
+        }
+
+        .dark .status-cancelled {
+            background-color: rgba(209, 213, 219, 0.2);
+            color: #d1d5db;
+        }
+
+        .stats-card {
+            transition: all 0.3s ease;
+            border-radius: 0.5rem;
+        }
+
+            .stats-card:hover {
+                transform: translateY(-4px);
+            }
+
+        .contract-image {
+            height: 180px;
+            object-fit: cover;
+            width: 100%;
+        }
+
+        .detail-image {
+            height: 250px;
+            object-fit: cover;
+            border-radius: 0.5rem;
+            width: 100%;
+        }
+
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        /* Sửa lỗi cú pháp: bỏ @@ và định dạng đúng */
+        @@keyframes spin {
+        from{
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+
+        }
+
+        .pagination-btn {
+            transition: all 0.2s ease;
+        }
+
+            .pagination-btn:hover:not(.disabled) {
+                background-color: #f3f4f6;
+            }
+
+        .dark .pagination-btn:hover:not(.disabled) {
+            background-color: #374151;
+        }
+
+        .page-number.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .dark .page-number.active {
+            background-color: #1d4ed8;
+        }
+    </style>
+}
+
+<!-- Header -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">Quản lý Hợp đồng</h1>
+        <p class="text-gray-600 dark:text-gray-400 mt-1">Danh sách hợp đồng homestay của bạn trên hệ thống</p>
+    </div>
+    <button id="filter-toggle" class="mt-4 md:mt-0 flex items-center px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500">
+        <i class="fas fa-filter mr-2"></i> Bộ lọc
+    </button>
+</div>
+
+<!-- Filter Panel -->
+<div id="filter-panel" class="hidden bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md mb-6 border border-gray-200 dark:border-gray-700">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Search -->
+        <div>
+            <label for="search-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tìm kiếm</label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-search text-gray-400 dark:text-gray-500"></i>
+                </div>
+                <input type="text" id="search-input" class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200" placeholder="Tìm hợp đồng...">
+            </div>
+        </div>
+
+        <!-- Status Filter -->
+        <div>
+            <label for="status-filter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Trạng thái</label>
+            <select id="status-filter" class="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-primary-500 focus:border-primary-500 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200">
+                <option value="all">Tất cả trạng thái</option>
+                <option value="Chờ xác nhận">Chờ xác nhận</option>
+                <option value="Đã duyệt">Đã duyệt</option>
+                <option value="Từ chối">Từ chối</option>
+                <option value="Đã hủy">Đã hủy</option>
+            </select>
+        </div>
+
+        <!-- Date Range -->
+        <div>
+            <label for="date-range" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Khoảng thời gian</label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-calendar-alt text-gray-400 dark:text-gray-500"></i>
+                </div>
+                <input type="text" id="date-range" class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200" placeholder="Chọn ngày">
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Actions -->
+    <div class="flex justify-end mt-4 space-x-3">
+        <button id="reset-filters" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500">
+            Đặt lại
+        </button>
+        <button id="apply-filters" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
+            Áp dụng
+        </button>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <!-- Total Contracts -->
+    <div class="stats-card bg-white dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+        <div class="flex items-center">
+            <div class="p-3 rounded-lg bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 mr-4">
+                <i class="fas fa-file-contract text-xl"></i>
+            </div>
+            <div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Tổng hợp đồng</p>
+                <h3 id="total-contracts" class="text-2xl font-bold text-gray-800 dark:text-gray-200">0</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Contracts -->
+    <div class="stats-card bg-white dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+        <div class="flex items-center">
+            <div class="p-3 rounded-lg bg-yellow-100 dark:bg-yellow-900/50 text-yellow-600 dark:text-yellow-400 mr-4">
+                <i class="fas fa-clock text-xl"></i>
+            </div>
+            <div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Chờ xác nhận</p>
+                <h3 id="pending-contracts" class="text-2xl font-bold text-gray-800 dark:text-gray-200">0</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Approved Contracts -->
+    <div class="stats-card bg-white dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+        <div class="flex items-center">
+            <div class="p-3 rounded-lg bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400 mr-4">
+                <i class="fas fa-check-circle text-xl"></i>
+            </div>
+            <div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Đã duyệt</p>
+                <h3 id="approved-contracts" class="text-2xl font-bold text-gray-800 dark:text-gray-200">0</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rejected/Cancelled Contracts -->
+    <div class="stats-card bg-white dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+        <div class="flex items-center">
+            <div class="p-3 rounded-lg bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 mr-4">
+                <i class="fas fa-times-circle text-xl"></i>
+            </div>
+            <div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Từ chối/Hủy</p>
+                <h3 id="rejected-contracts" class="text-2xl font-bold text-gray-800 dark:text-gray-200">0</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contracts List -->
+<div class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+    <div class="px-4 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-200">Danh sách hợp đồng của bạn</h3>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading-container" class="p-8 text-center">
+        <div class="flex justify-center">
+            <i class="fas fa-spinner animate-spin text-3xl text-primary-600 dark:text-primary-400"></i>
+        </div>
+        <p class="mt-2 text-gray-600 dark:text-gray-400">Đang tải hợp đồng...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-container" class="hidden p-8 text-center">
+        <div class="flex justify-center text-gray-400 dark:text-gray-500 mb-3">
+            <i class="fas fa-file-contract text-4xl"></i>
+        </div>
+        <h4 class="text-lg font-medium text-gray-700 dark:text-gray-300">Không có hợp đồng nào</h4>
+        <p class="mt-1 text-gray-500 dark:text-gray-400">Hiện tại bạn chưa có hợp đồng nào phù hợp với bộ lọc</p>
+    </div>
+
+    <!-- Contracts Grid -->
+    <div id="contracts-container" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+        <!-- Contracts will be loaded here dynamically -->
+    </div>
+
+    <!-- Pagination -->
+    <div class="px-4 py-3 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600 flex items-center justify-between">
+        <!-- Mobile Pagination -->
+        <div class="flex-1 flex justify-between sm:hidden">
+            <button id="prev-page-mobile" class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-600">
+                Trước
+            </button>
+            <button id="next-page-mobile" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-600">
+                Sau
+            </button>
+        </div>
+
+        <!-- Desktop Pagination -->
+        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <div>
+                <p class="text-sm text-gray-700 dark:text-gray-300">
+                    Hiển thị <span id="start-item" class="font-medium">0</span> - <span id="end-item" class="font-medium">0</span> của <span id="total-items" class="font-medium">0</span> hợp đồng
+                </p>
+            </div>
+            <div>
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    <button id="prev-page" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <span class="sr-only">Trước</span>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div id="pagination-numbers" class="flex -space-x-px">
+                        <!-- Page numbers will be inserted here -->
+                    </div>
+                    <button id="next-page" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <span class="sr-only">Sau</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contract Detail Modal -->
+<div id="contract-detail-modal" class="fixed inset-0 overflow-y-auto hidden z-50">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+            <div class="absolute inset-0 bg-gray-500 opacity-75 dark:bg-gray-900 dark:opacity-75"></div>
+        </div>
+
+        <!-- Modal content -->
+        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+            <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4 border-b border-gray-200 dark:border-gray-700">
+                <div class="sm:flex sm:items-start">
+                    <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                        <div class="flex justify-between items-start">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-200" id="modal-title">Chi tiết hợp đồng</h3>
+                            <button id="close-detail-modal" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+
+                        <div class="mt-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Contract Image -->
+                                <div>
+                                    <img id="detail-image" src="" alt="Hình ảnh homestay" class="detail-image w-full">
+                                </div>
+
+                                <!-- Contract Info -->
+                                <div>
+                                    <div class="flex justify-between items-start mb-2">
+                                        <h4 id="detail-title" class="text-xl font-bold text-gray-800 dark:text-gray-200"></h4>
+                                        <span id="detail-status" class="status-badge"></span>
+                                    </div>
+
+                                    <div class="space-y-3">
+                                        <div>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">Địa chỉ</p>
+                                            <p id="detail-address" class="font-medium text-gray-900 dark:text-gray-200"></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">Giá mỗi đêm</p>
+                                            <p id="detail-price" class="font-medium text-gray-900 dark:text-gray-200"></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">Hạng</p>
+                                            <p id="detail-rank" class="font-medium text-gray-900 dark:text-gray-200"></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">Khu vực</p>
+                                            <p id="detail-area" class="font-medium text-gray-900 dark:text-gray-200"></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">Ngày gửi</p>
+                                            <p id="detail-submit-date" class="font-medium text-gray-900 dark:text-gray-200"></p>
+                                        </div>
+                                        <div id="detail-approval-container" class="hidden">
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">Ngày duyệt</p>
+                                            <p id="detail-approval-date" class="font-medium text-gray-900 dark:text-gray-200"></p>
+                                        </div>
+                                        <div id="detail-reason-container" class="hidden">
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">Lý do</p>
+                                            <p id="detail-reason" class="font-medium text-gray-900 dark:text-gray-200"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="mt-6">
+                                <h4 class="font-bold text-gray-800 dark:text-gray-200 mb-2">Mô tả</h4>
+                                <p id="detail-description" class="text-gray-700 dark:text-gray-300"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal footer -->
+            <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-200 dark:border-gray-600">
+                <button id="cancel-contract-btn" type="button" class="hidden w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+                    Hủy hợp đồng
+                </button>
+                <button id="close-modal-btn" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-600 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Contract Modal -->
+<div id="cancel-contract-modal" class="fixed inset-0 overflow-y-auto hidden z-50">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+            <div class="absolute inset-0 bg-gray-500 opacity-75 dark:bg-gray-900 dark:opacity-75"></div>
+        </div>
+
+        <!-- Modal content -->
+        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/50 sm:mx-0 sm:h-10 sm:w-10">
+                        <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400"></i>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-200">Hủy hợp đồng</h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Bạn có chắc chắn muốn hủy hợp đồng này?</p>
+                            <div class="mt-4">
+                                <label for="cancel-reason" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Lý do hủy</label>
+                                <textarea id="cancel-reason" rows="3" class="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200" placeholder="Nhập lý do hủy hợp đồng"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-200 dark:border-gray-600">
+                <button id="confirm-cancel-btn" type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+                    Xác nhận hủy
+                </button>
+                <button id="close-cancel-modal" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-600 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    Hủy bỏ
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker@3.1.0/daterangepicker.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Current page and page size
+            let currentPage = 1;
+            const pageSize = 6;
+            let totalPages = 1;
+            let currentContractId = '';
+
+            // Initialize date range picker
+            $('#date-range').daterangepicker({
+                opens: 'left',
+                autoUpdateInput: false,
+                locale: {
+                    format: 'DD/MM/YYYY',
+                    cancelLabel: 'Xóa',
+                    applyLabel: 'Áp dụng',
+                    daysOfWeek: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'],
+                    monthNames: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'],
+                    firstDay: 1
+                }
+            });
+
+            $('#date-range').on('apply.daterangepicker', function(ev, picker) {
+                $(this).val(picker.startDate.format('DD/MM/YYYY') + ' to ' + picker.endDate.format('DD/MM/YYYY'));
+            });
+
+            $('#date-range').on('cancel.daterangepicker', function(ev, picker) {
+                $(this).val('');
+            });
+
+            // Toggle filter panel
+            $('#filter-toggle').click(function() {
+                $('#filter-panel').slideToggle();
+            });
+
+            // Thêm lời gọi loadContracts để tải danh sách hợp đồng ngay khi trang khởi tạo
+            loadContracts();
+
+            // Apply filters
+            $('#apply-filters').click(function() {
+                currentPage = 1;
+                loadContracts();
+                $('#filter-panel').slideUp();
+            });
+
+            // Reset filters
+            $('#reset-filters').click(function() {
+                $('#search-input').val('');
+                $('#status-filter').val('all');
+                $('#date-range').val('');
+                currentPage = 1;
+                loadContracts();
+            });
+
+            // Pagination handlers
+            $('#next-page, #next-page-mobile').click(function() {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    loadContracts();
+                }
+            });
+
+            $('#prev-page, #prev-page-mobile').click(function() {
+                if (currentPage > 1) {
+                    currentPage--;
+                    loadContracts();
+                }
+            });
+
+            // View contract detail
+            $(document).on('click', '.view-detail-btn', function() {
+                const contractId = $(this).data('id');
+                currentContractId = contractId;
+                getContractDetail(contractId);
+            });
+
+            // Close modals
+            $('#close-detail-modal, #close-modal-btn').click(function() {
+                $('#contract-detail-modal').addClass('hidden');
+            });
+
+            $('#close-cancel-modal').click(function() {
+                $('#cancel-contract-modal').addClass('hidden');
+            });
+
+            // Cancel contract button
+            $('#cancel-contract-btn').click(function() {
+                $('#cancel-reason').val('');
+                $('#cancel-contract-modal').removeClass('hidden');
+            });
+
+            // Confirm cancel contract
+            $('#confirm-cancel-btn').click(function() {
+                const reason = $('#cancel-reason').val().trim();
+
+                if (!reason) {
+                    showToast('Vui lòng nhập lý do hủy hợp đồng', false);
+                    return;
+                }
+
+                cancelContract(currentContractId, reason);
+            });
+
+            // Function to load contracts with filters
+            function loadContracts() {
+                const searchQuery = $('#search-input').val().trim();
+                const statusFilter = $('#status-filter').val();
+                const dateRange = $('#date-range').val();
+
+                // Show loading state
+                $('#loading-container').removeClass('hidden');
+                $('#empty-container').addClass('hidden');
+                $('#contracts-container').addClass('hidden');
+
+                $.ajax({
+                    url: '/Host/Contracts/GetContracts',
+                    type: 'GET',
+                    data: {
+                        searchQuery: searchQuery,
+                        statusFilter: statusFilter,
+                        dateRange: dateRange,
+                        page: currentPage,
+                        pageSize: pageSize
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            renderContracts(response.data);
+                            updatePagination(response.totalPages, response.currentPage, response.totalItems);
+                            updateStats(response.stats);
+
+                            if (response.data.length === 0) {
+                                $('#empty-container').removeClass('hidden');
+                                $('#contracts-container').addClass('hidden');
+                            } else {
+                                $('#empty-container').addClass('hidden');
+                                $('#contracts-container').removeClass('hidden');
+                            }
+                        } else {
+                            showToast('Không thể tải danh sách hợp đồng: ' + response.message, false);
+                        }
+                        $('#loading-container').addClass('hidden');
+                    },
+                    error: function(xhr, status, error) {
+                        showToast('Đã xảy ra lỗi khi tải danh sách hợp đồng', false);
+                        $('#loading-container').addClass('hidden');
+                    }
+                });
+            }
+
+            // Function to render contracts
+            function renderContracts(contracts) {
+                let html = '';
+
+                contracts.forEach(contract => {
+                    const statusClass = getStatusClass(contract.trangThai);
+                    const statusText = getStatusText(contract.trangThai);
+                    const priceFormatted = formatCurrency(contract.pricePerNight);
+                    console.log(contract.hinhAnh);
+                    html += `
+                        <div class="contract-card bg-white dark:bg-gray-700 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600">
+                            <img src="${contract.hinhAnh || '/images/default-homestay.jpg'}" alt="${contract.ten_Homestay}" class="contract-image w-full">
+                            <div class="p-4">
+                                <div class="flex justify-between items-start mb-2">
+                                    <h3 class="font-bold text-gray-800 dark:text-gray-200 truncate">${contract.ten_Homestay}</h3>
+                                    <span class="${statusClass}">${statusText}</span>
+                                </div>
+                                <p class="text-gray-600 dark:text-gray-400 text-sm mb-3 flex items-center">
+                                    <i class="fas fa-map-marker-alt mr-1 text-gray-400 dark:text-gray-500"></i> ${contract.khuVuc || 'Không xác định'}
+                                </p>
+                                <p class="text-gray-700 dark:text-gray-300 mb-4 line-clamp-2">${contract.moTa || 'Không có mô tả'}</p>
+                                <div class="flex justify-between items-center">
+                                    <span class="font-bold text-primary-600 dark:text-primary-400">${priceFormatted} VNĐ/đêm</span>
+                                    <button class="view-detail-btn inline-flex items-center px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500" data-id="${contract.ma_HopDong}">
+                                        <i class="fas fa-eye mr-1"></i> Chi tiết
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                $('#contracts-container').html(html);
+            }
+
+            // Function to update pagination
+            function updatePagination(totalPages, currentPage, totalItems) {
+                totalPages = totalPages;
+                currentPage = currentPage;
+
+                // Update item count
+                const startItem = (currentPage - 1) * pageSize + 1;
+                const endItem = Math.min(currentPage * pageSize, totalItems);
+
+                $('#start-item').text(startItem);
+                $('#end-item').text(endItem);
+                $('#total-items').text(totalItems);
+
+                // Update pagination numbers
+                let paginationHtml = '';
+                const maxVisiblePages = 5;
+                let startPage, endPage;
+
+                if (totalPages <= maxVisiblePages) {
+                    startPage = 1;
+                    endPage = totalPages;
+                } else {
+                    const maxPagesBeforeCurrent = Math.floor(maxVisiblePages / 2);
+                    const maxPagesAfterCurrent = Math.ceil(maxVisiblePages / 2) - 1;
+
+                    if (currentPage <= maxPagesBeforeCurrent) {
+                        startPage = 1;
+                        endPage = maxVisiblePages;
+                    } else if (currentPage + maxPagesAfterCurrent >= totalPages) {
+                        startPage = totalPages - maxVisiblePages + 1;
+                        endPage = totalPages;
+                    } else {
+                        startPage = currentPage - maxPagesBeforeCurrent;
+                        endPage = currentPage + maxPagesAfterCurrent;
+                    }
+                }
+
+                // Previous button
+                if (currentPage > 1) {
+                    $('#prev-page, #prev-page-mobile').prop('disabled', false);
+                } else {
+                    $('#prev-page, #prev-page-mobile').prop('disabled', true);
+                }
+
+                // Page numbers
+                for (let i = startPage; i <= endPage; i++) {
+                    paginationHtml += `
+                        <button class="page-number relative inline-flex items-center px-4 py-2 border text-sm font-medium ${i === currentPage ? 'bg-primary-600 border-primary-600 text-white' : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}">
+                            ${i}
+                        </button>
+                    `;
+                }
+
+                // Next button
+                if (currentPage < totalPages) {
+                    $('#next-page, #next-page-mobile').prop('disabled', false);
+                } else {
+                    $('#next-page, #next-page-mobile').prop('disabled', true);
+                }
+
+                $('#pagination-numbers').html(paginationHtml);
+
+                // Add click handlers for page numbers
+                $('.page-number').click(function() {
+                    const pageNum = parseInt($(this).text());
+                    if (pageNum !== currentPage) {
+                        currentPage = pageNum;
+                        loadContracts();
+                    }
+                });
+            }
+
+            // Function to update stats
+            function updateStats(stats) {
+                $('#total-contracts').text(stats.total || 0);
+                $('#pending-contracts').text(stats.pending || 0);
+                $('#approved-contracts').text(stats.approved || 0);
+                $('#rejected-contracts').text((stats.rejected || 0) + (stats.cancelled || 0));
+            }
+
+            // Function to get contract detail
+            function getContractDetail(contractId) {
+                $.ajax({
+                    url: `/Host/Contracts/GetContract/${contractId}`,
+                    type: 'GET',
+                    success: function(response) {
+                        if (response.success) {
+                            renderContractDetail(response.data);
+                        } else {
+                            showToast('Không thể tải chi tiết hợp đồng: ' + response.message, false);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        showToast('Đã xảy ra lỗi khi tải chi tiết hợp đồng', false);
+                    }
+                });
+            }
+
+            // Function to render contract detail
+            function renderContractDetail(contract) {
+                const statusClass = getStatusClass(contract.trangThai);
+                const statusText = getStatusText(contract.trangThai);
+                const priceFormatted = formatCurrency(contract.pricePerNight);
+
+                // Update modal content
+                $('#detail-title').text(contract.ten_Homestay);
+                $('#detail-status').text(statusText).attr('class', `status-badge ${statusClass}`);
+                $('#detail-image').attr('src', contract.hinhAnh || '/images/default-homestay.jpg');
+                $('#detail-address').text(contract.diaChi || 'Không có thông tin');
+                $('#detail-price').text(`${priceFormatted} VNĐ/đêm`);
+                $('#detail-rank').text(contract.hang || 'Không xác định');
+                $('#detail-area').text(contract.khuVuc || 'Không xác định');
+                $('#detail-submit-date').text(contract.ngayGui);
+                $('#detail-description').text(contract.moTa || 'Không có mô tả');
+
+                // Show/hide approval date
+                if (contract.ngayDuyet) {
+                    $('#detail-approval-date').text(contract.ngayDuyet);
+                    $('#detail-approval-container').removeClass('hidden');
+                } else {
+                    $('#detail-approval-container').addClass('hidden');
+                }
+
+                // Show/hide reason
+                if (contract.lyDoTuChoi) {
+                    $('#detail-reason').text(contract.lyDoTuChoi);
+                    $('#detail-reason-container').removeClass('hidden');
+                } else {
+                    $('#detail-reason-container').addClass('hidden');
+                }
+
+                // Show/hide cancel button (only for pending or approved contracts)
+                if (contract.trangThai === 'Chờ xác nhận' || contract.trangThai === 'Đã duyệt') {
+                    $('#cancel-contract-btn').removeClass('hidden');
+                } else {
+                    $('#cancel-contract-btn').addClass('hidden');
+                }
+
+                // Show modal
+                $('#contract-detail-modal').removeClass('hidden');
+            }
+
+            // Function to cancel contract
+            function cancelContract(contractId, reason) {
+                $.ajax({
+                    url: `/Host/Contracts/CancelContract/${contractId}`,
+                    type: 'POST',
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    contentType: 'application/json',
+                    data: JSON.stringify(reason),
+                    success: function(response) {
+                        if (response.success) {
+                            $('#cancel-contract-modal').addClass('hidden');
+                            $('#contract-detail-modal').addClass('hidden');
+                            showToast('Hủy hợp đồng thành công', true);
+                            loadContracts();
+                        } else {
+                            showToast('Không thể hủy hợp đồng: ' + response.message, false);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        showToast('Đã xảy ra lỗi khi hủy hợp đồng', false);
+                    }
+                });
+            }
+
+            // Helper function to get status class
+            function getStatusClass(status) {
+                switch (status) {
+                    case 'Chờ xác nhận': return 'status-pending';
+                    case 'Đã duyệt': return 'status-approved';
+                    case 'Từ chối': return 'status-rejected';
+                    case 'Đã hủy': return 'status-cancelled';
+                    default: return 'status-pending';
+                }
+            }
+
+            // Helper function to get status text
+            function getStatusText(status) {
+                switch (status) {
+                    case 'Chờ xác nhận': return 'Chờ xác nhận';
+                    case 'Đã duyệt': return 'Đã duyệt';
+                    case 'Từ chối': return 'Từ chối';
+                    case 'Đã hủy': return 'Đã hủy';
+                    default: return status;
+                }
+            }
+
+            // Helper function to format currency
+            function formatCurrency(amount) {
+                return new Intl.NumberFormat('vi-VN').format(amount);
+            }
+
+            // Show toast notification
+            function showToast(message, isSuccess) {
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.addEventListener('mouseenter', Swal.stopTimer);
+                        toast.addEventListener('mouseleave', Swal.resumeTimer);
+                    },
+                    background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#fff',
+                    color: document.documentElement.classList.contains('dark') ? '#fff' : '#111827'
+                });
+
+                Toast.fire({
+                    icon: isSuccess ? 'success' : 'error',
+                    title: message
+                });
+            }
+        });
+    </script>
+}

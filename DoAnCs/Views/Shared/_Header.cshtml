@@ -1,0 +1,520 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using DoAnCs.Models
+@using Microsoft.AspNetCore.Mvc.ViewFeatures
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    var user = SignInManager.IsSignedIn(User) ? await UserManager.GetUserAsync(User) : null;
+}
+
+<!-- Navigation -->
+<nav class="bg-white/95 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-rose-100 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-20 items-center">
+            <!-- Logo -->
+            <div class="flex items-center space-x-2">
+                <a href="/" class="flex items-center group transform transition-all duration-300 hover:scale-105">
+                    <div class="h-10 w-10 rounded-lg bg-gradient-to-r from-rose-600 to-rose-500 flex items-center justify-center transition-all duration-300 group-hover:rotate-6 group-hover:shadow-lg">
+                        <i class="fas fa-home text-white text-lg"></i>
+                    </div>
+                    <span class="ml-3 text-xl font-bold bg-gradient-to-r from-rose-600 to-rose-400 bg-clip-text text-transparent font-lora">Rose Homestay</span>
+                </a>
+            </div>
+
+            <!-- Desktop Navigation -->
+            <div class="hidden md:flex items-center space-x-1">
+                <!-- Trang chủ -->
+                <a href="/" class="relative px-4 py-2 text-gray-700 hover:text-rose-600 transition-colors duration-200 group @(Context.Request.Path == "/" ? "active text-rose-600" : "")">
+                    <span class="flex items-center">
+                        <i class="fas fa-home mr-2 text-current"></i>
+                        Trang chủ
+                    </span>
+                    <span class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-rose-600 transition-all duration-300 group-hover:w-3/4 @(Context.Request.Path == "/" ? "w-3/4" : "")"></span>
+                </a>
+
+                <!-- Tìm homestay -->
+                <a href="/Homestay/Index?khuVucName=" class="relative px-4 py-2 text-gray-700 hover:text-rose-600 transition-colors duration-200 group @(Context.Request.Path.StartsWithSegments("/Homestay/Index") ? "active text-rose-600" : "")">
+                    <span class="flex items-center">
+                        <i class="fas fa-search mr-2 text-current"></i>
+                        Tìm homestay
+                    </span>
+                    <span class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-rose-600 transition-all duration-300 group-hover:w-3/4 @(Context.Request.Path.StartsWithSegments("/Homestay/Index") ? "w-3/4" : "")"></span>
+                </a>
+
+                <!-- Địa điểm (Dropdown) -->
+                <div class="relative group @(Context.Request.Query.ContainsKey("khuVucName") ? "active" : "")" data-dropdown="location">
+                    <button class="flex items-center px-4 py-2 text-gray-700 hover:text-rose-600 transition-colors duration-200 @(Context.Request.Query.ContainsKey("khuVucName") ? "text-rose-600" : "")">
+                        <span class="flex items-center">
+                            <i class="fas fa-map-marker-alt mr-2 text-current"></i>
+                            Địa điểm
+                            <i class="fas fa-chevron-down text-xs ml-1 transition-transform duration-200 group-hover:rotate-180 @(Context.Request.Query.ContainsKey("khuVucName") ? "rotate-180" : "")"></i>
+                        </span>
+                    </button>
+                    <div class="dropdown hidden absolute left-0 mt-2 w-56 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black/5 focus:outline-none z-50 transition-all duration-200 transform opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100">
+                        <div class="py-1" id="khuVucDropdown">
+                            <!-- Các mục khu vực sẽ được render bởi JavaScript -->
+                            <div class="hidden text-center text-gray-500 py-2" id="noKhuVuc">Không có khu vực nào</div>
+                        </div>
+                    </div>
+                </div>
+
+                
+
+                <!-- Tin tức -->
+                <a href="/Home/news" class="relative px-4 py-2 text-gray-700 hover:text-rose-600 transition-colors duration-200 group @(Context.Request.Path.StartsWithSegments("/Home/news") ? "active text-rose-600" : "")">
+                    <span class="flex items-center">
+                        <i class="fas fa-newspaper mr-2 text-current"></i>
+                        Tin tức
+                    </span>
+                    <span class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-rose-600 transition-all duration-300 group-hover:w-3/4 @(Context.Request.Path.StartsWithSegments("/Home/news") ? "w-3/4" : "")"></span>
+                </a>
+
+                <!-- Về chúng tôi -->
+                <a href="/Home/AboutUs" class="relative px-4 py-2 text-gray-700 hover:text-rose-600 transition-colors duration-200 group @(Context.Request.Path.StartsWithSegments("/Home/AboutUs") ? "active text-rose-600" : "")">
+                    <span class="flex items-center">
+                        <i class="fas fa-info-circle mr-2 text-current"></i>
+                        Về chúng tôi
+                    </span>
+                    <span class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-rose-600 transition-all duration-300 group-hover:w-3/4 @(Context.Request.Path.StartsWithSegments("/Home/AboutUs") ? "w-3/4" : "")"></span>
+                </a>
+            </div>
+
+            <!-- User Actions -->
+            <div class="hidden md:flex items-center space-x-4">
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    <!-- Hiển thị khi đã đăng nhập -->
+                    <div class="relative group" data-dropdown="user">
+                        <button class="flex items-center space-x-2 focus:outline-none group">
+                            <div class="w-9 h-9 rounded-full bg-gradient-to-r from-rose-100 to-rose-200 flex items-center justify-center overflow-hidden shadow-sm group-hover:shadow-md transition-all duration-300">
+                                @if (!string.IsNullOrEmpty(user?.ProfilePicture))
+                                {
+                                    <img src="@user.ProfilePicture" alt="User avatar" class="w-full h-full object-cover">
+                                }
+                                else
+                                {
+                                    <i class="fas fa-user text-rose-600"></i>
+                                }
+                            </div>
+                            @if(!string.IsNullOrEmpty(user?.FullName))
+                            {
+                                <span class="hidden md:inline-block text-gray-700 font-medium">@user.FullName</span>
+                            }
+                            else
+                            {
+                                <span class="hidden md:inline-block text-gray-700 font-medium">@user.Email</span>
+                            }   
+                           
+                            <i class="fas fa-chevron-down text-xs text-gray-500 transition-transform duration-200 group-hover:rotate-180"></i>
+                        </button>
+
+                        <!-- Dropdown menu -->
+                        <div class="dropdown hidden absolute right-0 mt-2 w-56 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black/5 divide-y divide-gray-100 focus:outline-none z-50 transition-all duration-200 transform opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100">
+                            <!-- Dashboard -->
+                            <div class="py-1">
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <a asp-area="Admin" asp-controller="DashBoard" asp-action="Index" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-rose-50 hover:text-rose-600 transition-colors duration-200">
+                                        <i class="fas fa-tachometer-alt mr-3 text-rose-500 w-5 text-center"></i> Dashboard
+                                    </a>
+                                }
+                                else if (User.IsInRole("Host"))
+                                {
+                                    <a asp-area="Host" asp-controller="DashBoard" asp-action="Index" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-rose-50 hover:text-rose-600 transition-colors duration-200">
+                                        <i class="fas fa-calendar-alt mr-3 text-rose-500 w-5 text-center"></i> Homestay Manager
+                                    </a>
+                                }
+                            </div>
+                            <!-- Profile -->
+                            <div class="py-1">
+                                <a asp-controller="User" asp-action="Profile" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-rose-50 hover:text-rose-600 transition-colors duration-200">
+                                    <i class="fas fa-user mr-3 text-rose-500 w-5 text-center"></i> Hồ sơ cá nhân
+                                </a>
+                                <a href="/User/Profile#bookingsTab" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-rose-50 hover:text-rose-600 transition-colors duration-200">
+                                    <i class="fas fa-calendar-alt mr-3 text-rose-500 w-5 text-center"></i> Đặt phòng của tôi
+                                </a>
+                                <a asp-controller="User" asp-action="AvailablePromotions" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-rose-50 hover:text-rose-600 transition-colors duration-200">
+                                    <i class="fas fa-gift mr-3 text-rose-500 w-5 text-center"></i> Ưu đãi của tôi
+                                </a>
+                                <a asp-controller="User" asp-action="RegisterHomestay" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-rose-50 hover:text-rose-600 transition-colors duration-200">
+                                    <i class="fas fa-handshake mr-3 text-rose-500 w-5 text-center"></i> Bạn muốn trở thành đối tác?
+                                </a>
+                            </div>
+                            <!-- Logout -->
+                            <div class="py-1">
+                                <form asp-controller="Account" asp-action="Logout">
+                                    <button type="submit" class="w-full text-left flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-rose-50 hover:text-rose-600 transition-colors duration-200">
+                                        <i class="fas fa-sign-out-alt mr-3 text-rose-500 w-5 text-center"></i> Đăng xuất
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <!-- Hiển thị khi chưa đăng nhập -->
+                    <button onclick="showAuthModal('login')" class="relative overflow-hidden group bg-gradient-to-r from-rose-500 to-rose-600 text-white px-5 py-2 rounded-full font-medium text-sm flex items-center space-x-2 shadow-md hover:shadow-lg transition-all duration-300 hover:from-rose-600 hover:to-rose-700">
+                        <span class="relative z-10">Đăng nhập</span>
+                        <i class="fas fa-arrow-right text-xs relative z-10 transition-all duration-300 group-hover:translate-x-1"></i>
+                        <span class="absolute inset-0 bg-gradient-to-r from-rose-600 to-rose-700 opacity-0 group-hover:opacity-100 transition-all duration-300"></span>
+                    </button>
+                }
+            </div>
+
+            <!-- Mobile menu button -->
+            <div class="md:hidden flex items-center">
+                <button id="mobileMenuToggle" class="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-rose-600 hover:bg-rose-50 focus:outline-none transition-colors duration-200">
+                    <i class="fas fa-bars text-xl" id="menuOpenIcon"></i>
+                    <i class="fas fa-times text-xl hidden" id="menuCloseIcon"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile menu -->
+    <div id="mobileMenu" class="md:hidden hidden" style="transition: opacity 100ms ease-out, transform 100ms ease-out;">
+        <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white shadow-lg">
+            <a href="/" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-rose-600 hover:bg-rose-50 transition-colors duration-200 @(Context.Request.Path == "/" ? "text-rose-600 bg-rose-50" : "")">
+                <i class="fas fa-home mr-2"></i> Trang chủ
+            </a>
+            <a href="/search" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-rose-600 hover:bg-rose-50 transition-colors duration-200 @(Context.Request.Path.StartsWithSegments("/search") ? "text-rose-600 bg-rose-50" : "")">
+                <i class="fas fa-search mr-2"></i> Tìm homestay
+            </a>
+            <!-- Địa điểm (Mobile) -->
+            <div class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-rose-600 hover:bg-rose-50 transition-colors duration-200 @(Context.Request.Path.StartsWithSegments("/location") ? "text-rose-600 bg-rose-50" : "")">
+                <div class="flex items-center justify-between">
+                    <span>
+                        <i class="fas fa-map-marker-alt mr-2"></i> Địa điểm
+                    </span>
+                    <i class="fas fa-chevron-down text-xs transition-transform duration-200 @(Context.Request.Path.StartsWithSegments("/location") ? "rotate-180" : "")"></i>
+                </div>
+                <div class="pl-6 mt-1 space-y-1">
+                    <a href="/location/hanoi" class="block px-3 py-2 text-sm text-gray-600 hover:text-rose-600 hover:bg-rose-50 transition-colors duration-200 @(Context.Request.Path == "/location/hanoi" ? "text-rose-600 bg-rose-50" : "")">
+                        <i class="fas fa-landmark mr-2 text-rose-500"></i> Hà Nội
+                    </a>
+                    <a href="/location/danang" class="block px-3 py-2 text-sm text-gray-600 hover:text-rose-600 hover:bg-rose-50 transition-colors duration-200 @(Context.Request.Path == "/location/danang" ? "text-rose-600 bg-rose-50" : "")">
+                        <i class="fas fa-umbrella-beach mr-2 text-rose-500"></i> Đà Nẵng
+                    </a>
+                    <a href="/location/dalat" class="block px-3 py-2 text-sm text-gray-600 hover:text-rose-600 hover:bg-rose-50 transition-colors duration-200 @(Context.Request.Path == "/location/dalat" ? "text-rose-600 bg-rose-50" : "")">
+                        <i class="fas fa-mountain mr-2 text-rose-500"></i> Đà Lạt
+                    </a>
+                    <a href="/location/hochiminh" class="block px-3 py-2 text-sm text-gray-600 hover:text-rose-600 hover:bg-rose-50 transition-colors duration-200 @(Context.Request.Path == "/location/hochiminh" ? "text-rose-600 bg-rose-50" : "")">
+                        <i class="fas fa-city mr-2 text-rose-500"></i> TP.HCM
+                    </a>
+                </div>
+            </div>
+           
+            <a href="/Home/news" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-rose-600 hover:bg-rose-50 transition-colors duration-200 @(Context.Request.Path.StartsWithSegments("/Home/news") ? "text-rose-600 bg-rose-50" : "")">
+                <i class="fas fa-newspaper mr-2"></i> Tin tức
+            </a>
+            <a href="/about" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-rose-600 hover:bg-rose-50 transition-colors duration-200 @(Context.Request.Path.StartsWithSegments("/about") ? "text-rose-600 bg-rose-50" : "")">
+                <i class="fas fa-info-circle mr-2"></i> Về chúng tôi
+            </a>
+            @if (SignInManager.IsSignedIn(User))
+            {
+                <div class="border-t border-gray-200 mt-2 pt-2">
+                    <a asp-controller="User" asp-action="Profile" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-rose-600 hover:bg-rose-50 transition-colors duration-200 @(Context.Request.Path.StartsWithSegments("/Account/ProfileUser") ? "text-rose-600 bg-rose-50" : "")">
+                        <i class="fas fa-user mr-2"></i> Hồ sơ cá nhân
+                    </a>
+                    <a asp-controller="User" asp-action="Profile" asp-route-tab="bookings" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-rose-600 hover:bg-rose-50 transition-colors duration-200 @(Context.Request.Query["tab"] == "bookings" ? "text-rose-600 bg-rose-50" : "")">
+                        <i class="fas fa-calendar-alt mr-2"></i> Đặt phòng của tôi
+                    </a>
+                    <a asp-controller="User" asp-action="AvailablePromotions" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-rose-600 hover:bg-rose-50 transition-colors duration-200 @(Context.Request.Path.StartsWithSegments("/Account/AvailablePromotions") ? "text-rose-600 bg-rose-50" : "")">
+                        <i class="fas fa-gift mr-2"></i> Ưu đãi của tôi
+                    </a>
+                    <a asp-controller="User" asp-action="RegisterHomestay" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-rose-50 hover:text-rose-600 transition-colors duration-200">
+                        <i class="fas fa-handshake mr-3 text-rose-500 w-5 text-center"></i> Bạn muốn trở thành đối tác?
+                    </a>
+                    <a asp-controller="User" asp-action="RegisterHomestay" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-rose-50 hover:text-rose-600 transition-colors duration-200">
+                        <i class="fas fa-handshake mr-3 text-rose-500 w-5 text-center"></i> Bạn muốn trở thành đối tác?
+                    </a>
+                    <form asp-controller="Account" asp-action="Logout">
+                        <button type="submit" class="w-full text-left block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-rose-600 hover:bg-rose-50 transition-colors duration-200">
+                            <i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất
+                        </button>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <div class="border-t border-gray-200 mt-2 pt-2">
+                    <button onclick="showAuthModal('login')" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-rose-600 hover:bg-rose-50 transition-colors duration-200">
+                        <i class="fas fa-sign-in-alt mr-2"></i> Đăng nhập
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+</nav>
+
+<!-- Authentication Modal - Lower position -->
+<div id="authModal" class="fixed inset-0 z-50 hidden overflow-y-auto" style="will-change: opacity, transform;" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <!-- Overlay with lower opacity -->
+    <div class="fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity duration-300" aria-hidden="true"></div>
+
+    <!-- Modal container with top margin -->
+    <div class="flex items-start justify-center min-h-screen pt-16 px-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Modal panel with improved design -->
+        <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+            <div class="bg-white px-6 py-6 sm:px-8 sm:py-8">
+                <!-- Header with close button -->
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-gray-900 font-lora" id="modal-title">
+                        <span id="authModalTitle">Đăng nhập tài khoản</span>
+                    </h3>
+                    <button type="button" onclick="hideAuthModal()" class="text-gray-400 hover:text-gray-500 focus:outline-none transition-colors duration-200">
+                        <span class="sr-only">Close</span>
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Social login (only shown for login/register) -->
+                <div id="socialLoginSection" class="mb-6">
+                    <form asp-controller="Account" asp-action="GoogleLogin">
+                        <button type="submit" name="provider" value="Google" class="w-full flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200 mb-3">
+                            <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12.545 10.239v3.821h5.445c-0.712 2.315-2.647 3.972-5.445 3.972-3.332 0-6.033-2.701-6.033-6.032s2.701-6.032 6.033-6.032c1.498 0 2.866 0.549 3.921 1.453l2.814-2.814c-1.784-1.664-4.13-2.676-6.735-2.676-5.522 0-10 4.477-10 10s4.478 10 10 10c8.396 0 10-7.524 10-10 0-0.668-0.068-1.325-0.182-1.961h-9.818z" />
+                            </svg>
+                            <span id="socialLoginText">Đăng nhập với Google</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Divider (only shown for login/register) -->
+                <div id="dividerSection" class="relative mb-6">
+                    <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                        <div class="w-full border-t border-gray-200"></div>
+                    </div>
+                    <div class="relative flex justify-center">
+                        <span class="px-2 bg-white text-sm text-gray-500" id="dividerText">hoặc đăng nhập với email</span>
+                    </div>
+                </div>
+
+                <!-- Login Form -->
+                <form id="loginForm" asp-controller="Account" asp-action="Login" method="post" class="tab-content">
+                    <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+                    @Html.AntiForgeryToken()
+
+                    <div class="space-y-4">
+                        <div>
+                            <label for="loginEmail" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <div class="relative">
+                                <input type="email" id="loginEmail" name="Email" required
+                                       class="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all duration-200"
+                                       placeholder="Nhập email của bạn">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-envelope text-gray-400"></i>
+                                </div>
+                            </div>
+                            <p id="loginEmailError" class="text-red-500 text-xs mt-1"></p>
+                        </div>
+
+                        <div>
+                            <label for="loginPassword" class="block text-sm font-medium text-gray-700 mb-1">Mật khẩu</label>
+                            <div class="relative">
+                                <input type="password" id="loginPassword" name="Password" required
+                                       class="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all duration-200"
+                                       placeholder="Nhập mật khẩu">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-lock text-gray-400"></i>
+                                </div>
+                            </div>
+                            <p id="loginPasswordError" class="text-red-500 text-xs mt-1"></p>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <input id="remember-me" name="RememberMe" type="checkbox"
+                                       class="h-4 w-4 text-rose-600 focus:ring-rose-500 border-gray-300 rounded hidden">
+                                <label for="remember-me" class="ml-2 block text-sm text-gray-700 hidden">Ghi nhớ đăng nhập</label>
+                            </div>
+
+                            <div class="text-sm">
+                                <a onclick="showForgotPasswordForm()" class="font-medium text-rose-600 hover:text-rose-500 transition-colors duration-200 cursor-pointer">
+                                    Quên mật khẩu?
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="pt-2">
+                            <button type="submit"
+                                    class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 transition-all duration-200">
+                                Đăng nhập
+                            </button>
+                        </div>
+
+                        <!-- Error message -->
+                        <div id="loginErrorMessage" class="text-red-500 text-sm mt-2 text-center"></div>
+                    </div>
+                </form>
+
+                <!-- Register Form -->
+                <form id="registerForm" asp-controller="Account" asp-action="Register" method="post" class="tab-content hidden">
+                    @Html.AntiForgeryToken()
+
+                    <div class="space-y-4">
+                        <div>
+                            <label for="fullName" class="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
+                            <div class="relative">
+                                <input type="text" id="fullName" name="FullName" required
+                                       class="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all duration-200"
+                                       placeholder="Nhập họ và tên">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-user text-gray-400"></i>
+                                </div>
+                            </div>
+                            <p id="fullNameError" class="text-red-500 text-xs mt-1"></p>
+                        </div>
+
+                        <div>
+                            <label for="registerEmail" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <div class="relative">
+                                <input type="email" id="registerEmail" name="Email" required
+                                       class="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all duration-200"
+                                       placeholder="Nhập email của bạn">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-envelope text-gray-400"></i>
+                                </div>
+                            </div>
+                            <p id="emailError" class="text-red-500 text-xs mt-1"></p>
+                        </div>
+
+                        <div>
+                            <label for="registerPassword" class="block text-sm font-medium text-gray-700 mb-1">Mật khẩu</label>
+                            <div class="relative">
+                                <input type="password" id="registerPassword" name="Password" required
+                                       class="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all duration-200"
+                                       placeholder="Nhập mật khẩu">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-lock text-gray-400"></i>
+                                </div>
+                            </div>
+                            <p id="passwordError" class="text-red-500 text-xs mt-1"></p>
+                        </div>
+
+                        <div>
+                            <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1">Xác nhận mật khẩu</label>
+                            <div class="relative">
+                                <input type="password" id="confirmPassword" name="ConfirmPassword" required
+                                       class="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all duration-200"
+                                       placeholder="Nhập lại mật khẩu">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-lock text-gray-400"></i>
+                                </div>
+                            </div>
+                            <p id="confirmPasswordError" class="text-red-500 text-xs mt-1"></p>
+                        </div>
+
+                        <div class="pt-2">
+                            <button type="submit"
+                                    class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 transition-all duration-200">
+                                Đăng ký
+                            </button>
+                        </div>
+
+                        <!-- General error message -->
+                        <div id="registerErrorMessage" class="text-red-500 text-sm mt-2 text-center"></div>
+                    </div>
+                </form>
+
+                <!-- Forgot Password Form -->
+                <form id="forgotPasswordForm" asp-controller="Account" asp-action="ForgotPassword" method="post" class="tab-content hidden">
+                    <div id="forgotPasswordMessage" class="mb-4 text-sm text-gray-600"></div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label for="forgotEmail" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <div class="relative">
+                                <input type="email" id="forgotEmail" name="Email" required
+                                       class="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all duration-200"
+                                       placeholder="Nhập email của bạn">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-envelope text-gray-400"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-2">
+                            <button type="submit" id="forgotPasswordBtn"
+                                    class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 transition-all duration-200">
+                                Gửi yêu cầu
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Footer links -->
+                <div id="authFooterLinks" class="mt-4 text-center text-sm text-gray-600">
+                    <span id="authFooterText">Chưa có tài khoản?</span>
+                    <a id="toggleAuthLink" onclick="toggleAuthForm()" class="font-medium text-rose-600 hover:text-rose-500 transition-colors duration-200 cursor-pointer">
+                        Đăng ký ngay
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- OTP Modal -->
+<div id="otpModal" class="fixed inset-0 z-50 hidden overflow-y-auto" style="will-change: opacity, transform;" aria-labelledby="otp-modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity duration-300" aria-hidden="true"></div>
+        <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+            <div class="bg-white px-6 py-6 sm:px-8 sm:py-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-gray-900 font-lora" id="otp-modal-title">Xác minh OTP</h3>
+                    <button type="button" onclick="hideOtpModal()" class="text-gray-400 hover:text-gray-500 focus:outline-none transition-colors duration-200">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="mb-4 text-sm text-gray-600">Nhập mã OTP 6 số được gửi đến email của bạn.</div>
+                <div>
+                    <input type="text" id="otpInput" maxlength="6" placeholder="Nhập mã OTP"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all duration-200 text-center text-lg font-mono"
+                           oninput="restrictToNumbers(this)">
+                    <p id="otpError" class="text-red-500 text-xs mt-1 hidden"></p>
+                </div>
+                <div class="mt-4 flex items-center justify-between">
+                    <button id="resendOtpButton" onclick="resendOtp()" disabled
+                            class="text-sm text-rose-600 hover:text-rose-700 transition-colors duration-200">
+                        Gửi lại mã (<span id="otpCountdown">60</span>s)
+                    </button>
+                    <button onclick="verifyOtp()"
+                            class="inline-flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 transition-all duration-200">
+                        Xác minh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div id="successModal" class="fixed inset-0 z-50 hidden overflow-y-auto" style="will-change: opacity, transform;" aria-labelledby="success-modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity duration-300" aria-hidden="true"></div>
+        <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+            <div class="bg-white px-6 py-8 sm:px-8 sm:py-10">
+                <div class="text-center">
+                    <div class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-green-100">
+                        <i class="fas fa-check-circle text-green-600 text-3xl"></i>
+                    </div>
+                    <h3 class="mt-4 text-2xl font-bold text-gray-900 font-lora" id="success-modal-title"></h3>
+                    <p class="mt-2 text-sm text-gray-600" id="success-modal-message"></p>
+                    <div class="mt-6">
+                        <button onclick="hideSuccessModal()"
+                                class="inline-flex justify-center py-2 px-6 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 transition-all duration-200">
+                            Đóng
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,782 @@
+﻿@model IEnumerable<DoAnCs.Models.HopDong>
+@{
+    ViewData["Title"] = "Quản lý Hợp đồng";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<!-- CSRF Token -->
+@Html.AntiForgeryToken()
+
+
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">Quản lý Hợp đồng</h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-1">Xem và quản lý tất cả hợp đồng trong hệ thống</p>
+        </div>
+    </div>
+
+    <!-- Filters Card -->
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label for="searchInput" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tìm kiếm mã hợp đồng</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </div>
+                    <input type="text" id="searchInput" class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500" placeholder="Tìm theo mã hợp đồng...">
+                </div>
+            </div>
+            <div>
+                <label for="statusFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Trạng thái</label>
+                <select id="statusFilter" class="block w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500">
+                    <option value="all">Tất cả trạng thái</option>
+                    <option value="Đang chờ duyệt">Đang chờ duyệt</option>
+                    <option value="Đã duyệt">Đã duyệt</option>
+                    <option value="Từ chối">Từ chối</option>
+                    <option value="Đã hủy">Đã hủy</option>
+                </select>
+            </div>
+            <div>
+                <label for="dateRangePicker" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Khoảng ngày gửi</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-calendar-alt text-gray-400"></i>
+                    </div>
+                    <input type="text" id="dateRangePicker" class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500" placeholder="Chọn khoảng ngày gửi">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Tổng số hợp đồng</p>
+                    <h3 class="text-2xl font-bold text-gray-800 dark:text-white" id="totalContracts">--</h3>
+                </div>
+                <div class="p-3 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400">
+                    <i class="fas fa-file-contract text-xl"></i>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Đang chờ duyệt</p>
+                    <h3 class="text-2xl font-bold text-yellow-600 dark:text-yellow-400" id="pendingCount">--</h3>
+                </div>
+                <div class="p-3 rounded-full bg-yellow-100 dark:bg-yellow-900/50 text-yellow-600 dark:text-yellow-400">
+                    <i class="fas fa-clock text-xl"></i>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Đã duyệt</p>
+                    <h3 class="text-2xl font-bold text-green-600 dark:text-green-400" id="approvedCount">--</h3>
+                </div>
+                <div class="p-3 rounded-full bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400">
+                    <i class="fas fa-check-circle text-xl"></i>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Từ chối</p>
+                    <h3 class="text-2xl font-bold text-red-600 dark:text-red-400" id="rejectedCount">--</h3>
+                </div>
+                <div class="p-3 rounded-full bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400">
+                    <i class="fas fa-times-circle text-xl"></i>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Đã hủy</p>
+                    <h3 class="text-2xl font-bold text-gray-600 dark:text-gray-400" id="cancelledCount">--</h3>
+                </div>
+                <div class="p-3 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                    <i class="fas fa-ban text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contract Table -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Mã hợp đồng</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tên Homestay</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Địa chỉ</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ngày gửi</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ngày duyệt</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Giá mỗi đêm</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Hạng</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Khu vực</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Trạng thái</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Lý do từ chối</th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="contractTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    <!-- Data will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="p-8 text-center">
+            <div class="inline-flex items-center">
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span class="text-gray-600 dark:text-gray-300">Đang tải dữ liệu...</span>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden p-8 text-center">
+            <div class="flex flex-col items-center justify-center">
+                <div class="p-4 bg-gray-100 dark:bg-gray-700 rounded-full mb-3">
+                    <i class="fas fa-file-contract text-3xl text-gray-400 dark:text-gray-500"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-1">Không có hợp đồng nào</h3>
+                <p class="text-gray-500 dark:text-gray-400 mb-4">Không tìm thấy hợp đồng nào phù hợp với bộ lọc của bạn</p>
+                <button id="tryAgainBtn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <i class="fas fa-sync-alt mr-2"></i> Tải lại
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div id="pagination" class="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div class="text-sm text-gray-500 dark:text-gray-400" id="paginationInfo"></div>
+        <div class="flex gap-1" id="paginationButtons"></div>
+    </div>
+
+    <!-- Details Modal -->
+    <div id="detailsModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true"></span>
+            <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+                <div class="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 border-b border-gray-200 dark:border-gray-700">
+                    <div class="flex items-start justify-between">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title">Chi tiết hợp đồng</h3>
+                        <button type="button" onclick="closeModal('detailsModal')" class="bg-white dark:bg-gray-800 rounded-md text-gray-400 hover:text-gray-500 focus:outline-none">
+                            <span class="sr-only">Close</span>
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="px-4 py-5 sm:p-6" id="detailsModalContent">
+                    <!-- Content will be loaded here -->
+                </div>
+                <div class="px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-200 dark:border-gray-700">
+                    <button type="button" onclick="closeModal('detailsModal')" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-700 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Status Modal -->
+    <div id="updateStatusModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true"></span>
+            <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+                <div class="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 border-b border-gray-200 dark:border-gray-700">
+                    <div class="flex items-start justify-between">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title">Cập nhật trạng thái</h3>
+                        <button type="button" onclick="closeModal('updateStatusModal')" class="bg-white dark:bg-gray-800 rounded-md text-gray-400 hover:text-gray-500 focus:outline-none">
+                            <span class="sr-only">Close</span>
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <form id="updateStatusForm">
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="mb-4">
+                            <label for="trangThai" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb MONTHS -2">Trạng thái</label>
+                            <select id="trangThai" name="trangThai" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                <option value="Đang chờ duyệt">Đang chờ duyệt</option>
+                                <option value="Đã duyệt">Đã duyệt</option>
+                                <option value="Từ chối">Từ chối</option>
+                                <option value="Đã hủy">Đã hủy</option>
+                            </select>
+                        </div>
+                        <div id="lyDoTuChoiField" class="mb-4 hidden">
+                            <label for="lyDoTuChoi" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Lý do từ chối</label>
+                            <textarea id="lyDoTuChoi" name="lyDoTuChoi" rows="3" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="Nhập lý do từ chối..."></textarea>
+                        </div>
+                    </div>
+                    <div class="px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-200 dark:border-gray-700">
+                        <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">Cập nhật</button>
+                        <button type="button" onclick="closeModal('updateStatusModal')" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-700 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">Hủy</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.9/dist/flatpickr.min.css" rel="stylesheet">
+    <style>
+        .modal {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .action-btn {
+            transition: all 0.2s;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+        }
+
+            .action-btn:hover {
+                transform: translateY(-1px);
+                background-color: rgba(59, 130, 246, 0.1);
+            }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+            .status-badge.pending {
+                background-color: #fef9c3;
+                color: #a16207;
+            }
+
+        .dark .status-badge.pending {
+            background-color: rgba(253, 230, 138, 0.2);
+            color: rgb(234, 179, 8);
+        }
+
+        .status-badge.approved {
+            background-color: #dcfce7;
+            color: #15803d;
+        }
+
+        .dark .status-badge.approved {
+            background-color: rgba(134, 239, 172, 0.2);
+            color: rgb(34, 197, 94);
+        }
+
+        .status-badge.rejected {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .dark .status-badge.rejected {
+            background-color: rgba(252, 165, 165, 0.2);
+            color: rgb(239, 68, 68);
+        }
+
+        .status-badge.cancelled {
+            background-color: #e5e7eb;
+            color: #4b5563;
+        }
+
+        .dark .status-badge.cancelled {
+            background-color: rgba(209, 213, 219, 0.2);
+            color: rgb(107, 114, 128);
+        }
+
+        .contract-row:hover {
+            background-color: rgba(243, 244, 246, 0.5);
+        }
+
+        .dark .contract-row:hover {
+            background-color: rgba(31, 41, 55, 0.5);
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.9/dist/flatpickr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.9/dist/l10n/vn.js"></script>
+
+    <script>
+        // Global variables
+        let currentPage = 1;
+        let totalPages = 1;
+        const pageSize = 10;
+        let totalItems = 0;
+        let currentContractId = null;
+
+        // Modal functions
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        // Format date to YYYY-MM-DD
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // Load contracts with filters
+        function loadContracts() {
+            const searchString = document.getElementById('searchInput').value;
+            const status = document.getElementById('statusFilter').value;
+            let dateRange = document.getElementById('dateRangePicker').value;
+
+            // Ensure dateRange is in correct format (YYYY-MM-DD to YYYY-MM-DD)
+            if (dateRange) {
+                const dates = dateRange.split(' to ');
+                if (dates.length === 2) {
+                    const startDate = new Date(dates[0]);
+                    const endDate = new Date(dates[1]);
+                    if (!isNaN(startDate) && !isNaN(endDate)) {
+                        dateRange = `${formatDate(startDate)} to ${formatDate(endDate)}`;
+                    } else {
+                        dateRange = ''; // Clear invalid date range
+                    }
+                } else {
+                    dateRange = ''; // Clear if not a valid range
+                }
+            }
+
+            document.getElementById('loadingState').classList.remove('hidden');
+            document.getElementById('emptyState').classList.add('hidden');
+            document.getElementById('contractTableBody').innerHTML = '';
+
+            fetch(`/Admin/Contract/GetHopDongs?searchQuery=${encodeURIComponent(searchString)}&statusFilter=${encodeURIComponent(status)}&dateRange=${encodeURIComponent(dateRange)}&pageNumber=${currentPage}&pageSize=${pageSize}`)
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data || typeof data !== 'object') throw new Error('Dữ liệu trả về không hợp lệ');
+                    if (data.success) {
+                        totalPages = data.totalPages || 1;
+                        renderContracts(data.data);
+                        renderPagination(data.totalPages, data.currentPage);
+                        totalItems = data.totalRecords;
+                        updateContractStats(data.stats, data.totalRecords);
+                    } else {
+                        showToast(data.message || 'Không thể tải danh sách hợp đồng', false);
+                        document.getElementById('emptyState').classList.remove('hidden');
+                    }
+                })
+                .catch(error => {
+                    showToast('Lỗi khi tải danh sách hợp đồng: ' + error.message, false);
+                    document.getElementById('emptyState').classList.remove('hidden');
+                })
+                .finally(() => {
+                    document.getElementById('loadingState').classList.add('hidden');
+                });
+        }
+
+        // Update contract stats
+        function updateContractStats(stats, totalRecords) {
+            document.getElementById('totalContracts').textContent = totalRecords;
+            document.getElementById('pendingCount').textContent = stats.pending;
+            document.getElementById('approvedCount').textContent = stats.approved;
+            document.getElementById('rejectedCount').textContent = stats.rejected;
+            document.getElementById('cancelledCount').textContent = stats.cancelled;
+        }
+
+        // Render contracts to table
+        function renderContracts(contracts) {
+            const tableBody = document.getElementById('contractTableBody');
+            if (!contracts || contracts.length === 0) {
+                document.getElementById('emptyState').classList.remove('hidden');
+                return;
+            }
+
+            tableBody.innerHTML = contracts.map(contract => {
+                const statusClass = contract.trangThai === 'Đang chờ duyệt' ? 'pending' :
+                                   contract.trangThai === 'Đã duyệt' ? 'approved' :
+                                   contract.trangThai === 'Từ chối' ? 'rejected' : 'cancelled';
+                const isApproved = contract.trangThai === 'Đã duyệt';
+                const actionButtonsClass = isApproved ? 'hidden' : '';
+
+                return `
+                    <tr class="contract-row">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">${contract.ma_HopDong}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">${contract.ten_Homestay}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">${contract.diaChi}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${new Date(contract.ngayGui).toLocaleDateString('vi-VN')}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${contract.ngayDuyet ? new Date(contract.ngayDuyet).toLocaleDateString('vi-VN') : 'Chưa duyệt'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${contract.pricePerNight.toLocaleString()} VND</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${contract.hang} sao</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${contract.ma_KV || 'Chưa có'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="status-badge ${statusClass}">${contract.trangThai}</span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">${contract.lyDoTuChoi || 'Không có'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="flex justify-end space-x-2 ${actionButtonsClass}">
+                                <button onclick="openDetailsModal('${contract.ma_HopDong}')"
+                                    class="action-btn text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300" title="Chi tiết">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button onclick="openUpdateStatusModal('${contract.ma_HopDong}', '${contract.trangThai}', '${contract.lyDoTuChoi || ''}')"
+                                    class="action-btn text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300" title="Cập nhật trạng thái">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Render pagination
+        function renderPagination(totalPagesParam, currentPageParam) {
+            totalPages = totalPagesParam || 1;
+            const paginationButtons = document.getElementById('paginationButtons');
+            const paginationInfo = document.getElementById('paginationInfo');
+
+            if (totalPages <= 1) {
+                paginationButtons.innerHTML = '';
+                paginationInfo.textContent = '';
+                return;
+            }
+
+            const startItem = (currentPage - 1) * pageSize + 1;
+            const endItem = Math.min(currentPage * pageSize, totalItems);
+            paginationInfo.textContent = `Hiển thị ${startItem}-${endItem} của ${totalItems}`;
+
+            let buttons = [];
+            const maxVisiblePages = 5;
+
+            buttons.push(`
+                <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}
+                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 ${currentPage === 1 ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'}">
+                    <span class="sr-only">Previous</span>
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            `);
+
+            if (currentPage > Math.floor(maxVisiblePages/2) + 1) {
+                buttons.push(`
+                    <button onclick="changePage(1)" class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">1</button>
+                `);
+                if (currentPage > Math.floor(maxVisiblePages/2) + 2) {
+                    buttons.push(`
+                        <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300">...</span>
+                    `);
+                }
+            }
+
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages/2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                buttons.push(`
+                    <button onclick="changePage(${i})"
+                        class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium ${currentPage === i ? 'bg-blue-50 dark:bg-gray-700 border-blue-500 text-blue-600 dark:text-blue-400 z-10' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}">
+                        ${i}
+                    </button>
+                `);
+            }
+
+            if (currentPage < totalPages - Math.floor(maxVisiblePages/2)) {
+                if (currentPage < totalPages - Math.floor(maxVisiblePages/2) - 1) {
+                    buttons.push(`
+                        <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300">...</span>
+                    `);
+                }
+                buttons.push(`
+                    <button onclick="changePage(${totalPages})" class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">${totalPages}</button>
+                `);
+            }
+
+            buttons.push(`
+                <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}
+                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 ${currentPage === totalPages ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'}">
+                    <span class="sr-only">Next</span>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            `);
+
+            paginationButtons.innerHTML = buttons.join('');
+        }
+
+        // Change page
+        function changePage(page) {
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            loadContracts();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Show toast notification
+        function showToast(message, isSuccess) {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                }
+            });
+
+            Toast.fire({
+                icon: isSuccess ? 'success' : 'error',
+                title: message,
+                background: isSuccess ? 'rgba(16, 185, 129, 0.9)' : 'rgba(239, 68, 68, 0.9)',
+                color: 'white'
+            });
+        }
+
+        // Open details modal
+        function openDetailsModal(id) {
+            fetch(`/Admin/Contract/Details/${id}`)
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        const contract = data.data;
+                        const modalContent = `
+                            <div class="flex items-start mb-6">
+                                <div class="flex-shrink-0 h-16 w-16 rounded-lg overflow-hidden">
+                                    <img src="${contract.hinhAnh || '/img/default-homestay.jpg'}" class="h-full w-full object-cover" alt="${contract.ten_Homestay}">
+                                </div>
+                                <div class="ml-4">
+                                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white">${contract.ten_Homestay}</h4>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">${contract.diaChi}</p>
+                                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                        <span class="font-medium">Mã hợp đồng:</span> ${contract.ma_HopDong}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                <div>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Giá mỗi đêm</p>
+                                    <p class="text-base font-medium text-gray-900 dark:text-white">${contract.pricePerNight.toLocaleString()} VND</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Hạng</p>
+                                    <p class="text-base font-medium text-gray-900 dark:text-white">${contract.hang} sao</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Mã khu vực</p>
+                                    <p class="text-base font-medium text-gray-900 dark:text-white">${contract.ma_KV || 'Chưa có'}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Ngày gửi</p>
+                                    <p class="text-base font-medium text-gray-900 dark:text-white">${new Date(contract.ngayGui).toLocaleDateString('vi-VN')}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Ngày duyệt</p>
+                                    <p class="text-base font-medium text-gray-900 dark:text-white">${contract.ngayDuyet ? new Date(contract.ngayDuyet).toLocaleDateString('vi-VN') : 'Chưa duyệt'}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Trạng thái</p>
+                                    <p class="text-base font-medium ${contract.trangThai === 'Đã duyệt' ? 'text-green-600 dark:text-green-400' : contract.trangThai === 'Từ chối' ? 'text-red-600 dark:text-red-400' : contract.trangThai === 'Đang chờ duyệt' ? 'text-yellow-600 dark:text-yellow-400' : 'text-gray-600 dark:text-gray-400'}">${contract.trangThai}</p>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Mô tả</p>
+                                <p class="text-base text-gray-900 dark:text-white">${contract.moTa || 'Chưa có mô tả'}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Lý do từ chối</p>
+                                <p class="text-base text-gray-900 dark:text-white">${contract.lyDoTuChoi || 'Không có'}</p>
+                            </div>
+                        `;
+                        document.getElementById('detailsModalContent').innerHTML = modalContent;
+                        openModal('detailsModal');
+                    } else {
+                        showToast(data.message || 'Không thể tải thông tin hợp đồng', false);
+                    }
+                })
+                .catch(error => {
+                    showToast('Lỗi khi tải thông tin hợp đồng: ' + error.message, false);
+                });
+        }
+
+        // Open update status modal
+        function openUpdateStatusModal(id, currentStatus, lyDoTuChoi) {
+            currentContractId = id;
+            const trangThaiSelect = document.getElementById('trangThai');
+            trangThaiSelect.innerHTML = ''; // Clear existing options
+
+            // Valid statuses
+            const statuses = ['Đang chờ duyệt', 'Đã duyệt', 'Từ chối', 'Đã hủy'];
+            statuses.forEach(status => {
+                if (status !== currentStatus) { // Only add statuses different from current
+                    const option = document.createElement('option');
+                    option.value = status;
+                    option.textContent = status;
+                    trangThaiSelect.appendChild(option);
+                }
+            });
+
+            document.getElementById('trangThai').value = statuses.includes(lyDoTuChoi) ? lyDoTuChoi : (statuses[0] !== currentStatus ? statuses[0] : statuses[1]);
+            document.getElementById('lyDoTuChoi').value = lyDoTuChoi;
+            toggleLyDoTuChoiField(document.getElementById('trangThai').value);
+            openModal('updateStatusModal');
+        }
+
+        // Toggle rejection reason field
+        function toggleLyDoTuChoiField(status) {
+            const lyDoTuChoiField = document.getElementById('lyDoTuChoiField');
+            if (status === 'Từ chối') {
+                lyDoTuChoiField.classList.remove('hidden');
+                document.getElementById('lyDoTuChoi').required = true;
+            } else {
+                lyDoTuChoiField.classList.add('hidden');
+                document.getElementById('lyDoTuChoi').required = false;
+            }
+        }
+
+        // Handle update status form submission
+        function handleUpdateStatusSubmit(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const trangThai = formData.get('trangThai');
+            const lyDoTuChoi = formData.get('lyDoTuChoi');
+
+            if (trangThai === 'Từ chối' && !lyDoTuChoi) {
+                showToast('Lý do từ chối không được để trống', false);
+                return;
+            }
+
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Đang cập nhật...';
+            submitButton.disabled = true;
+
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+            if (!token) {
+                showToast('Không tìm thấy CSRF token. Vui lòng tải lại trang.', false);
+                submitButton.textContent = originalText;
+                submitButton.disabled = false;
+                return;
+            }
+
+            fetch(`/Admin/Contract/UpdateStatus/${currentContractId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': token
+                },
+                body: `trangThai=${encodeURIComponent(trangThai)}&lyDoTuChoi=${encodeURIComponent(lyDoTuChoi)}`
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message || 'Cập nhật trạng thái thành công', true);
+                        closeModal('updateStatusModal');
+                        loadContracts();
+                    } else {
+                        showToast(data.message || 'Không thể cập nhật trạng thái', false);
+                    }
+                })
+                .catch(error => {
+                    showToast('Lỗi khi cập nhật trạng thái: ' + error.message, false);
+                })
+                .finally(() => {
+                    submitButton.textContent = originalText;
+                    submitButton.disabled = false;
+                });
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize date range picker
+            flatpickr('#dateRangePicker', {
+                mode: 'range',
+                dateFormat: 'Y-m-d',
+                altInput: true,
+                altFormat: 'd/m/Y',
+                allowInput: true,
+                locale: {
+                    rangeSeparator: ' to '
+                },
+                onChange: function(selectedDates, dateStr) {
+                    if (selectedDates.length === 2) {
+                        currentPage = 1;
+                        loadContracts();
+                    }
+                }
+            });
+
+            // Event listeners for filters
+            let searchTimeout;
+            document.getElementById('searchInput').addEventListener('input', () => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    currentPage = 1;
+                    loadContracts();
+                }, 300);
+            });
+
+            document.getElementById('statusFilter').addEventListener('change', () => {
+                currentPage = 1;
+                loadContracts();
+            });
+
+            // Update status form submission
+            document.getElementById('updateStatusForm').addEventListener('submit', handleUpdateStatusSubmit);
+
+            // Toggle rejection reason field when status changes
+            document.getElementById('trangThai').addEventListener('change', (e) => {
+                toggleLyDoTuChoiField(e.target.value);
+            });
+
+            // Try again button
+            document.getElementById('tryAgainBtn').addEventListener('click', loadContracts);
+
+            // Load initial data
+            loadContracts();
+        });
+    </script>
+}

@@ -1,0 +1,740 @@
+﻿@model dynamic
+@{
+    ViewData["Title"] = "Quản lý Phụ thu";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<!-- CSRF Token -->
+@Html.AntiForgeryToken()
+
+<div class="flex flex-col h-full">
+    <!-- Header Section -->
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">Quản lý Phụ thu</h1>
+                <p class="text-gray-600 dark:text-gray-300 mt-1">Xem và quản lý tất cả phụ thu trong hệ thống</p>
+            </div>
+            <button id="addSurchargeBtn" class="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg transition duration-200 shadow-md">
+                <i class="fas fa-plus-circle mr-2"></i> Thêm phụ thu mới
+            </button>
+        </div>
+    </div>
+
+    <!-- Filters Card -->
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="md:col-span-2">
+                <label for="searchInput" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tìm kiếm</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </div>
+                    <input type="text" id="searchInput" class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-500 dark:focus:border-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-300" placeholder="Tìm theo nội dung hoặc mã phiếu...">
+                </div>
+            </div>
+            <div>
+                <label for="dateRangePicker" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Khoảng ngày</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-calendar-alt text-gray-400"></i>
+                    </div>
+                    <input type="text" id="dateRangePicker" class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-500 dark:focus:border-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-300" placeholder="Chọn khoảng ngày">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Tổng số phụ thu</p>
+                    <h3 class="text-2xl font-bold text-gray-800 dark:text-white" id="totalSurcharges">--</h3>
+                </div>
+                <div class="p-3 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400">
+                    <i class="fas fa-file-invoice text-xl"></i>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Phụ thu cao nhất</p>
+                    <h3 class="text-2xl font-bold text-green-600 dark:text-green-400" id="highestSurcharge">--</h3>
+                </div>
+                <div class="p-3 rounded-full bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400">
+                    <i class="fas fa-arrow-up text-xl"></i>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Phụ thu thấp nhất</p>
+                    <h3 class="text-2xl font-bold text-red-600 dark:text-red-400" id="lowestSurcharge">--</h3>
+                </div>
+                <div class="p-3 rounded-full bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400">
+                    <i class="fas fa-arrow-down text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Surcharge Table -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-6 flex-1">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Mã phiếu</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ngày phụ thu</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nội dung</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Phí phụ thu</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Loại phòng áp dụng</th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="surchargeTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    <!-- Data will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="p-8 text-center">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
+            <p class="mt-2 text-gray-600 dark:text-gray-300">Đang tải dữ liệu...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden p-8 text-center">
+            <i class="fas fa-file-invoice text-4xl text-gray-300 dark:text-gray-500 mb-2"></i>
+            <p class="text-gray-500 dark:text-gray-400">Không tìm thấy phụ thu nào</p>
+            <button id="tryAgainBtn" class="mt-4 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium">Thử lại</button>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div id="pagination" class="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
+        <div class="text-sm text-gray-500 dark:text-gray-400" id="paginationInfo"></div>
+        <div class="flex gap-1" id="paginationButtons"></div>
+    </div>
+</div>
+
+<!-- Add/Edit Surcharge Modal -->
+<div id="surchargeModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4 py-6 hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+            <h2 class="text-xl font-bold text-gray-800 dark:text-white" id="modalTitle">Thêm phụ thu mới</h2>
+            <button onclick="closeModal('surchargeModal')" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <form id="surchargeForm">
+                <input type="hidden" id="Ma_PhieuPT" name="Ma_PhieuPT" value="">
+                <div class="grid grid-cols-1 gap-4 mb-4">
+                    <div>
+                        <label for="NgayPhuThu" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ngày phụ thu</label>
+                        <input type="date" id="NgayPhuThu" name="NgayPhuThu" class="block w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-500 dark:focus:border-blue-500 text-gray-900 dark:text-white" required>
+                    </div>
+                    <div>
+                        <label for="NoiDung" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nội dung</label>
+                        <input type="text" id="NoiDung" name="NoiDung" class="block w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-500 dark:focus:border-blue-500 text-gray-900 dark:text-white" required>
+                    </div>
+                    <div>
+                        <label for="PhiPhuThu" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phí phụ thu (%)</label>
+                        <div class="relative">
+                            <input type="number" id="PhiPhuThu" name="PhiPhuThu" min="0" max="100" step="0.1" class="block w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-500 dark:focus:border-blue-500 text-gray-900 dark:text-white pr-12" required>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <span class="text-gray-500 dark:text-gray-400">%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Áp dụng cho loại phòng</label>
+                        <div id="roomTypesContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                            <!-- Room types will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <button type="button" onclick="closeModal('surchargeModal')" class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Hủy</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4 py-6 hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+            <h2 class="text-xl font-bold text-gray-800 dark:text-white">Xác nhận xóa</h2>
+            <button onclick="closeModal('deleteModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <p class="text-gray-600 dark:text-gray-300 mb-4">Bạn có chắc chắn muốn xóa phụ thu này? Hành động này không thể hoàn tác.</p>
+            <div class="mt-6 flex justify-between">
+                <button onclick="closeModal('deleteModal')" class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">Hủy</button>
+                <button onclick="deleteSurcharge()" class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition">Xác nhận xóa</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.9/dist/flatpickr.min.css" rel="stylesheet">
+    <style>
+        .modal {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .action-btn {
+            transition: all 0.2s;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+        }
+
+            .action-btn:hover {
+                transform: translateY(-1px);
+                background-color: rgba(59, 130, 246, 0.1);
+            }
+
+        .dark .action-btn:hover {
+            background-color: rgba(59, 130, 246, 0.2);
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            transition: all 0.2s;
+        }
+
+            .checkbox-container:hover {
+                background-color: rgba(59, 130, 246, 0.1);
+            }
+
+        .dark .checkbox-container:hover {
+            background-color: rgba(59, 130, 246, 0.2);
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            margin-right: 0.5rem;
+        }
+
+        .surcharge-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background-color: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .dark .surcharge-badge {
+            background-color: #1e3a8a;
+            color: #bfdbfe;
+        }
+
+        /* Custom scrollbar for modal */
+        #surchargeModal::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #surchargeModal::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 0 8px 8px 0;
+        }
+
+        #surchargeModal::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+            #surchargeModal::-webkit-scrollbar-thumb:hover {
+                background: #a8a8a8;
+            }
+
+        .dark #surchargeModal::-webkit-scrollbar-track {
+            background: #374151;
+        }
+
+        .dark #surchargeModal::-webkit-scrollbar-thumb {
+            background: #4b5563;
+        }
+
+            .dark #surchargeModal::-webkit-scrollbar-thumb:hover {
+                background: #6b7280;
+            }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.9/dist/flatpickr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.9/dist/l10n/vn.js"></script>
+
+    <script>
+        // Global variables
+        let currentPage = 1;
+        let totalPages = 1;
+        const pageSize = 10;
+        let totalItems = 0;
+        let currentSurchargeId = null;
+        let allRoomTypes = [];
+
+        // Modal functions
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        // Load surcharges with filters
+        function loadSurcharges() {
+            const searchString = document.getElementById('searchInput').value;
+            const dateRange = document.getElementById('dateRangePicker').value;
+
+            console.log(`Sending dateRange to server: ${dateRange}`);
+
+            document.getElementById('loadingState').classList.remove('hidden');
+            document.getElementById('emptyState').classList.add('hidden');
+            document.getElementById('surchargeTableBody').innerHTML = '';
+
+            fetch(`/Admin/Surcharge/GetSurcharges?searchString=${encodeURIComponent(searchString)}&dateRange=${encodeURIComponent(dateRange)}&page=${currentPage}&pageSize=${pageSize}`)
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data || typeof data !== 'object') throw new Error('Dữ liệu trả về không hợp lệ');
+                    if (data.success) {
+                        totalPages = data.totalPages || 1;
+                        renderSurcharges(data.data);
+                        renderPagination(data.totalPages, data.currentPage);
+                        totalItems = data.totalItems;
+                        updateSurchargeStats(data.data);
+                    } else {
+                        showToast(data.message || 'Không thể tải danh sách phụ thu', false);
+                        document.getElementById('emptyState').classList.remove('hidden');
+                    }
+                })
+                .catch(error => {
+                    showToast('Lỗi khi tải danh sách phụ thu: ' + error.message, false);
+                    document.getElementById('emptyState').classList.remove('hidden');
+                })
+                .finally(() => {
+                    document.getElementById('loadingState').classList.add('hidden');
+                });
+        }
+
+        // Update surcharge stats
+        function updateSurchargeStats(surcharges) {
+            const total = surcharges.length;
+            const highest = total > 0 ? Math.max(...surcharges.map(s => s.phiPhuThu)) : 0;
+            const lowest = total > 0 ? Math.min(...surcharges.map(s => s.phiPhuThu)) : 0;
+
+            document.getElementById('totalSurcharges').textContent = total;
+            document.getElementById('highestSurcharge').textContent = highest + '%';
+            document.getElementById('lowestSurcharge').textContent = lowest + '%';
+        }
+
+        // Render surcharges to table
+        function renderSurcharges(surcharges) {
+            const tableBody = document.getElementById('surchargeTableBody');
+            if (!surcharges || surcharges.length === 0) {
+                document.getElementById('emptyState').classList.remove('hidden');
+                return;
+            }
+
+            tableBody.innerHTML = surcharges.map(surcharge => {
+                const appliedRoomTypes = surcharge.appliedRoomTypes && Array.isArray(surcharge.appliedRoomTypes)
+                    ? surcharge.appliedRoomTypes.map(rt => rt.tenLoai).join(', ')
+                    : 'Không áp dụng';
+
+                return `
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">${surcharge.ma_PhieuPT}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">${surcharge.ngayPhuThu}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">${surcharge.noiDung}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="surcharge-badge">${surcharge.phiPhuThu}%</span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">${appliedRoomTypes}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="flex justify-end space-x-2">
+                                <button onclick="editSurcharge('${encodeURIComponent(surcharge.ma_PhieuPT)}')"
+                                    class="action-btn text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300" title="Chỉnh sửa">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="openDeleteModal('${encodeURIComponent(surcharge.ma_PhieuPT)}')"
+                                    class="action-btn text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300" title="Xóa">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Render pagination
+        function renderPagination(totalPagesParam, currentPage) {
+            totalPages = totalPagesParam || 1;
+            const paginationButtons = document.getElementById('paginationButtons');
+            const paginationInfo = document.getElementById('paginationInfo');
+
+            if (totalPages <= 1) {
+                paginationButtons.innerHTML = '';
+                paginationInfo.textContent = '';
+                return;
+            }
+
+            const startItem = (currentPage - 1) * pageSize + 1;
+            const endItem = Math.min(currentPage * pageSize, totalItems);
+            paginationInfo.textContent = `Hiển thị ${startItem}-${endItem} của ${totalItems}`;
+
+            let buttons = [];
+            const maxVisiblePages = 5;
+
+            buttons.push(`
+                <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}
+                    class="px-3 py-1 rounded-md border ${currentPage === 1 ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'}">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            `);
+
+            if (currentPage > Math.floor(maxVisiblePages/2) + 1) {
+                buttons.push(`
+                    <button onclick="changePage(1)" class="px-3 py-1 rounded-md border bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600">1</button>
+                `);
+                if (currentPage > Math.floor(maxVisiblePages/2) + 2) {
+                    buttons.push('<span class="px-2 py-1 text-gray-500 dark:text-gray-400">...</span>');
+                }
+            }
+
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages/2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                buttons.push(`
+                    <button onclick="changePage(${i})"
+                        class="px-3 py-1 rounded-md border ${currentPage === i ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'}">
+                        ${i}
+                    </button>
+                `);
+            }
+
+            if (currentPage < totalPages - Math.floor(maxVisiblePages/2)) {
+                if (currentPage < totalPages - Math.floor(maxVisiblePages/2) - 1) {
+                    buttons.push('<span class="px-2 py-1 text-gray-500 dark:text-gray-400">...</span>');
+                }
+                buttons.push(`
+                    <button onclick="changePage(${totalPages})" class="px-3 py-1 rounded-md border bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600">${totalPages}</button>
+                `);
+            }
+
+            buttons.push(`
+                <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}
+                    class="px-3 py-1 rounded-md border ${currentPage === totalPages ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'}">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            `);
+
+            paginationButtons.innerHTML = buttons.join('');
+        }
+
+        // Change page
+        function changePage(page) {
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            loadSurcharges();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Show toast notification
+        function showToast(message, isSuccess) {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                }
+            });
+
+            Toast.fire({
+                icon: isSuccess ? 'success' : 'error',
+                title: message,
+                background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
+                color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#1f2937'
+            });
+        }
+
+        // Open modal to add new surcharge
+        function openAddSurchargeModal() {
+            document.getElementById('modalTitle').textContent = 'Thêm phụ thu mới';
+            document.getElementById('surchargeForm').reset();
+            document.getElementById('Ma_PhieuPT').value = '';
+            document.querySelectorAll('#roomTypesContainer input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            openModal('surchargeModal');
+        }
+
+        // Open modal to edit surcharge
+        function editSurcharge(maPhieuPT) {
+            maPhieuPT = decodeURIComponent(maPhieuPT);
+            currentSurchargeId = maPhieuPT;
+
+            fetch(`/Admin/Surcharge/GetSurcharge/${maPhieuPT}`)
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success && data.data) {
+                        document.getElementById('modalTitle').textContent = 'Chỉnh sửa phụ thu';
+                        document.getElementById('Ma_PhieuPT').value = data.data.ma_PhieuPT;
+                        document.getElementById('NgayPhuThu').value = data.data.ngayPhuThu;
+                        document.getElementById('NoiDung').value = data.data.noiDung;
+                        document.getElementById('PhiPhuThu').value = data.data.phiPhuThu;
+
+                        // Clear all checkboxes first
+                        document.querySelectorAll('#roomTypesContainer input[type="checkbox"]').forEach(checkbox => {
+                            checkbox.checked = false;
+                        });
+
+                        // Check the applied room types
+                        if (data.data.appliedRoomTypes && data.data.appliedRoomTypes.length > 0) {
+                            data.data.appliedRoomTypes.forEach(id => {
+                                const checkbox = document.querySelector(`#roomTypesContainer input[value="${id}"]`);
+                                if (checkbox) checkbox.checked = true;
+                            });
+                        }
+
+                        openModal('surchargeModal');
+                    } else {
+                        showToast(data.message || 'Không thể tải thông tin phụ thu', false);
+                    }
+                })
+                .catch(error => {
+                    showToast('Lỗi khi tải thông tin phụ thu: ' + error.message, false);
+                });
+        }
+
+        // Open delete modal
+        function openDeleteModal(maPhieuPT) {
+            currentSurchargeId = decodeURIComponent(maPhieuPT);
+            openModal('deleteModal');
+        }
+
+        // Handle surcharge form submission
+        function handleSurchargeSubmit(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = {
+                ma_PhieuPT: formData.get('Ma_PhieuPT'),
+                ngayPhuThu: formData.get('NgayPhuThu'),
+                noiDung: formData.get('NoiDung'),
+                phiPhuThu: parseFloat(formData.get('PhiPhuThu')),
+                roomTypeIds: Array.from(document.querySelectorAll('input[name="RoomTypeIds"]:checked')).map(el => el.value)
+            };
+
+            // Validate data
+            if (!data.ngayPhuThu || isNaN(new Date(data.ngayPhuThu))) {
+                showToast('Ngày phụ thu không hợp lệ', false);
+                return;
+            }
+            if (!data.noiDung || data.noiDung.trim() === '') {
+                showToast('Nội dung không được để trống', false);
+                return;
+            }
+            if (isNaN(data.phiPhuThu) || data.phiPhuThu < 0 || data.phiPhuThu > 100) {
+                showToast('Phí phụ thu phải từ 0% đến 100%', false);
+                return;
+            }
+            if (data.roomTypeIds.length === 0) {
+                showToast('Vui lòng chọn ít nhất một loại phòng', false);
+                return;
+            }
+
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Đang lưu...';
+            submitButton.disabled = true;
+
+            const url = data.ma_PhieuPT ? '/Admin/Surcharge/UpdateSurcharge' : '/Admin/Surcharge/CreateSurcharge';
+            const method = 'POST';
+
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message || 'Lưu phụ thu thành công', true);
+                        closeModal('surchargeModal');
+                        loadSurcharges();
+                    } else {
+                        showToast(data.message || 'Không thể lưu phụ thu', false);
+                    }
+                })
+                .catch(error => {
+                    showToast('Lỗi khi lưu phụ thu: ' + error.message, false);
+                })
+                .finally(() => {
+                    submitButton.textContent = originalText;
+                    submitButton.disabled = false;
+                });
+        }
+
+        // Delete surcharge
+        function deleteSurcharge() {
+            if (!currentSurchargeId) return;
+
+            const deleteButton = document.querySelector('#deleteModal button.bg-red-600');
+            const originalText = deleteButton.textContent;
+            deleteButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Đang xóa...';
+            deleteButton.disabled = true;
+
+            fetch(`/Admin/Surcharge/DeleteSurcharge/${currentSurchargeId}`, {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                }
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message || 'Xóa phụ thu thành công', true);
+                        closeModal('deleteModal');
+                        loadSurcharges();
+                    } else {
+                        showToast(data.message || 'Không thể xóa phụ thu', false);
+                    }
+                })
+                .catch(error => {
+                    showToast('Lỗi khi xóa phụ thu: ' + error.message, false);
+                })
+                .finally(() => {
+                    deleteButton.textContent = originalText;
+                    deleteButton.disabled = false;
+                });
+        }
+
+        // Load room types for form
+        function loadRoomTypes() {
+            fetch('/Admin/Surcharge/GetRoomTypes')
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success && data.data) {
+                        allRoomTypes = data.data;
+                        const container = document.getElementById('roomTypesContainer');
+                        container.innerHTML = data.data.map(rt => `
+                            <label class="checkbox-container">
+                                <input type="checkbox" name="RoomTypeIds" value="${rt.iD_Loai}">
+                                ${rt.tenLoai}
+                            </label>
+                        `).join('');
+                    } else {
+                        showToast(data.message || 'Không thể tải danh sách loại phòng', false);
+                    }
+                })
+                .catch(error => {
+                    showToast('Lỗi khi tải danh sách loại phòng', false);
+                });
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize date range picker
+            flatpickr('#dateRangePicker', {
+                mode: 'range',
+                dateFormat: 'Y-m-d',
+                altInput: true,
+                altFormat: 'd/m/Y',
+                allowInput: true,
+                locale: {
+                    rangeSeparator: ' to '
+                },
+                onChange: function(selectedDates, dateStr) {
+                    console.log(`Selected dateRange: ${dateStr}`);
+                    if (selectedDates.length === 2) {
+                        currentPage = 1;
+                        loadSurcharges();
+                    }
+                }
+            });
+
+            // Event listeners for filters
+            let searchTimeout;
+            document.getElementById('searchInput').addEventListener('input', () => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    currentPage = 1;
+                    loadSurcharges();
+                }, 300);
+            });
+
+            // Add surcharge button
+            document.getElementById('addSurchargeBtn').addEventListener('click', openAddSurchargeModal);
+
+            // Try again button
+            document.getElementById('tryAgainBtn').addEventListener('click', loadSurcharges);
+
+            // Form submission
+            document.getElementById('surchargeForm').addEventListener('submit', handleSurchargeSubmit);
+
+            // Load initial data
+            loadSurcharges();
+            loadRoomTypes();
+        });
+    </script>
+}

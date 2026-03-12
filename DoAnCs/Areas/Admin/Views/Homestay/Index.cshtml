@@ -1,0 +1,1010 @@
+﻿@using DoAnCs.Models
+@{
+    ViewData["Title"] = "Quản lý Homestay";
+}
+
+<!-- Main Content -->
+<div class="flex flex-col h-full">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 px-6 pt-4">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-200">Quản lý Homestay</h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-1 text-sm md:text-base">
+                Tổng số homestay: <span id="totalHomestays" class="font-semibold text-primary-600 dark:text-primary-400">0</span>
+            </p>
+        </div>
+        <div class="flex gap-3">
+            <a asp-area="Admin" asp-controller="Location" asp-action="Index"
+               class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg text-sm md:text-base">
+                <i class="fas fa-map-marker-alt"></i>
+                Quản lý khu vực
+            </a>
+            <button onclick="openAddHomestayModal()"
+                    class="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2.5 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg text-sm md:text-base">
+                <i class="fas fa-plus"></i>
+                Thêm homestay mới
+            </button>
+        </div>
+    </div>
+
+    <!-- Advanced Filters -->
+    <div class="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mx-6 mb-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Bộ lọc nâng cao</h3>
+            <button id="resetFilters" class="text-sm text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 flex items-center gap-1">
+                <i class="fas fa-redo"></i>
+                Đặt lại
+            </button>
+        </div>
+
+        <div id="filterForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Search Input -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tìm kiếm</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </div>
+                    <input type="text" id="searchInput" name="searchString" placeholder="Tìm theo tên, địa chỉ..."
+                           class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200 text-sm transition duration-150">
+                </div>
+            </div>
+
+            <!-- Location Filter -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Khu vực</label>
+                <div class="relative">
+                    <select id="locationFilter" name="locationFilter" class="w-full pl-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none text-sm bg-white dark:bg-gray-700 dark:text-gray-200">
+                        <option value="all">Tất cả địa điểm</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                        <i class="fas fa-chevron-down text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Filter -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Trạng thái</label>
+                <div class="relative">
+                    <select id="statusFilter" name="statusFilter" class="w-full pl-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none text-sm bg-white dark:bg-gray-700 dark:text-gray-200">
+                        <option value="all">Tất cả trạng thái</option>
+                        <option value="Hoạt động">Hoạt động</option>
+                        <option value="Ngừng hoạt động">Ngừng hoạt động</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                        <i class="fas fa-chevron-down text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sort By -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sắp xếp</label>
+                <div class="relative">
+                    <select id="sortBy" name="sortOrder" class="w-full pl-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none text-sm bg-white dark:bg-gray-700 dark:text-gray-200">
+                        <option value="Date">Cũ nhất</option>
+                        <option value="date_desc">Mới nhất</option>
+                        <option value="price_desc">Giá cao đến thấp</option>
+                        <option value="Price">Giá thấp đến cao</option>
+                        <option value="rating_desc">Đánh giá hạng cao nhất</option>
+                        <option value="rating_asc">Đánh giá hạng thấp nhất</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                        <i class="fas fa-chevron-down text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="flex-1 overflow-y-auto px-6 pb-6">
+        <!-- Homestay Cards Grid -->
+        <div id="homestayGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Cards will be loaded here dynamically -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="bg-white dark:bg-gray-800 rounded-xl p-8 text-center border border-gray-200 dark:border-gray-700 mt-6 hidden">
+            <i class="fas fa-home text-4xl text-gray-400 dark:text-gray-500 mb-4"></i>
+            <h3 class="mt-2 text-lg font-medium text-gray-900 dark:text-gray-200">Không tìm thấy homestay nào</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Thử thay đổi tiêu chí tìm kiếm hoặc thêm homestay mới.</p>
+            <div class="mt-6">
+                <button type="button" onclick="openAddHomestayModal()"
+                        class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                    <i class="fas fa-plus mr-2"></i>
+                    Thêm homestay mới
+                </button>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div id="paginationContainer" class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mt-6 hidden">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <span class="text-xs md:text-sm text-gray-500 dark:text-gray-400">
+                    Hiển thị <span id="showingCount" class="font-medium">0</span> đến
+                    <span id="totalCount" class="font-medium">0</span> của
+                    <span id="totalHomestaysCount" class="font-medium">0</span> kết quả
+                </span>
+                <div id="paginationControls" class="flex items-center gap-1">
+                    <!-- Pagination buttons will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" aria-modal="true" role="dialog">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900 sm:mx-0 sm:h-10 sm:w-10">
+                        <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400"></i>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-200" id="modal-title">Xác nhận ngừng hoạt động</h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Bạn có chắc chắn muốn ngừng hoạt động homestay này? Tất cả các phòng liên quan sẽ được chuyển sang trạng thái "Bảo trì".</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button type="button" onclick="confirmDelete()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+                    Xác nhận
+                </button>
+                <button type="button" onclick="closeRemoveModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-600 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    Hủy bỏ
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" aria-modal="true" role="dialog">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+            <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900 sm:mx-0 sm:h-10 sm:w-10">
+                        <i class="fas fa-edit text-blue-600 dark:text-blue-400"></i>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-200" id="modal-title">Chỉnh sửa Homestay</h3>
+                        <div class="mt-2 w-full">
+                            <form id="editHomestayForm" enctype="multipart/form-data" class="space-y-4">
+                                <input type="hidden" id="edit_ID_Homestay" name="ID_Homestay">
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tên Homestay *</label>
+                                        <input type="text" id="edit_Ten_Homestay" name="Ten_Homestay" required
+                                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200 text-sm">
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Khu vực *</label>
+                                        <select id="edit_Ma_KV" name="Ma_KV" required
+                                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200 text-sm">
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Chủ homestay *</label>
+                                        <select id="edit_Ma_ND" name="Ma_ND" required
+                                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200 text-sm">
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Giá mỗi đêm (VNĐ) *</label>
+                                        <input type="number" id="edit_PricePerNight" name="PricePerNight" required
+                                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200 text-sm">
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Hạng (1-5 sao)</label>
+                                        <select id="edit_Hang" name="Hang" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200 text-sm">
+                                            <option value="1">1 sao</option>
+                                            <option value="1.5">1.5 sao</option>
+                                            <option value="2">2 sao</option>
+                                            <option value="2.5">2.5 sao</option>
+                                            <option value="3">3 sao</option>
+                                            <option value="3.5">3.5 sao</option>
+                                            <option value="4">4 sao</option>
+                                            <option value="4.5">4.5 sao</option>
+                                            <option value="5">5 sao</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Trạng thái *</label>
+                                        <select id="edit_TrangThai" name="TrangThai" required
+                                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200 text-sm">
+                                            <option value="Hoạt động">Hoạt động</option>
+                                            <option value="Ngừng hoạt động">Ngừng hoạt động</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="md:col-span-2">
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Địa chỉ *</label>
+                                        <input type="text" id="edit_DiaChi" name="DiaChi" required
+                                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200 text-sm">
+                                    </div>
+
+                                    <div class="md:col-span-2">
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Hình ảnh</label>
+                                        <div class="flex items-center gap-2">
+                                            <label class="cursor-pointer">
+                                                <span class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                                    <i class="fas fa-upload mr-2 text-gray-500"></i>
+                                                    Tải lên
+                                                </span>
+                                                <input type="file" id="edit_HinhAnhFile" name="HinhAnhFile" accept="image/*" class="sr-only">
+                                            </label>
+                                            <span id="fileName" class="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">Chưa chọn file</span>
+                                        </div>
+                                        <img id="currentImage" class="mt-2 max-w-[150px] rounded-md border border-gray-200 dark:border-gray-600" src="" alt="Current Image" style="display: none;">
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button type="button" onclick="submitEditForm()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm">
+                    Lưu thay đổi
+                </button>
+                <button type="button" onclick="closeEditModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-600 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    Hủy bỏ
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Homestay Modal -->
+<div id="addHomestayModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" aria-modal="true" role="dialog">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+            <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900 sm:mx-0 sm:h-10 sm:w-10">
+                        <i class="fas fa-plus text-blue-600 dark:text-blue-400"></i>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-200" id="modal-title">Thêm Homestay mới</h3>
+                        <div class="mt-2 w-full">
+                            <form id="addHomestayForm" enctype="multipart/form-data" class="space-y-4">
+                                @Html.AntiForgeryToken()
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Khu vực *</label>
+                                        <select id="add_Ma_KV" name="Ma_KV" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200 text-sm" required>
+                                            <option value="">-- Chọn khu vực --</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Chủ homestay *</label>
+                                        <select id="add_Ma_ND" name="Ma_ND" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200 text-sm" required>
+                                            <option value="">-- Chọn chủ homestay --</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tên homestay *</label>
+                                        <input id="add_Ten_Homestay" name="Ten_Homestay" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200 text-sm" required />
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Giá mỗi đêm *</label>
+                                        <input id="add_PricePerNight" name="PricePerNight" type="number" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200 text-sm" required />
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Hạng (1-5 sao)</label>
+                                        <select id="add_Hang" name="Hang" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200 text-sm">
+                                            <option value="1">1 sao</option>
+                                            <option value="1.5">1.5 sao</option>
+                                            <option value="2">2 sao</option>
+                                            <option value="2.5">2.5 sao</option>
+                                            <option value="3">3 sao</option>
+                                            <option value="3.5">3.5 sao</option>
+                                            <option value="4">4 sao</option>
+                                            <option value="4.5">4.5 sao</option>
+                                            <option value="5" selected>5 sao</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Trạng thái *</label>
+                                        <select id="add_TrangThai" name="TrangThai" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200 text-sm" required>
+                                            <option value="Hoạt động" selected>Hoạt động</option>
+                                            <option value="Ngừng hoạt động">Ngừng hoạt động</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="md:col-span-2">
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Địa chỉ *</label>
+                                        <input id="add_DiaChi" name="DiaChi" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200 text-sm" required />
+                                    </div>
+
+                                    <div class="md:col-span-2">
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ảnh đại diện *</label>
+                                        <div class="flex items-center gap-2">
+                                            <label class="cursor-pointer">
+                                                <span class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                                    <i class="fas fa-upload mr-2 text-gray-500"></i>
+                                                    Tải lên
+                                                </span>
+                                                <input type="file" id="add_HinhAnhFile" name="HinhAnhFile" accept="image/*" required class="sr-only"
+                                                       onchange="document.getElementById('addFileName').textContent = this.files[0]?.name || 'Chưa chọn file'">
+                                            </label>
+                                            <span id="addFileName" class="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">Chưa chọn file</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button type="button" onclick="submitAddForm()" id="submitAddHomestay" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm">
+                    Thêm homestay
+                </button>
+                <button type="button" onclick="closeAddHomestayModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-600 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    Hủy bỏ
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Policy Navigation Modal -->
+<div id="policyModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" aria-modal="true" role="dialog">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-purple-100 dark:bg-purple-900 sm:mx-0 sm:h-10 sm:w-10">
+                        <i class="fas fa-file-contract text-purple-600 dark:text-purple-400"></i>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-200" id="modal-title">Quản lý chính sách</h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Bạn có muốn chuyển đến trang quản lý chính sách của homestay này để xem hoặc cập nhật chính sách không?</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button type="button" onclick="confirmPolicyNavigation()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-purple-600 text-base font-medium text-white hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 sm:ml-3 sm:w-auto sm:text-sm">
+                    Xác nhận
+                </button>
+                <button type="button" onclick="closePolicyModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-600 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    Hủy bỏ
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js"></script>
+    <script>
+        // Enhanced showToast function
+        function showToast(message, isSuccess) {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                }
+            });
+
+            Toast.fire({
+                icon: isSuccess ? 'success' : 'error',
+                title: message
+            });
+        }
+
+        let currentPage = 1;
+        let pageSize = 6;
+        let totalCount = 0;
+        let totalPages = 1;
+        let searchString = '';
+        let locationFilter = 'all';
+        let statusFilter = 'all';
+        let sortOrder = 'Date';
+        let khuVucList = [];
+        let nguoiDungList = [];
+
+        // Load initial data
+        $(document).ready(function () {
+            // Load dropdown data
+            loadKhuVucList();
+            loadNguoiDungList();
+            // Load initial homestay data
+            fetchHomestays();
+
+            // Form validation for addHomestayForm
+            $('#addHomestayForm').validate({
+                rules: {
+                    Ma_KV: { required: true },
+                    Ma_ND: { required: true },
+                    Ten_Homestay: { required: true, maxlength: 100 },
+                    PricePerNight: { required: true, number: true, min: 0 },
+                    DiaChi: { required: true },
+                    HinhAnhFile: { required: true }
+                },
+                messages: {
+                    Ma_KV: "Vui lòng chọn khu vực",
+                    Ma_ND: "Vui lòng chọn chủ homestay",
+                    Ten_Homestay: {
+                        required: "Vui lòng nhập tên homestay",
+                        maxlength: "Tên homestay không được vượt quá 100 ký tự"
+                    },
+                    PricePerNight: {
+                        required: "Vui lòng nhập giá mỗi đêm",
+                        number: "Giá phải là số",
+                        min: "Giá phải lớn hơn hoặc bằng 0"
+                    },
+                    DiaChi: "Vui lòng nhập địa chỉ",
+                    HinhAnhFile: "Vui lòng chọn ảnh đại diện"
+                }
+            });
+
+            // Form validation for editHomestayForm
+            $('#editHomestayForm').validate({
+                rules: {
+                    Ten_Homestay: { required: true, maxlength: 100 },
+                    Ma_KV: { required: true },
+                    Ma_ND: { required: true },
+                    PricePerNight: { required: true, number: true, min: 0 },
+                    DiaChi: { required: true },
+                    TrangThai: { required: true }
+                },
+                messages: {
+                    Ten_Homestay: {
+                        required: "Vui lòng nhập tên homestay",
+                        maxlength: "Tên homestay không được vượt quá 100 ký tự"
+                    },
+                    Ma_KV: "Vui lòng chọn khu vực",
+                    Ma_ND: "Vui lòng chọn chủ homestay",
+                    PricePerNight: {
+                        required: "Vui lòng nhập giá mỗi đêm",
+                        number: "Giá phải là số",
+                        min: "Giá phải lớn hơn hoặc bằng 0"
+                    },
+                    DiaChi: "Vui lòng nhập địa chỉ",
+                    TrangThai: "Vui lòng chọn trạng thái"
+                }
+            });
+
+            // Bind filter events
+            $('#searchInput, #locationFilter, #statusFilter, #sortBy').change(function () {
+                searchString = $('#searchInput').val();
+                locationFilter = $('#locationFilter').val();
+                statusFilter = $('#statusFilter').val();
+                sortOrder = $('#sortBy').val();
+                currentPage = 1;
+                fetchHomestays();
+            });
+
+            // Reset filters
+            $('#resetFilters').click(function () {
+                $('#searchInput').val('');
+                $('#locationFilter').val('all');
+                $('#statusFilter').val('all');
+                $('#sortBy').val('Date');
+                searchString = '';
+                locationFilter = 'all';
+                statusFilter = 'all';
+                sortOrder = 'Date';
+                currentPage = 1;
+                fetchHomestays();
+            });
+
+            // File input display for edit modal
+            $('#edit_HinhAnhFile').change(function () {
+                $('#fileName').text(this.files[0]?.name || 'Chưa chọn file');
+            });
+
+            // File input display for add modal
+            $('#add_HinhAnhFile').change(function () {
+                $('#addFileName').text(this.files[0]?.name || 'Chưa chọn file');
+            });
+        });
+
+        // Load Khu Vuc List
+        function loadKhuVucList() {
+            fetch('/Admin/Homestay/GetKhuVucList')
+                .then(response => response.json())
+                .then(response => {
+                    if (response.success) {
+                        khuVucList = response.data;
+                        // Populate location filter dropdown
+                        const locationFilter = $('#locationFilter');
+                        locationFilter.empty();
+                        locationFilter.append('<option value="all">Tất cả địa điểm</option>');
+                        khuVucList.forEach(item => {
+                            locationFilter.append(`<option value="${item.value}">${item.text}</option>`);
+                        });
+
+                        // Populate add/edit modal dropdowns
+                        const addMaKV = $('#add_Ma_KV');
+                        const editMaKV = $('#edit_Ma_KV');
+                        addMaKV.empty();
+                        editMaKV.empty();
+                        addMaKV.append('<option value="">-- Chọn khu vực --</option>');
+                        khuVucList.forEach(item => {
+                            addMaKV.append(`<option value="${item.value}">${item.text}</option>`);
+                            editMaKV.append(`<option value="${item.value}">${item.text}</option>`);
+                        });
+                    } else {
+                        showToast(response.message || 'Không thể tải danh sách khu vực', false);
+                    }
+                })
+                .catch(error => {
+                    showToast('Có lỗi xảy ra khi tải danh sách khu vực', false);
+                    console.error(error);
+                });
+        }
+
+        // Load Nguoi Dung List
+        function loadNguoiDungList() {
+            fetch('/Admin/Homestay/GetNguoiDungList')
+                .then(response => response.json())
+                .then(response => {
+                    if (response.success) {
+                        nguoiDungList = response.data;
+                        // Populate add/edit modal dropdowns
+                        const addMaND = $('#add_Ma_ND');
+                        const editMaND = $('#edit_Ma_ND');
+                        addMaND.empty();
+                        editMaND.empty();
+                        addMaND.append('<option value="">-- Chọn chủ homestay --</option>');
+                        nguoiDungList.forEach(item => {
+                            addMaND.append(`<option value="${item.value}">${item.text}</option>`);
+                            editMaND.append(`<option value="${item.value}">${item.text}</option>`);
+                        });
+                    } else {
+                        showToast(response.message || 'Không thể tải danh sách người dùng', false);
+                    }
+                })
+                .catch(error => {
+                    showToast('Có lỗi xảy ra khi tải danh sách người dùng', false);
+                    console.error(error);
+                });
+        }
+
+        // Fetch Homestays
+        function fetchHomestays() {
+            const params = new URLSearchParams({
+                page: currentPage,
+                pageSize: pageSize,
+                searchString: searchString,
+                locationFilter: locationFilter,
+                statusFilter: statusFilter,
+                sortOrder: sortOrder
+            });
+
+            fetch(`/Admin/Homestay/GetHomestaysFiltered?${params.toString()}`)
+                .then(response => response.json())
+                .then(response => {
+                    if (response.success) {
+                        const data = response.data;
+                        totalCount = data.totalCount;
+                        totalPages = data.totalPages;
+                        currentPage = data.currentPage;
+                        pageSize = data.pageSize;
+
+                        // Update total count
+                        $('#totalHomestays').text(totalCount);
+                        $('#totalHomestaysCount').text(totalCount);
+                        $('#showingCount').text((currentPage - 1) * pageSize + 1);
+                        $('#totalCount').text(Math.min(currentPage * pageSize, totalCount));
+
+                        // Render homestays
+                        const homestayGrid = $('#homestayGrid');
+                        homestayGrid.empty();
+                        if (data.homestays.length === 0) {
+                            $('#emptyState').show();
+                            $('#paginationContainer').hide();
+                        } else {
+                            $('#emptyState').hide();
+                            $('#paginationContainer').show();
+                            data.homestays.forEach(homestay => {
+                                const starsHtml = generateStarsHtml(homestay.hang || 0);
+                                const cardHtml = `
+                                    <div class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 dark:border-gray-700 group">
+                                        <div class="relative h-52 overflow-hidden">
+                                            <img src="${homestay.hinhAnh || '/img/default-homestay.jpg'}"
+                                                 class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                 alt="${homestay.tenHomestay}">
+                                            <div class="absolute top-3 right-3 px-2.5 py-1 rounded-full text-xs font-semibold shadow-sm
+                                                        ${homestay.trangThai === 'Hoạt động' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'}">
+                                                ${homestay.trangThai}
+                                            </div>
+                                            <div class="absolute bottom-3 left-3 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-sm">
+                                                <span class="font-bold text-primary-600 dark:text-primary-400">${homestay.pricePerNight.toLocaleString('vi-VN')} VNĐ</span>
+                                                <span class="text-xs text-gray-500 dark:text-gray-400">/đêm</span>
+                                            </div>
+                                        </div>
+                                        <div class="p-4">
+                                            <div class="flex justify-between items-start mb-2">
+                                                <h3 class="text-lg font-bold text-gray-900 dark:text-gray-200 truncate">${homestay.tenHomestay}</h3>
+                                                <div class="flex items-center bg-blue-50 dark:bg-blue-900 px-2 py-1 rounded-full">
+                                                    ${starsHtml}
+                                                    <span class="text-xs font-medium ml-1">${(homestay.hang || 0).toFixed(1)}</span>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-start text-gray-600 dark:text-gray-400 mb-3">
+                                                <i class="fas fa-map-marker-alt text-gray-400 dark:text-gray-500 mt-0.5 mr-1.5 text-sm"></i>
+                                                <span class="text-xs line-clamp-2">${homestay.diaChi}</span>
+                                            </div>
+                                            <div class="grid grid-cols-2 gap-3 mb-4">
+                                                <div class="flex items-center">
+                                                    <div class="bg-blue-100 dark:bg-blue-900 p-1.5 rounded-lg mr-2 flex-shrink-0">
+                                                        <i class="fas fa-door-open text-blue-600 dark:text-blue-400 text-sm"></i>
+                                                    </div>
+                                                    <div class="overflow-hidden">
+                                                        <p class="text-xs text-gray-500 dark:text-gray-400 truncate">Số phòng</p>
+                                                        <p class="text-sm font-medium truncate">${homestay.phongsCount}</p>
+                                                    </div>
+                                                </div>
+                                                <div class="flex items-center">
+                                                    <div class="bg-purple-100 dark:bg-purple-900 p-1.5 rounded-lg mr-2 flex-shrink-0">
+                                                        <i class="fas fa-tag text-purple-600 dark:text-purple-400 text-sm"></i>
+                                                    </div>
+                                                    <div class="overflow-hidden">
+                                                        <p class="text-xs text-gray-500 dark:text-gray-400 truncate">Loại hình</p>
+                                                        <p class="text-sm font-medium truncate">Homestay</p>
+                                                    </div>
+                                                </div>
+                                                <div class="flex items-center">
+                                                    <div class="bg-green-100 dark:bg-green-900 p-1.5 rounded-lg mr-2 flex-shrink-0">
+                                                        <i class="fas fa-user text-green-600 dark:text-green-400 text-sm"></i>
+                                                    </div>
+                                                    <div class="overflow-hidden">
+                                                        <p class="text-xs text-gray-500 dark:text-gray-400 truncate">Chủ homestay</p>
+                                                        <p class="text-sm font-medium truncate">${homestay.nguoiDung?.email || 'N/A'}</p>
+                                                    </div>
+                                                </div>
+                                                <div class="flex items-center">
+                                                    <div class="bg-orange-100 dark:bg-orange-900 p-1.5 rounded-lg mr-2 flex-shrink-0">
+                                                        <i class="fas fa-map-marked-alt text-orange-600 dark:text-orange-400 text-sm"></i>
+                                                    </div>
+                                                    <div class="overflow-hidden">
+                                                        <p class="text-xs text-gray-500 dark:text-gray-400 truncate">Khu vực</p>
+                                                        <p class="text-sm font-medium truncate">${homestay.khuVuc?.tenKV || 'N/A'}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="flex justify-between border-t border-gray-200 dark:border-gray-700 pt-3">
+                                                <div class="flex gap-2 flex-wrap">
+                                                    <a href="/Admin/Room?homestayId=${homestay.idHomestay}"
+                                                       class="inline-flex items-center px-3 py-1.5 bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition-colors text-xs">
+                                                        <i class="fas fa-plus mr-1 text-xs"></i>
+                                                        Thêm phòng
+                                                    </a>
+                                                    <a href="/Admin/Service/Index?homestayId=${homestay.idHomestay}"
+                                                       class="inline-flex items-center px-3 py-1.5 bg-green-50 dark:bg-green-900 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-100 dark:hover:bg-green-800 transition-colors text-xs">
+                                                        <i class="fas fa-concierge-bell mr-1 text-xs"></i>
+                                                        Dịch vụ
+                                                    </a>
+                                                    <button onclick="openPolicyModal('${homestay.idHomestay}')"
+                                                            class="inline-flex items-center px-3 py-1.5 bg-purple-50 dark:bg-purple-900 text-purple-600 dark:text-purple-400 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-800 transition-colors text-xs">
+                                                        <i class="fas fa-file-contract mr-1 text-xs"></i>
+                                                        Chính sách
+                                                    </button>
+                                                </div>
+                                                <div class="flex gap-1">
+                                                    <button onclick="openEditModal('${homestay.idHomestay}')"
+                                                            class="p-1.5 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition-colors">
+                                                        <i class="fas fa-edit text-sm"></i>
+                                                    </button>
+                                                    <button onclick="openRemoveModal('${homestay.idHomestay}')"
+                                                            class="p-1.5 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900 rounded-lg hover:bg-red-100 dark:hover:bg-red-800 transition-colors">
+                                                        <i class="fas fa-trash-alt text-sm"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>`;
+                                homestayGrid.append(cardHtml);
+                            });
+                        }
+
+                        // Render pagination
+                        renderPagination();
+                    } else {
+                        showToast(response.message || 'Không thể tải danh sách homestay', false);
+                    }
+                })
+                .catch(error => {
+                    showToast('Có lỗi xảy ra khi tải danh sách homestay', false);
+                    console.error(error);
+                });
+        }
+
+        // Generate star rating HTML
+        function generateStarsHtml(rating) {
+            let starsHtml = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= rating) {
+                    starsHtml += `<i class="fas fa-star text-yellow-400 text-xs"></i>`;
+                } else if (i - 0.5 <= rating && rating < i) {
+                    starsHtml += `<i class="fas fa-star-half-alt text-yellow-400 text-xs"></i>`;
+                } else {
+                    starsHtml += `<i class="far fa-star text-yellow-400 text-xs"></i>`;
+                }
+            }
+            return starsHtml;
+        }
+
+        // Render Pagination
+        function renderPagination() {
+            const paginationControls = $('#paginationControls');
+            paginationControls.empty();
+
+            if (currentPage > 1) {
+                paginationControls.append(`
+                    <button onclick="changePage(${currentPage - 1})" id="prevPage" class="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 transition-colors flex items-center text-sm">
+                        <i class="fas fa-chevron-left mr-1 text-xs"></i>
+                        Trước
+                    </button>
+                `);
+            } else {
+                paginationControls.append(`
+                    <span class="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 flex items-center text-sm cursor-not-allowed">
+                        <i class="fas fa-chevron-left mr-1 text-xs"></i>
+                        Trước
+                    </span>
+                `);
+            }
+
+            const pageButtons = $('<div class="flex gap-1"></div>');
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === currentPage) {
+                    pageButtons.append(`<span class="px-3 py-1.5 rounded-lg bg-primary-600 text-white text-sm">${i}</span>`);
+                } else {
+                    pageButtons.append(`<button onclick="changePage(${i})" class="px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">${i}</button>`);
+                }
+            }
+            paginationControls.append(pageButtons);
+
+            if (currentPage < totalPages) {
+                paginationControls.append(`
+                    <button onclick="changePage(${currentPage + 1})" id="nextPage" class="px-3 py-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 transition-colors flex items-center text-sm">
+                        Sau
+                        <i class="fas fa-chevron-right ml-1 text-xs"></i>
+                    </button>
+                `);
+            } else {
+                paginationControls.append(`
+                    <span class="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 flex items-center text-sm cursor-not-allowed">
+                        Sau
+                        <i class="fas fa-chevron-right ml-1 text-xs"></i>
+                    </span>
+                `);
+            }
+        }
+
+        // Change page
+        function changePage(page) {
+            currentPage = page;
+            fetchHomestays();
+        }
+
+        // Modal functions
+        function openEditModal(id) {
+            fetch(`/Admin/Homestay/GetHomestay?id=${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    $('#edit_ID_Homestay').val(data.id_Homestay);
+                    $('#edit_Ten_Homestay').val(data.ten_Homestay);
+                    $('#edit_Ma_KV').val(data.ma_KV);
+                    $('#edit_Ma_ND').val(data.ma_ND);
+                    $('#edit_DiaChi').val(data.diaChi);
+                    $('#edit_PricePerNight').val(data.pricePerNight);
+                    $('#edit_TrangThai').val(data.trangThai);
+                    $('#edit_Hang').val(data.hang || '5');
+
+                    if (data.hinhAnh) {
+                        $('#currentImage').attr('src', data.hinhAnh).show();
+                    } else {
+                        $('#currentImage').hide();
+                    }
+
+                    $('#editModal').removeClass('hidden');
+                })
+                .catch(error => {
+                    showToast('Không thể tải thông tin homestay', false);
+                    console.error(error);
+                });
+        }
+
+        function closeEditModal() {
+            $('#editModal').addClass('hidden');
+        }
+
+        function openAddHomestayModal() {
+            $('#addHomestayForm')[0].reset();
+            $('#addFileName').text('Chưa chọn file');
+            $('#addHomestayModal').removeClass('hidden');
+        }
+
+        function closeAddHomestayModal() {
+            $('#addHomestayModal').addClass('hidden');
+        }
+
+        let currentHomestayId = null;
+
+        function openRemoveModal(id) {
+            currentHomestayId = id;
+            $('#deleteModal').removeClass('hidden');
+        }
+
+        function closeRemoveModal() {
+            currentHomestayId = null;
+            $('#deleteModal').addClass('hidden');
+        }
+
+        // Policy Modal Functions
+        function openPolicyModal(id) {
+            currentHomestayId = id;
+            $('#policyModal').removeClass('hidden');
+        }
+
+        function closePolicyModal() {
+            currentHomestayId = null;
+            $('#policyModal').addClass('hidden');
+        }
+
+        function confirmPolicyNavigation() {
+            if (!currentHomestayId) {
+                showToast('Không xác định được homestay để chuyển hướng', false);
+                return;
+            }
+            window.location.href = `/Admin/Homestay/Policy/${currentHomestayId}`;
+        }
+
+        // Delete confirmation via AJAX
+        function confirmDelete() {
+            if (!currentHomestayId) {
+                showToast('Không xác định được homestay để xóa', false);
+                return;
+            }
+
+            const deleteBtn = $('#deleteModal').find('button[onclick="confirmDelete()"]');
+            deleteBtn.prop('disabled', true);
+            deleteBtn.html('<i class="fas fa-circle-notch fa-spin mr-2"></i> Đang xử lý...');
+
+            $.ajax({
+                url: '/Admin/Homestay/DeleteConfirmed',
+                type: 'POST',
+                data: { id: currentHomestayId },
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function (response) {
+                    if (response.success) {
+                        showToast(response.message, true);
+                        closeRemoveModal();
+                        fetchHomestays();
+                    } else {
+                        showToast(response.message || 'Có lỗi xảy ra khi ngừng hoạt động homestay', false);
+                    }
+                },
+                error: function (xhr) {
+                    showToast('Có lỗi xảy ra khi ngừng hoạt động homestay', false);
+                    console.error(xhr.responseText);
+                },
+                complete: function () {
+                    deleteBtn.prop('disabled', false);
+                    deleteBtn.html('Xác nhận');
+                }
+            });
+        }
+
+        // Form submission for adding a new homestay
+        function submitAddForm() {
+            const form = document.getElementById('addHomestayForm');
+            const formData = new FormData(form);
+            const submitBtn = document.querySelector('#submitAddHomestay');
+
+            if (!$('#addHomestayForm').valid()) {
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Đang xử lý...';
+
+            fetch('/Admin/Homestay/Create', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(response => {
+                if (response.success) {
+                    showToast('Thêm homestay thành công', true);
+                    closeAddHomestayModal();
+                    fetchHomestays();
+                } else {
+                    showToast(response.message || 'Có lỗi xảy ra', false);
+                }
+            })
+            .catch(error => {
+                showToast('Có lỗi xảy ra khi thêm homestay', false);
+                console.error(error);
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Thêm homestay';
+            });
+        }
+
+        // Form submission for editing a homestay
+        function submitEditForm() {
+            const form = document.getElementById('editHomestayForm');
+            const formData = new FormData(form);
+            const id = $('#edit_ID_Homestay').val();
+            const submitBtn = $('#editModal').find('button[type="button"]').first();
+
+            if (!$('#editHomestayForm').valid()) {
+                return;
+            }
+
+            submitBtn.prop('disabled', true);
+            submitBtn.html('<i class="fas fa-circle-notch fa-spin mr-2"></i> Đang lưu...');
+
+            $.ajax({
+                url: '/Admin/Homestay/Update/' + id,
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    if (response.success) {
+                        showToast('Cập nhật homestay thành công', true);
+                        closeEditModal();
+                        fetchHomestays();
+                    } else {
+                        showToast(response.message || 'Có lỗi xảy ra khi cập nhật homestay', false);
+                    }
+                },
+                error: function (xhr) {
+                    showToast('Có lỗi xảy ra khi cập nhật homestay', false);
+                    console.error(xhr.responseText);
+                },
+                complete: function () {
+                    submitBtn.prop('disabled', false);
+                    submitBtn.html('Lưu thay đổi');
+                }
+            });
+        }
+    </script>
+}

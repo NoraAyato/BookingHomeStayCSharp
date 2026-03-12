@@ -1,0 +1,637 @@
+﻿@model DoAnCs.Models.ViewModels.HomestayViewModel
+
+@{
+    ViewData["Title"] = "Danh sách Homestay";
+}
+
+<div class="min-h-screen bg-white">
+    <!-- Hero Section with Search -->
+    <div class="relative bg-rose-700 overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-b from-black/20 to-black/40"></div>
+        <div class="relative container mx-auto px-4 py-20 md:py-28">
+            <div class="text-center max-w-3xl mx-auto" data-aos="fade-up">
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white font-lora mb-6">Khám phá Homestay tuyệt vời</h1>
+                <p class="text-xl text-rose-100 max-w-2xl mx-auto mb-8">Tìm kiếm nơi nghỉ dưỡng hoàn hảo cho chuyến đi của bạn</p>
+
+                <!-- Quick Search -->
+                <div class="max-w-xl mx-auto" data-aos="fade-up" data-aos-delay="100">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-rose-400 text-lg"></i>
+                        </div>
+                        <input type="text" id="searchString"
+                               class="block w-full pl-12 pr-4 py-3 rounded-full bg-white/90 border border-white/30 focus:ring-2 focus:ring-rose-300 focus:border-rose-300 shadow-lg"
+                               value="@Model.SearchString"
+                               placeholder="Tìm kiếm homestay theo tên hoặc địa chỉ..." />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="absolute bottom-0 left-0 right-0 h-12 bg-white transform skew-y-1 origin-bottom"></div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="container mx-auto px-4 -mt-8 relative z-10">
+        <div class="bg-white rounded-xl shadow-md p-6 mb-8 border border-gray-100">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Location Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Khu vực</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-map-marker-alt text-rose-400"></i>
+                        </div>
+                        <select id="locationFilter" class="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-rose-300 focus:border-rose-300 appearance-none bg-white">
+                            <option value="all">Tất cả khu vực</option>
+                            @foreach (var khuVuc in Model.KhuVucs)
+                            {
+                                <option value="@khuVuc.Ma_KV" selected="@(khuVuc.Ma_KV == Model.LocationFilter)">@khuVuc.Ten_KV</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Price Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Mức giá</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-coins text-rose-400"></i>
+                        </div>
+                        <select id="priceFilter" class="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-rose-300 focus:border-rose-300 appearance-none bg-white">
+                            <option value="">Tất cả</option>
+                            <option value="500000" selected="@(Model.PriceFilter == 500000)">500,000 VNĐ+</option>
+                            <option value="1000000" selected="@(Model.PriceFilter == 1000000)">1,000,000 VNĐ+</option>
+                            <option value="1500000" selected="@(Model.PriceFilter == 1500000)">1,500,000 VNĐ+</option>
+                            <option value="2000000" selected="@(Model.PriceFilter == 2000000)">2,000,000 VNĐ+</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Rating Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Đánh giá</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-star text-rose-400"></i>
+                        </div>
+                        <select id="ratingFilter" class="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-rose-300 focus:border-rose-300 appearance-none bg-white">
+                            <option value="">Tất cả</option>
+                            <option value="1" selected="@(Model.RatingFilter == 1)">1+ sao</option>
+                            <option value="2" selected="@(Model.RatingFilter == 2)">2+ sao</option>
+                            <option value="3" selected="@(Model.RatingFilter == 3)">3+ sao</option>
+                            <option value="4" selected="@(Model.RatingFilter == 4)">4+ sao</option>
+                            <option value="5" selected="@(Model.RatingFilter == 5)">5 sao</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Sort Options -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Sắp xếp</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-sort text-rose-400"></i>
+                        </div>
+                        <select id="sortOrder" class="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-rose-300 focus:border-rose-300 appearance-none bg-white">
+                            <option value="name_asc" selected="@(Model.SortOrder == "name_asc")">Tên (A-Z)</option>
+                            <option value="name_desc" selected="@(Model.SortOrder == "name_desc")">Tên (Z-A)</option>
+                            <option value="price_asc" selected="@(Model.SortOrder == "price_asc")">Giá (Thấp-Cao)</option>
+                            <option value="price_desc" selected="@(Model.SortOrder == "price_desc")">Giá (Cao-Thấp)</option>
+                            <option value="date_asc" selected="@(Model.SortOrder == "date_asc")">Ngày tạo (Cũ-Mới)</option>
+                            <option value="date_desc" selected="@(Model.SortOrder == "date_desc")">Ngày tạo (Mới-Cũ)</option>
+                            <option value="rating_desc" selected="@(Model.SortOrder == "rating_desc")">Xếp hạng (Cao-Thấp)</option>
+                            <option value="rating_asc" selected="@(Model.SortOrder == "rating_asc")">Xếp hạng (Thấp-Cao)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 flex justify-between items-center hidden">
+                <div id="resultsCount" class="text-sm text-gray-500 hidden">
+                    Đang tải...
+                </div>
+                <div>
+                    <button id="resetFilters" class="px-4 py-2 bg-white text-rose-600 border border-rose-200 rounded-lg hover:bg-rose-50 transition-colors mr-2">
+                        <i class="fas fa-sync-alt mr-1"></i>Đặt lại
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 pb-12">
+        <!-- Initial Message -->
+        <div id="initialMessage" class="text-center py-16" data-aos="fade-up">
+            <div class="inline-block bg-white p-6 rounded-full shadow-lg mb-6 transform transition-all duration-500 hover:scale-110">
+                <i class="fas fa-search text-rose-500 text-4xl"></i>
+            </div>
+            <h3 class="text-2xl font-semibold text-gray-800 mb-3">Tìm kiếm homestay của bạn</h3>
+            <p class="text-gray-600 mb-6">Sử dụng bộ lọc để tìm homestay phù hợp với nhu cầu của bạn</p>
+            <div class="animate-bounce mt-8">
+                <i class="fas fa-chevron-down text-rose-400 text-2xl"></i>
+            </div>
+        </div>
+
+        <!-- Homestay List -->
+        <div id="homestayList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8 hidden">
+            <!-- Homestays will be rendered here via JavaScript -->
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loading" class="text-center hidden py-16">
+            <div class="inline-flex items-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-rose-600"></div>
+                <span class="ml-4 text-lg text-gray-600">Đang tải danh sách homestay...</span>
+            </div>
+        </div>
+
+        <!-- No Results Message -->
+        <div id="noResults" class="text-center hidden py-16" data-aos="fade-up">
+            <div class="inline-block bg-white p-6 rounded-full shadow-lg mb-6 transform transition-all duration-500 hover:scale-110">
+                <i class="fas fa-search text-rose-500 text-4xl"></i>
+            </div>
+            <h3 class="text-2xl font-semibold text-gray-800 mb-3">Không tìm thấy homestay phù hợp</h3>
+            <p class="text-gray-600 mb-6">Hãy thử điều chỉnh bộ lọc hoặc tìm kiếm với từ khóa khác</p>
+            <button id="resetFiltersBottom" class="px-6 py-2.5 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors shadow-md">
+                <i class="fas fa-sync-alt mr-2"></i>Đặt lại bộ lọc
+            </button>
+        </div>
+
+        <!-- Pagination -->
+        <nav id="pagination" aria-label="Page navigation" class="hidden mt-8">
+            <ul class="flex justify-center items-center space-x-1">
+                <!-- Pagination links will be rendered here via JavaScript -->
+            </ul>
+        </nav>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        /* Custom homestay card styles */
+        .homestay-card {
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            overflow: hidden;
+            background: white;
+            position: relative;
+        }
+
+            .homestay-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+            }
+
+            .homestay-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 4px;
+                background: linear-gradient(90deg, #f43f5e, #eab308);
+                z-index: 1;
+            }
+
+        .homestay-image {
+            height: 200px;
+            width: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .homestay-card:hover .homestay-image {
+            transform: scale(1.03);
+        }
+
+        .price-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(244, 63, 94, 0.95);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 2;
+        }
+
+        .rating-badge {
+            display: inline-flex;
+            align-items: center;
+            background: #fef3c7;
+            color: #92400e;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* Pagination styles */
+        .page-item {
+            margin: 0 2px;
+        }
+
+        .page-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: 1px solid #f3f4f6;
+            color: #6b7280;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+            .page-link:hover {
+                background-color: #f9fafb;
+                color: #4b5563;
+            }
+
+            .page-link.active {
+                background: linear-gradient(135deg, #f43f5e, #eab308);
+                color: white;
+                border-color: transparent;
+            }
+
+            .page-link.disabled {
+                opacity: 0.5;
+                pointer-events: none;
+            }
+
+        /* View button */
+        .view-btn {
+            background: linear-gradient(135deg, #f43f5e, #eab308);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+            .view-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(244, 63, 94, 0.3);
+            }
+
+        /* Location pin */
+        .location-pin {
+            position: relative;
+            padding-left: 20px;
+        }
+
+            .location-pin::before {
+                content: '';
+                position: absolute;
+                left: 0;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 14px;
+                height: 14px;
+                background-color: #f43f5e;
+                border-radius: 50%;
+                opacity: 0.2;
+            }
+
+            .location-pin i {
+                position: absolute;
+                left: 0;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #f43f5e;
+                font-size: 12px;
+            }
+
+        /* Animation for cards */
+        @@keyframes fadeInUp {
+            from
+
+        {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize AOS animation
+            AOS.init({
+                duration: 800,
+                once: true,
+                easing: 'ease-out-quad'
+            });
+
+            const searchStringInput = document.getElementById('searchString');
+            const locationFilterSelect = document.getElementById('locationFilter');
+            const priceFilterSelect = document.getElementById('priceFilter');
+            const ratingFilterSelect = document.getElementById('ratingFilter');
+            const sortOrderSelect = document.getElementById('sortOrder');
+            const homestayList = document.getElementById('homestayList');
+            const pagination = document.getElementById('pagination');
+            const loading = document.getElementById('loading');
+            const noResults = document.getElementById('noResults');
+            const initialMessage = document.getElementById('initialMessage');
+            const resetFiltersBtn = document.getElementById('resetFilters');
+            const resetFiltersBottomBtn = document.getElementById('resetFiltersBottom');
+            const resultsCount = document.getElementById('resultsCount');
+
+            let currentPage = 1;
+            let isInitialLoad = true;
+
+            // Check if any filter is applied
+            const hasActiveFilters = () => {
+                return (
+                    searchStringInput.value.trim() !== '' ||
+                    locationFilterSelect.value !== 'all' ||
+                    priceFilterSelect.value !== '' ||
+                    ratingFilterSelect.value !== ''
+                );
+            };
+
+            const fetchHomestays = async (page = 1) => {
+                if (!hasActiveFilters() && isInitialLoad) {
+                    initialMessage.classList.remove('hidden');
+                    homestayList.classList.add('hidden');
+                    pagination.classList.add('hidden');
+                    noResults.classList.add('hidden');
+                    isInitialLoad = false;
+                    return;
+                }
+
+                loading.classList.remove('hidden');
+                homestayList.classList.add('hidden');
+                pagination.classList.add('hidden');
+                noResults.classList.add('hidden');
+                initialMessage.classList.add('hidden');
+                resultsCount.classList.remove('hidden');
+                resultsCount.textContent = 'Đang tải...';
+
+                const params = new URLSearchParams({
+                    searchString: searchStringInput.value,
+                    locationFilter: locationFilterSelect.value,
+                    priceFilter: priceFilterSelect.value,
+                    ratingFilter: ratingFilterSelect.value,
+                    sortOrder: sortOrderSelect.value,
+                    pageNumber: page
+                });
+
+                try {
+                    const response = await fetch(`/Homestay/SearchHomestays?${params}`);
+                    const result = await response.json();
+
+                    if (result.success && result.data.length > 0) {
+                        homestayList.classList.remove('hidden');
+                        renderHomestays(result.data);
+                        renderPagination(result.currentPage, result.totalPages);
+                        updateResultsCount(result.totalCount);
+
+                        // Animate cards sequentially
+                        document.querySelectorAll('.homestay-card').forEach((card, index) => {
+                            card.style.opacity = '0';
+                            card.style.transform = 'translateY(20px)';
+                            card.style.animationDelay = `${index * 0.1}s`;
+                            card.classList.add('fade-in-up');
+                        });
+                    } else {
+                        noResults.classList.remove('hidden');
+                        resultsCount.classList.add('hidden');
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi lấy danh sách homestay:', error);
+                    noResults.classList.remove('hidden');
+                    noResults.innerHTML = `
+                        <div class="text-center py-16">
+                            <div class="inline-block bg-white p-6 rounded-full shadow-lg mb-6">
+                                <i class="fas fa-exclamation-triangle text-rose-500 text-4xl"></i>
+                            </div>
+                            <h3 class="text-2xl font-semibold text-gray-800 mb-3">Đã xảy ra lỗi</h3>
+                            <p class="text-gray-600 mb-6">Không thể tải danh sách homestay. Vui lòng thử lại sau.</p>
+                            <button onclick="window.location.reload()" class="px-6 py-2.5 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors shadow-md">
+                                <i class="fas fa-redo mr-2"></i>Tải lại trang
+                            </button>
+                        </div>
+                    `;
+                    resultsCount.classList.add('hidden');
+                } finally {
+                    loading.classList.add('hidden');
+                    isInitialLoad = false;
+                }
+            };
+
+            const updateResultsCount = (count) => {
+                if (count > 0) {
+                    resultsCount.textContent = `Tìm thấy ${count} homestay phù hợp`;
+                } else {
+                    resultsCount.classList.add('hidden');
+                }
+            };
+
+            const renderHomestays = (homestays) => {
+                homestayList.innerHTML = homestays.map(homestay => `
+                    <div class="homestay-card" style="opacity: 0;">
+                        <div class="flex flex-col h-full">
+                            <div class="relative overflow-hidden">
+                                <img src="${homestay.hinhAnh || '/images/placeholder.jpg'}"
+                                     class="homestay-image"
+                                     alt="${homestay.tenHomestay}"
+                                     loading="lazy" />
+                                <div class="price-badge">${homestay.pricePerNight.toLocaleString('vi-VN')} VNĐ</div>
+                            </div>
+                            <div class="p-4 flex-grow flex flex-col">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-2">${homestay.tenHomestay}</h3>
+
+                                <div class="location-pin text-sm text-gray-600 mb-3">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>${homestay.khuVuc?.tenKv || 'N/A'}</span>
+                                </div>
+
+                                <p class="text-gray-500 text-sm mb-4 line-clamp-2">${homestay.diaChi}</p>
+
+                                <div class="mt-auto pt-3 border-t border-gray-100">
+                                    <div class="flex items-center justify-between">
+                                        ${homestay.hang ? `
+                                        <div class="rating-badge">
+                                            <i class="fas fa-star text-yellow-500 mr-1"></i>
+                                            ${homestay.hang.toFixed(1)}
+                                        </div>
+                                        ` : '<div></div>'}
+
+                                        <a href="/Homestay/HomestayDetails?id=${homestay.idHomestay}"
+                                           class="view-btn px-4 py-2 text-sm rounded-lg inline-flex items-center">
+                                            <i class="fas fa-eye mr-2"></i>Xem
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            };
+
+            const renderPagination = (currentPage, totalPages) => {
+                if (totalPages <= 1) return;
+
+                pagination.classList.remove('hidden');
+                const paginationUl = pagination.querySelector('ul');
+                paginationUl.innerHTML = '';
+
+                // Previous button
+                const prevLi = document.createElement('li');
+                prevLi.className = 'page-item';
+                prevLi.innerHTML = `
+                    <a href="#" data-page="${currentPage - 1}" class="page-link ${currentPage === 1 ? 'disabled' : ''}">
+                        <i class="fas fa-chevron-left text-xs"></i>
+                    </a>
+                `;
+                paginationUl.appendChild(prevLi);
+
+                // Page numbers
+                const maxVisiblePages = 5;
+                let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+                if (endPage - startPage + 1 < maxVisiblePages) {
+                    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                }
+
+                if (startPage > 1) {
+                    const firstLi = document.createElement('li');
+                    firstLi.className = 'page-item';
+                    firstLi.innerHTML = `
+                        <a href="#" data-page="1" class="page-link">1</a>
+                    `;
+                    paginationUl.appendChild(firstLi);
+
+                    if (startPage > 2) {
+                        const ellipsisLi = document.createElement('li');
+                        ellipsisLi.className = 'page-item';
+                        ellipsisLi.innerHTML = '<span class="page-link">...</span>';
+                        ellipsisLi.style.pointerEvents = 'none';
+                        paginationUl.appendChild(ellipsisLi);
+                    }
+                }
+
+                for (let i = startPage; i <= endPage; i++) {
+                    const pageLi = document.createElement('li');
+                    pageLi.className = 'page-item';
+                    pageLi.innerHTML = `
+                        <a href="#" data-page="${i}" class="page-link ${i === currentPage ? 'active' : ''}">${i}</a>
+                    `;
+                    paginationUl.appendChild(pageLi);
+                }
+
+                if (endPage < totalPages) {
+                    if (endPage < totalPages - 1) {
+                        const ellipsisLi = document.createElement('li');
+                        ellipsisLi.className = 'page-item';
+                        ellipsisLi.innerHTML = '<span class="page-link">...</span>';
+                        ellipsisLi.style.pointerEvents = 'none';
+                        paginationUl.appendChild(ellipsisLi);
+                    }
+
+                    const lastLi = document.createElement('li');
+                    lastLi.className = 'page-item';
+                    lastLi.innerHTML = `
+                        <a href="#" data-page="${totalPages}" class="page-link">${totalPages}</a>
+                    `;
+                    paginationUl.appendChild(lastLi);
+                }
+
+                // Next button
+                const nextLi = document.createElement('li');
+                nextLi.className = 'page-item';
+                nextLi.innerHTML = `
+                    <a href="#" data-page="${currentPage + 1}" class="page-link ${currentPage === totalPages ? 'disabled' : ''}">
+                        <i class="fas fa-chevron-right text-xs"></i>
+                    </a>
+                `;
+                paginationUl.appendChild(nextLi);
+
+                // Add event listeners to pagination links
+                paginationUl.querySelectorAll('a[data-page]').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const page = parseInt(link.dataset.page);
+                        if (page >= 1 && page <= totalPages) {
+                            currentPage = page;
+                            fetchHomestays(page);
+                            window.scrollTo({
+                                top: document.getElementById('homestayList').offsetTop - 100,
+                                behavior: 'smooth'
+                            });
+                        }
+                    });
+                });
+            };
+
+            // Reset all filters
+            const resetFilters = () => {
+                searchStringInput.value = '';
+                locationFilterSelect.value = 'all';
+                priceFilterSelect.value = '';
+                ratingFilterSelect.value = '';
+                sortOrderSelect.value = 'name_asc';
+                currentPage = 1;
+                initialMessage.classList.remove('hidden');
+                homestayList.classList.add('hidden');
+                pagination.classList.add('hidden');
+                noResults.classList.add('hidden');
+                resultsCount.classList.add('hidden');
+
+                // Show animation when resetting
+                initialMessage.style.opacity = '0';
+                initialMessage.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    initialMessage.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                    initialMessage.style.opacity = '1';
+                    initialMessage.style.transform = 'translateY(0)';
+                }, 100);
+            };
+
+            // Event listeners for filters (real-time filtering)
+            [locationFilterSelect, priceFilterSelect, ratingFilterSelect, sortOrderSelect].forEach(element => {
+                element.addEventListener('change', () => {
+                    currentPage = 1;
+                    fetchHomestays();
+                });
+            });
+
+            // Reset filters buttons
+            resetFiltersBtn.addEventListener('click', resetFilters);
+            resetFiltersBottomBtn.addEventListener('click', resetFilters);
+
+            // Debounce search input
+            let searchTimeout;
+            searchStringInput.addEventListener('input', () => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    currentPage = 1;
+                    fetchHomestays();
+                }, 500);
+            });
+
+            // Check initial filters and fetch if khuVucName is present
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('khuVucName') || hasActiveFilters()) {
+                fetchHomestays();
+            }
+        });
+    </script>
+}

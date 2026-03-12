@@ -1,0 +1,1061 @@
+﻿@{
+    ViewData["Title"] = "Quản lý Khuyến mãi";
+}
+
+<!-- AntiForgery Token -->
+<input type="hidden" name="__RequestVerificationToken" value="@Html.AntiForgeryToken().ToString()" />
+
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+    <div>
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-200">Quản lý Khuyến mãi</h1>
+        <p class="text-gray-600 dark:text-gray-400 mt-1">Xem và quản lý tất cả khuyến mãi trong hệ thống</p>
+    </div>
+    <button onclick="openCreateModal()" class="px-4 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition">
+        <i class="fas fa-plus mr-2"></i>Thêm khuyến mãi
+    </button>
+</div>
+
+<!-- Filters Card -->
+<div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+            <label for="searchInput" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tìm kiếm</label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-search text-gray-400 dark:text-gray-500"></i>
+                </div>
+                <input type="text" id="searchInput" class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200" placeholder="Tìm theo nội dung khuyến mãi...">
+            </div>
+        </div>
+        <div>
+            <label for="statusFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Trạng thái</label>
+            <select id="statusFilter" class="block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200">
+                <option value="">Tất cả trạng thái</option>
+                <option value="Active">Đang áp dụng</option>
+                <option value="Expired">Kết thúc</option>
+            </select>
+        </div>
+        <div>
+            <label for="dateRangePicker" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Khoảng ngày HSD</label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-calendar-alt text-gray-400 dark:text-gray-500"></i>
+                </div>
+                <input type="text" id="dateRangePicker" class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200" placeholder="Chọn khoảng ngày">
+            </div>
+        </div>
+        <div>
+            <label for="homestayFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Homestay</label>
+            <select id="homestayFilter" class="block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200">
+                <option value="">Tất cả homestay</option>
+                <!-- Homestay options will be loaded here -->
+            </select>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Overview -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Tổng khuyến mãi</p>
+                <h3 class="text-2xl font-bold text-gray-800 dark:text-gray-200" id="totalPromotions">--</h3>
+            </div>
+            <div class="p-3 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400">
+                <i class="fas fa-ticket-alt text-xl"></i>
+            </div>
+        </div>
+    </div>
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Đang áp dụng</p>
+                <h3 class="text-2xl font-bold text-green-600 dark:text-green-400" id="activePromotions">--</h3>
+            </div>
+            <div class="p-3 rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400">
+                <i class="fas fa-check-circle text-xl"></i>
+            </div>
+        </div>
+    </div>
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Kết thúc</p>
+                <h3 class="text-2xl font-bold text-red-600 dark:text-red-400" id="expiredPromotions">--</h3>
+            </div>
+            <div class="p-3 rounded-full bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400">
+                <i class="fas fa-times-circle text-xl"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Promotions Table -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mb-6">
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Mã KM</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nội dung</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ngày bắt đầu</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">HSD</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Chiết khấu</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Trạng thái</th>
+                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody id="promotionsTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <!-- Data will be loaded here -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="p-8 text-center">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary-500 border-t-transparent"></div>
+        <p class="mt-2 text-gray-600 dark:text-gray-400">Đang tải dữ liệu...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden p-8 text-center">
+        <i class="fas fa-ticket-alt text-4xl text-gray-300 dark:text-gray-500 mb-2"></i>
+        <p class="text-gray-500 dark:text-gray-400">Không tìm thấy khuyến mãi nào. Hãy thử thay đổi bộ lọc hoặc thêm khuyến mãi mới.</p>
+        <button id="tryAgainBtn" class="mt-4 text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 font-medium">Thử lại</button>
+    </div>
+</div>
+
+<!-- Pagination -->
+<div id="pagination" class="flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="text-sm text-gray-500 dark:text-gray-400" id="paginationInfo"></div>
+    <div class="flex gap-1" id="paginationButtons"></div>
+</div>
+
+<!-- Promotion Details Modal -->
+<div id="detailsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4 py-6 hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+            <h2 class="text-xl font-bold text-gray-800 dark:text-gray-200">Chi tiết khuyến mãi</h2>
+            <button onclick="closeModal('detailsModal')" class="text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <div id="detailsContent" class="space-y-4">
+                <!-- Details will be loaded here -->
+            </div>
+            <div class="mt-6 flex justify-end gap-2">
+                <button onclick="openEditModal()" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">Chỉnh sửa</button>
+                <button onclick="closeModal('detailsModal')" class="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create/Edit Promotion Modal -->
+<div id="createEditModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4 py-6 hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+            <h2 id="createEditModalTitle" class="text-xl font-bold text-gray-800 dark:text-gray-200">Thêm khuyến mãi</h2>
+            <button onclick="closeModal('createEditModal')" class="text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <form id="promotionForm" enctype="multipart/form-data">
+                <input type="hidden" id="ma_KM" name="ma_KM">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="noiDung" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nội dung</label>
+                        <input type="text" id="noiDung" name="noiDung" class="block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200" required>
+                    </div>
+                   
+                    <div>
+                        <label for="ma_KM_input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mã khuyến mãi</label>
+                        <input type="text" id="ma_KM_input" name="ma_KM_input" class="block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200" required>
+                    </div>
+                    <div>
+                        <label for="ngayBatDau" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ngày bắt đầu</label>
+                        <input type="text" id="ngayBatDau" name="ngayBatDau" class="block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200" required>
+                    </div>
+                    <div>
+                        <label for="hsd" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">HSD</label>
+                        <input type="text" id="hsd" name="hsd" class="block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200" required>
+                    </div>
+                    <div>
+                        <label for="chietKhau" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Chiết khấu</label>
+                        <input type="number" id="chietKhau" name="chietKhau" class="block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200" required>
+                    </div>
+                    <div>
+                        <label for="loaiChietKhau" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Loại chiết khấu</label>
+                        <select id="loaiChietKhau" name="loaiChietKhau" class="block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200" required>
+                            <option value="Percentage">Phần trăm</option>
+                            <option value="Fixed">Cố định</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="soDemToiThieu" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Số đêm tối thiểu</label>
+                        <input type="number" id="soDemToiThieu" name="soDemToiThieu" class="block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200">
+                    </div>
+                    <div>
+                        <label for="soNgayDatTruoc" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Số ngày đặt trước</label>
+                        <input type="number" id="soNgayDatTruoc" name="soNgayDatTruoc" class="block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200">
+                    </div>
+                    <div>
+                        <label for="soLuong" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Số lượng</label>
+                        <input type="number" id="soLuong" name="soLuong" class="block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200" required>
+                    </div>
+                    <div>
+                        <label for="hinhAnhFile" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Hình ảnh</label>
+                        <input type="file" id="hinhAnhFile" name="HinhAnhFile" accept="image/*" class="block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-200">
+                        <div id="imagePreview" class="mt-2 hidden">
+                            <img id="previewImage" class="max-w-full h-auto rounded-lg" alt="Xem trước hình ảnh" />
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" id="chiApDungChoKhachMoi" name="chiApDungChoKhachMoi" class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded">
+                        <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Chỉ áp dụng cho khách mới</span>
+                    </label>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" onclick="closeModal('createEditModal')" class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition">Hủy</button>
+                    <button type="submit" id="savePromotionBtn" class="px-4 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4 py-6 hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+            <h2 class="text-xl font-bold text-gray-800 dark:text-gray-200">Xác nhận xóa</h2>
+            <button onclick="closeModal('deleteModal')" class="text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <p class="text-gray-600 dark:text-gray-400 mb-4">Bạn có chắc chắn muốn xóa khuyến mãi này? Hành động này không thể hoàn tác.</p>
+            <div class="mt-6 flex justify-between">
+                <button onclick="closeModal('deleteModal')" class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition">Hủy</button>
+                <button onclick="deletePromotion()" class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition">Xác nhận xóa</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.9/dist/flatpickr.min.css" rel="stylesheet">
+    <style>
+        .modal {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #059669;
+        }
+
+        .dark .status-active {
+            background-color: rgba(16, 185, 129, 0.2);
+        }
+
+        .status-expired {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #b91c1c;
+        }
+
+        .dark .status-expired {
+            background-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .action-btn {
+            transition: all 0.2s;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+        }
+
+            .action-btn:hover {
+                transform: translateY(-1px);
+                background-color: rgba(14, 165, 233, 0.1);
+            }
+
+        .dark .action-btn:hover {
+            background-color: rgba(14, 165, 233, 0.2);
+        }
+
+        .content-text {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .dark ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .dark ::-webkit-scrollbar-track {
+            background: #374151;
+        }
+
+        .dark ::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 3px;
+        }
+
+            .dark ::-webkit-scrollbar-thumb:hover {
+                background: #6b7280;
+            }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.9/dist/flatpickr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.9/dist/l10n/vn.js"></script>
+
+    <script>
+        // Global variables
+        let currentPage = 1;
+        let totalPages = 1;
+        const pageSize = 10;
+        let totalItems = 0;
+        let currentPromotionId = null;
+        let allHomestays = [];
+        let isEditMode = false;
+
+        // Get CSRF token safely
+        function getCsrfToken() {
+            const tokenElement = document.querySelector('input[name="__RequestVerificationToken"]');
+            if (!tokenElement) {
+                console.error('CSRF token not found');
+                return null;
+            }
+            return tokenElement.value;
+        }
+
+        // Get promotion status based on HSD
+        function getPromotionStatus(hsd) {
+            if (!hsd) return 'Expired';
+            const currentDate = new Date().toISOString().split('T')[0];
+            return hsd.split('T')[0] < currentDate ? 'Expired' : 'Active';
+        }
+
+        // Modal functions
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+            if (modalId === 'createEditModal') {
+                // Reset image preview when closing create/edit modal
+                document.getElementById('imagePreview').classList.add('hidden');
+                document.getElementById('previewImage').src = '';
+                document.getElementById('hinhAnhFile').value = '';
+            }
+        }
+
+        // Show toast notification
+        function showToast(message, isSuccess) {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                }
+            });
+
+            Toast.fire({
+                icon: isSuccess ? 'success' : 'error',
+                title: message
+            });
+        }
+
+        // Load promotions with filters
+        async function loadPromotions() {
+            const searchString = document.getElementById('searchInput').value || '';
+            const statusFilter = document.getElementById('statusFilter').value || '';
+            const dateRange = document.getElementById('dateRangePicker').value || '';
+            const homestayFilter = document.getElementById('homestayFilter').value || '';
+
+            console.log('LoadPromotions Parameters:', {
+                searchString,
+                statusFilter,
+                dateRange,
+                homestayFilter,
+                page: currentPage,
+                pageSize
+            });
+
+            document.getElementById('loadingState').classList.remove('hidden');
+            document.getElementById('emptyState').classList.add('hidden');
+            document.getElementById('promotionsTableBody').innerHTML = '';
+
+            try {
+                const url = `/Admin/Promotion/GetPromotions?searchString=${encodeURIComponent(searchString)}&status=${statusFilter}&dateRange=${encodeURIComponent(dateRange)}&homestay=${homestayFilter}&page=${currentPage}&pageSize=${pageSize}`;
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('GetPromotions Error Response:', errorText);
+                    throw new Error(`HTTP error! Status: ${response.status}, Response: ${errorText}`);
+                }
+
+                const data = await response.json();
+                if (data.success) {
+                    totalPages = data.totalPages || 1;
+                    totalItems = data.totalItems || 0;
+
+                    renderPromotions(data.data || []);
+                    renderPagination(data.totalPages, data.currentPage);
+                    updatePromotionStats(data.data || []);
+                } else {
+                    showToast(data.message || 'Không thể tải danh sách khuyến mãi', false);
+                    document.getElementById('emptyState').classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error loading promotions:', error);
+                showToast('Lỗi khi tải danh sách khuyến mãi: ' + error.message, false);
+                document.getElementById('emptyState').classList.remove('hidden');
+            } finally {
+                document.getElementById('loadingState').classList.add('hidden');
+            }
+        }
+
+        // Render promotions to table
+        function renderPromotions(promotions) {
+            const tableBody = document.getElementById('promotionsTableBody');
+
+            if (!promotions || promotions.length === 0) {
+                document.getElementById('emptyState').classList.remove('hidden');
+                return;
+            }
+
+            tableBody.innerHTML = promotions.map(p => {
+                const status = getPromotionStatus(p.hsd);
+                const statusClass = status === 'Active' ? 'status-active' : 'status-expired';
+                const discountText = p.loaiChietKhau === 'Percentage' ? `${p.chietKhau}%` : `${p.chietKhau.toLocaleString()} VNĐ`;
+
+                return `
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-200">${p.ma_KM || ''}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                            <div class="content-text">${p.noiDung || ''}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${p.ngayBatDau?.split('T')[0] || ''}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${p.hsd?.split('T')[0] || ''}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${discountText}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="status-badge ${statusClass}">${status === 'Active' ? 'Đang áp dụng' : 'Kết thúc'}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="flex justify-end space-x-2">
+                                <button onclick="showPromotionDetails('${encodeURIComponent(p.ma_KM || '')}')"
+                                    class="action-btn text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300" title="Xem chi tiết">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button onclick="confirmDeletePromotion('${encodeURIComponent(p.ma_KM || '')}')"
+                                    class="action-btn text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300" title="Xóa">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Update promotion stats
+        function updatePromotionStats(promotions) {
+            const total = promotions.length;
+            const active = promotions.filter(p => getPromotionStatus(p.hsd) === 'Active').length;
+            const expired = promotions.filter(p => getPromotionStatus(p.hsd) === 'Expired').length;
+
+            document.getElementById('totalPromotions').textContent = total;
+            document.getElementById('activePromotions').textContent = active;
+            document.getElementById('expiredPromotions').textContent = expired;
+        }
+
+        // Render pagination
+        function renderPagination(totalPagesParam, currentPageParam) {
+            totalPages = totalPagesParam || 1;
+            const paginationButtons = document.getElementById('paginationButtons');
+            const paginationInfo = document.getElementById('paginationInfo');
+
+            if (totalPages <= 1) {
+                paginationButtons.innerHTML = '';
+                paginationInfo.textContent = '';
+                return;
+            }
+
+            const startItem = (currentPage - 1) * pageSize + 1;
+            const endItem = Math.min(currentPage * pageSize, totalItems);
+            paginationInfo.textContent = `Hiển thị ${startItem}-${endItem} của ${totalItems}`;
+
+            let buttons = [];
+            const maxVisiblePages = 5;
+
+            buttons.push(`
+                <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}
+                    class="px-3 py-1 rounded-md border ${currentPage === 1 ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600'}">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            `);
+
+            if (currentPage > Math.floor(maxVisiblePages/2) + 1) {
+                buttons.push(`
+                    <button onclick="changePage(1)" class="px-3 py-1 rounded-md border bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600">1</button>
+                `);
+                if (currentPage > Math.floor(maxVisiblePages/2) + 2) {
+                    buttons.push('<span class="px-2 py-1 text-gray-500 dark:text-gray-400">...</span>');
+                }
+            }
+
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages/2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                buttons.push(`
+                    <button onclick="changePage(${i})"
+                        class="px-3 py-1 rounded-md border ${currentPage === i ? 'bg-primary-600 text-white' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600'}">
+                        ${i}
+                    </button>
+                `);
+            }
+
+            if (currentPage < totalPages - Math.floor(maxVisiblePages/2)) {
+                if (currentPage < totalPages - Math.floor(maxVisiblePages/2) - 1) {
+                    buttons.push('<span class="px-2 py-1 text-gray-500 dark:text-gray-400">...</span>');
+                }
+                buttons.push(`
+                    <button onclick="changePage(${totalPages})" class="px-3 py-1 rounded-md border bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600">${totalPages}</button>
+                `);
+            }
+
+            buttons.push(`
+                <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}
+                    class="px-3 py-1 rounded-md border ${currentPage === totalPages ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600'}">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            `);
+
+            paginationButtons.innerHTML = buttons.join('');
+        }
+
+        // Change page
+        function changePage(page) {
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            loadPromotions();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Show promotion details
+        async function showPromotionDetails(ma_KM) {
+            ma_KM = decodeURIComponent(ma_KM);
+            if (!ma_KM) {
+                showToast('Mã khuyến mãi không hợp lệ', false);
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Admin/Promotion/GetPromotion?id=${ma_KM}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('GetPromotion Error Response:', errorText);
+                    throw new Error(`HTTP error! Status: ${response.status}, Response: ${errorText}`);
+                }
+
+                const data = await response.json();
+                if (data.success) {
+                    currentPromotionId = ma_KM;
+                    renderPromotionDetails(data);
+                    openModal('detailsModal');
+                } else {
+                    showToast(data.message || 'Không thể tải chi tiết khuyến mãi', false);
+                }
+            } catch (error) {
+                console.error('Error loading promotion details:', error);
+                showToast('Lỗi khi tải chi tiết khuyến mãi: ' + error.message, false);
+            }
+        }
+
+        // Render promotion details
+        function renderPromotionDetails(data) {
+            const detailsContent = document.getElementById('detailsContent');
+            const discountText = data.loaiChietKhau === 'Percentage' ? `${data.chietKhau}%` : `${data.chietKhau.toLocaleString()} VNĐ`;
+            const status = getPromotionStatus(data.hsd);
+
+            detailsContent.innerHTML = `
+                ${data.hinhAnh ? `
+                    <div class="mb-4">
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Hình ảnh</p>
+                        <img src="${data.hinhAnh}" class="max-w-full h-auto rounded-lg" alt="Hình ảnh khuyến mãi" />
+                    </div>
+                ` : ''}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Mã khuyến mãi</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-200">${data.maKM || ''}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Nội dung</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-200">${data.noiDung || ''}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Ngày bắt đầu</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-200">${data.ngayBatDau || ''}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">HSD</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-200">${data.hsd || ''}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Chiết khấu</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-200">${discountText}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Loại chiết khấu</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-200">${data.loaiChietKhau || ''}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Số đêm tối thiểu</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-200">${data.soDemToiThieu || 'Không yêu cầu'}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Số ngày đặt trước</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-200">${data.soNgayDatTruoc || 'Không yêu cầu'}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Số lượng</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-200">${data.soLuong || ''}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Trạng thái</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-200">${status === 'Active' ? 'Đang áp dụng' : 'Kết thúc'}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Chỉ áp dụng cho khách mới</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-200">${data.chiApDungChoKhachMoi ? 'Có' : 'Không'}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Áp dụng cho tất cả homestay</p>
+                        <p class="font-medium text-gray-800 dark:text-gray-200">${data.apDungChoTatCaPhong ? 'Có' : 'Không'}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Open create modal
+        function openCreateModal() {
+            console.log('Debug: Opening create modal');
+            isEditMode = false;
+            document.getElementById('createEditModalTitle').textContent = 'Thêm khuyến mãi';
+            document.getElementById('ma_KM_input').disabled = false;
+            document.getElementById('promotionForm').reset();
+            // Explicitly clear ma_KM and ma_KM_input
+            document.getElementById('ma_KM').value = '';
+            document.getElementById('ma_KM_input').value = '';
+            document.getElementById('imagePreview').classList.add('hidden');
+            document.getElementById('previewImage').src = '';
+            document.getElementById('hinhAnhFile').value = '';
+            openModal('createEditModal');
+
+            flatpickr('#ngayBatDau', {
+                dateFormat: 'Y-m-d',
+                altInput: true,
+                altFormat: 'd/m/Y',
+                allowInput: true,
+                minDate: 'today'
+            });
+
+            flatpickr('#hsd', {
+                dateFormat: 'Y-m-d',
+                altInput: true,
+                altFormat: 'd/m/Y',
+                allowInput: true,
+                minDate: 'today'
+            });
+
+            console.log('Debug: Create modal initialized with flatpickr');
+            console.log('Debug: ma_KM value after reset:', document.getElementById('ma_KM').value);
+            console.log('Debug: ma_KM_input value after reset:', document.getElementById('ma_KM_input').value);
+        }
+
+        // Open edit modal
+        async function openEditModal() {
+            console.log('Debug: Opening edit modal for promotion ID:', currentPromotionId);
+            isEditMode = true;
+            document.getElementById('createEditModalTitle').textContent = 'Chỉnh sửa khuyến mãi';
+            document.getElementById('ma_KM_input').disabled = true;
+
+            try {
+                console.log('Debug: Fetching promotion data for editing');
+                const response = await fetch(`/Admin/Promotion/GetPromotion?id=${currentPromotionId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('GetPromotion for Edit Error Response:', errorText);
+                    throw new Error(`HTTP error! Status: ${response.status}, Response: ${errorText}`);
+                }
+
+                const data = await response.json();
+                console.log('Debug: Received promotion data for edit:', data);
+                if (data.success) {
+                    document.getElementById('ma_KM').value = data.maKM || '';
+                    document.getElementById('ma_KM_input').value = data.maKM || '';
+                    document.getElementById('noiDung').value = data.noiDung || '';
+                    document.getElementById('ngayBatDau').value = data.ngayBatDau?.split('T')[0] || '';
+                    document.getElementById('hsd').value = data.hsd?.split('T')[0] || '';
+                    document.getElementById('chietKhau').value = data.chietKhau || '';
+                    document.getElementById('loaiChietKhau').value = data.loaiChietKhau || 'Percentage';
+                    document.getElementById('soDemToiThieu').value = data.soDemToiThieu || '';
+                    document.getElementById('soNgayDatTruoc').value = data.soNgayDatTruoc || '';
+                    document.getElementById('soLuong').value = data.soLuong || '';
+                    document.getElementById('chiApDungChoKhachMoi').checked = data.chiApDungChoKhachMoi || false;
+                    document.getElementById('imagePreview').classList.add('hidden');
+                    document.getElementById('previewImage').src = '';
+                    document.getElementById('hinhAnhFile').value = '';
+
+                    flatpickr('#ngayBatDau', {
+                        dateFormat: 'Y-m-d',
+                        altInput: true,
+                        altFormat: 'd/m/Y',
+                        allowInput: true,
+                        minDate: 'today'
+                    });
+
+                    flatpickr('#hsd', {
+                        dateFormat: 'Y-m-d',
+                        altInput: true,
+                        altFormat: 'd/m/Y',
+                        allowInput: true,
+                        minDate: data.ngayBatDau?.split('T')[0] || 'today'
+                    });
+
+                    openModal('createEditModal');
+                    console.log('Debug: Edit modal initialized with promotion data and flatpickr');
+                } else {
+                    console.error('Debug: Failed to load promotion data:', data.message);
+                    showToast(data.message || 'Không thể tải thông tin khuyến mãi', false);
+                }
+            } catch (error) {
+                console.error('Debug: Error loading promotion for edit:', error);
+                showToast('Lỗi khi tải thông tin khuyến mãi: ' + error.message, false);
+            }
+        }
+
+        // Preview image
+        document.getElementById('hinhAnhFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const previewContainer = document.getElementById('imagePreview');
+            const previewImage = document.getElementById('previewImage');
+
+            if (file) {
+                const validImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
+                if (!validImageTypes.includes(file.type)) {
+                    showToast('Chỉ hỗ trợ định dạng .jpg, .jpeg, .png, .gif', false);
+                    e.target.value = '';
+                    previewContainer.classList.add('hidden');
+                    return;
+                }
+
+                previewImage.src = URL.createObjectURL(file);
+                previewContainer.classList.remove('hidden');
+            } else {
+                previewContainer.classList.add('hidden');
+                previewImage.src = '';
+            }
+        });
+
+        // Save promotion
+        document.getElementById('promotionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            console.log('Debug: Submitting promotion form, isEditMode:', isEditMode);
+            const saveButton = document.getElementById('savePromotionBtn');
+            const originalText = saveButton.textContent;
+            saveButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Đang lưu...';
+            saveButton.disabled = true;
+
+            try {
+                const ngayBatDau = document.getElementById('ngayBatDau').value;
+                const hsd = document.getElementById('hsd').value;
+
+                if (!ngayBatDau || !hsd) {
+                    throw new Error('Vui lòng chọn ngày bắt đầu và ngày hết hạn');
+                }
+
+                const ngayBatDauDate = new Date(ngayBatDau);
+                const hsdDate = new Date(hsd);
+
+                if (isNaN(ngayBatDauDate.getTime()) || isNaN(hsdDate.getTime())) {
+                    throw new Error('Ngày bắt đầu hoặc ngày hết hạn không hợp lệ');
+                }
+
+                const formData = new FormData();
+                formData.append('ma_KM', document.getElementById('ma_KM').value || document.getElementById('ma_KM_input').value);
+                formData.append('noiDung', document.getElementById('noiDung').value);
+                formData.append('ngayBatDau', ngayBatDau);
+                formData.append('hsd', hsd);
+                formData.append('chietKhau', parseFloat(document.getElementById('chietKhau').value) || 0);
+                formData.append('loaiChietKhau', document.getElementById('loaiChietKhau').value);
+                formData.append('soDemToiThieu', parseInt(document.getElementById('soDemToiThieu').value) || '');
+                formData.append('soNgayDatTruoc', parseInt(document.getElementById('soNgayDatTruoc').value) || '');
+                formData.append('soLuong', parseInt(document.getElementById('soLuong').value) || 0);
+                formData.append('chiApDungChoKhachMoi', document.getElementById('chiApDungChoKhachMoi').checked);
+                const hinhAnhFile = document.getElementById('hinhAnhFile').files[0];
+                if (hinhAnhFile) {
+                    formData.append('HinhAnhFile', hinhAnhFile);
+                }
+
+                // Debug: Log form data
+                console.log('Debug: FormData contents:');
+                for (let [key, value] of formData.entries()) {
+                    console.log(`  ${key}:`, value);
+                }
+
+                const csrfToken = getCsrfToken();
+                if (!csrfToken) {
+                    throw new Error('CSRF token not found');
+                }
+
+                const url = isEditMode ? '/Admin/Promotion/Update' : '/Admin/Promotion/Create';
+                console.log('Debug: Sending request to:', url);
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'RequestVerificationToken': csrfToken
+                    },
+                    body: formData
+                });
+
+                const responseText = await response.text();
+                let data;
+                try {
+                    data = responseText ? JSON.parse(responseText) : {};
+                    console.log('Debug: Server response:', data);
+                } catch (e) {
+                    console.error('Debug: Invalid JSON response:', responseText);
+                    throw new Error('Phản hồi từ server không hợp lệ');
+                }
+
+                if (!response.ok) {
+                    console.error('Debug: Server responded with status:', response.status, 'Response:', data);
+                    throw new Error(data.message || `Lỗi HTTP! Mã: ${response.status}`);
+                }
+
+                if (data.success) {
+                    console.log('Debug: Promotion saved successfully:', data.message);
+                    showToast(data.message || 'Lưu khuyến mãi thành công', true);
+                    closeModal('createEditModal');
+                    loadPromotions();
+                } else {
+                    console.error('Debug: Failed to save promotion:', data.message);
+                    showToast(data.message || 'Không thể lưu khuyến mãi', false);
+                }
+            } catch (error) {
+                console.error('Debug: Error saving promotion:', error);
+                showToast('Lỗi khi lưu khuyến mãi: ' + error.message, false);
+            } finally {
+                saveButton.textContent = originalText;
+                saveButton.disabled = false;
+                console.log('Debug: Form submission completed');
+            }
+        });
+
+        // Confirm delete promotion
+        function confirmDeletePromotion(ma_KM) {
+            currentPromotionId = decodeURIComponent(ma_KM);
+            if (!currentPromotionId) {
+                showToast('Mã khuyến mãi không hợp lệ', false);
+                return;
+            }
+            openModal('deleteModal');
+        }
+
+        // Delete promotion
+        async function deletePromotion() {
+            if (!currentPromotionId) {
+                showToast('Mã khuyến mãi không hợp lệ', false);
+                return;
+            }
+
+            const deleteButton = document.querySelector('#deleteModal button.bg-red-600');
+            const originalText = deleteButton.textContent;
+            deleteButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Đang xóa...';
+            deleteButton.disabled = true;
+
+            try {
+                const csrfToken = getCsrfToken();
+                if (!csrfToken) {
+                    throw new Error('CSRF token not found');
+                }
+
+                const response = await fetch('/Admin/Promotion/DeleteConfirmed', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'RequestVerificationToken': csrfToken
+                    },
+                    body: JSON.stringify(currentPromotionId)
+                });
+
+                const responseText = await response.text();
+                let data;
+                try {
+                    data = responseText ? JSON.parse(responseText) : {};
+                } catch (e) {
+                    console.error('Invalid JSON response:', responseText);
+                    throw new Error('Phản hồi từ server không hợp lệ');
+                }
+
+                if (!response.ok) {
+                    console.error('Server responded with status:', response.status, 'Response:', data);
+                    throw new Error(data.message || `HTTP error! Status: ${response.status}`);
+                }
+
+                if (data.success) {
+                    showToast(data.message || 'Xóa khuyến mãi thành công', true);
+                    closeModal('deleteModal');
+                    loadPromotions();
+                } else {
+                    showToast(data.message || 'Không thể xóa khuyến mãi', false);
+                }
+            } catch (error) {
+                console.error('Error deleting promotion:', error);
+                showToast('Lỗi khi xóa khuyến mãi: ' + error.message, false);
+            } finally {
+                deleteButton.textContent = originalText;
+                deleteButton.disabled = false;
+            }
+        }
+
+        // Load homestays for filter
+        async function loadHomestays() {
+            try {
+                const response = await fetch('/Admin/Homestay/GetHomestays', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('GetHomestays Error Response:', errorText);
+                    throw new Error(`HTTP error! Status: ${response.status}, Response: ${errorText}`);
+                }
+
+                const data = await response.json();
+                if (data.success && data.data) {
+                    allHomestays = data.data;
+                    const select = document.getElementById('homestayFilter');
+                    select.innerHTML = '<option value="">Tất cả homestay</option>' +
+                        data.data.map(h => `<option value="${h.idHomestay}">${h.tenHomestay}</option>`).join('');
+                } else {
+                    showToast(data.message || 'Không thể tải danh sách homestay', false);
+                }
+            } catch (error) {
+                console.error('Error loading homestays:', error);
+                showToast('Lỗi khi tải danh sách homestay', false);
+            }
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+            flatpickr('#dateRangePicker', {
+                mode: 'range',
+                dateFormat: 'Y-m-d',
+                altInput: true,
+                altFormat: 'd/m/Y',
+                allowInput: true,
+                locale: {
+                    rangeSeparator: ' to '
+                },
+                onChange: function(selectedDates, dateStr) {
+                    if (selectedDates.length === 2) {
+                        currentPage = 1;
+                        loadPromotions();
+                    }
+                }
+            });
+
+            document.getElementById('searchInput').addEventListener('input', () => {
+                currentPage = 1;
+                loadPromotions();
+            });
+
+            document.getElementById('statusFilter').addEventListener('change', () => {
+                currentPage = 1;
+                loadPromotions();
+            });
+
+            document.getElementById('homestayFilter').addEventListener('change', () => {
+                currentPage = 1;
+                loadPromotions();
+            });
+
+            document.getElementById('tryAgainBtn').addEventListener('click', loadPromotions);
+
+            // Initial load
+            loadPromotions();
+            loadHomestays();
+        });
+    </script>
+}

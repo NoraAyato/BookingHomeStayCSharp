@@ -1,0 +1,636 @@
+﻿@model DoAnCs.Models.ViewModels.HomestayDetailsViewModel
+@{
+    ViewData["Title"] = Model.Homestay.Ten_Homestay;
+    var selectedRoomIds = ViewBag.SelectedRoomIds as string[] ?? new string[0];
+    var isAddingRoom = selectedRoomIds.Any();
+
+    var cleanPhone = Model.HostPhone?.Replace(" ", "").Replace("-", "").Replace("+84", "0") ?? "";
+    if (!string.IsNullOrEmpty(cleanPhone) && !cleanPhone.StartsWith("0"))
+    {
+        cleanPhone = "0" + cleanPhone;
+    }
+}
+
+<!-- Hero Section với hình ảnh full-width -->
+<section class="relative">
+    <div class="relative h-96 w-full overflow-hidden">
+        <!-- Hình ảnh homestay với hiệu ứng parallax -->
+        <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent z-10"></div>
+        <img src="@Model.Homestay.HinhAnh" alt="@Model.Homestay.Ten_Homestay"
+             class="w-full h-full object-cover transform transition-transform duration-700 hover:scale-105"
+             loading="lazy" />
+
+        <!-- Nút điều hướng -->
+        <div class="absolute top-0 left-0 right-0 z-20 flex justify-between items-start p-6">
+            <a asp-action="Search"
+               asp-controller="Homestay"
+               asp-route-checkInDate="@Model.CheckInDate.ToString("yyyy-MM-dd")"
+               asp-route-checkOutDate="@Model.CheckOutDate.ToString("yyyy-MM-dd")"
+               asp-route-location="@ViewBag.Location"
+               class="bg-white/90 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg transition-all hover:shadow-xl">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <button class="bg-white/90 hover:bg-white text-rose-600 p-3 rounded-full shadow-lg transition-all hover:shadow-xl">
+                <i class="far fa-heart"></i>
+            </button>
+        </div>
+
+        <!-- Thông tin chính -->
+        <div class="absolute bottom-0 left-0 right-0 z-20 px-6 pb-6">
+            <h1 class="text-4xl font-bold text-white font-lora mb-2 drop-shadow-lg">@Model.Homestay.Ten_Homestay</h1>
+            <div class="flex items-center flex-wrap gap-4">
+                @if (Model.Homestay.Hang.HasValue)
+                {
+                    <div class="bg-rose-500 text-white px-3 py-1 rounded-full flex items-center shadow">
+                        <i class="fas fa-star mr-1"></i>
+                        <span>@Model.Homestay.Hang?.ToString("0.0")</span>
+                    </div>
+                }
+                <div class="flex items-center text-white/90 drop-shadow-md">
+                    <i class="fas fa-map-marker-alt text-rose-300 mr-2"></i>
+                    <span>@Model.Homestay.DiaChi</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 -mt-16 relative z-30">
+    <div class="flex flex-col lg:flex-row gap-8">
+        <!-- Phần nội dung chính -->
+        <div class="lg:w-2/3">
+            <!-- Thông tin ngày đặt phòng -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center flex-1">
+                        <div class="bg-white border border-gray-200 p-4 rounded-lg shadow-sm mr-4 flex-1 text-center">
+                            <div class="text-sm text-gray-500 font-medium">Nhận phòng</div>
+                            <div class="font-bold text-lg text-rose-600">@Model.CheckInDate.ToString("dd/MM/yyyy")</div>
+                        </div>
+                        <div class="text-gray-400 mx-2">
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+                        <div class="bg-white border border-gray-200 p-4 rounded-lg shadow-sm flex-1 text-center">
+                            <div class="text-sm text-gray-500 font-medium">Trả phòng</div>
+                            <div class="font-bold text-lg text-rose-600">@Model.CheckOutDate.ToString("dd/MM/yyyy")</div>
+                        </div>
+                    </div>
+                    <div class="bg-rose-50 border border-rose-100 p-4 rounded-lg shadow-sm text-center min-w-[120px]">
+                        <div class="text-sm text-rose-600 font-medium">Tổng số đêm</div>
+                        <div class="font-bold text-lg text-rose-700">@Model.NumberOfNights đêm</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Danh sách phòng trống -->
+            <section class="mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 font-lora mb-6 relative inline-block">
+                    <span>Phòng trống</span>
+                    <span class="absolute bottom-0 left-0 w-full h-1 bg-rose-500 rounded-full"></span>
+                </h2>
+
+                @if (Model.AvailableRooms.Any())
+                {
+                    <div class="space-y-6">
+                        @foreach (var room in Model.AvailableRooms)
+                        {
+                            <div class="border border-gray-200 rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300">
+                                <div class="flex flex-col md:flex-row">
+                                    <!-- Hình ảnh phòng -->
+                                    <div class="md:w-1/3 relative">
+                                        <img src="@(room.HinhAnhs.FirstOrDefault()?.UrlAnh ?? "/images/default-room.jpg")"
+                                             alt="@room.TenPhong"
+                                             loading="lazy"
+                                             class="w-full h-64 md:h-full object-cover transition-transform duration-500 hover:scale-105" />
+                                        <span class="absolute top-4 right-4 bg-green-500 text-white text-xs px-2 py-1 rounded-full shadow">
+                                            Còn phòng
+                                        </span>
+                                    </div>
+
+                                    <!-- Thông tin phòng -->
+                                    <div class="md:w-2/3 p-6">
+                                        <div class="flex justify-between items-start mb-4">
+                                            <h3 class="text-2xl font-bold text-gray-900 font-lora">@room.TenPhong</h3>
+                                            <span class="text-xl font-bold text-rose-600">
+                                                @room.DonGia.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))<span class="text-sm font-normal">/đêm</span>
+                                            </span>
+                                        </div>
+
+                                        <!-- Thông tin cơ bản -->
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                                            <div class="flex items-center bg-gray-50 p-3 rounded-lg">
+                                                <div class="bg-rose-100 text-rose-600 p-2 rounded-full mr-3">
+                                                    <i class="fas fa-bed"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="text-sm text-gray-500">Loại phòng</div>
+                                                    <div class="font-medium">@room.TenLoai</div>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center bg-gray-50 p-3 rounded-lg">
+                                                <div class="bg-rose-100 text-rose-600 p-2 rounded-full mr-3">
+                                                    <i class="fas fa-user-friends"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="text-sm text-gray-500">Sức chứa</div>
+                                                    <div class="font-medium">@room.SoNguoi người</div>
+                                                </div>
+                                            </div>
+                                            @if (room.TotalPhuThu > 0)
+                                            {
+                                                <div class="flex items-center bg-gray-50 p-3 rounded-lg">
+                                                    <div class="bg-rose-100 text-rose-600 p-2 rounded-full mr-3">
+                                                        <i class="fas fa-exclamation-circle"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="text-sm text-gray-500">Phụ thu</div>
+                                                        <div class="font-medium">@room.TotalPhuThu.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</div>
+                                                    </div>
+                                                </div>
+                                            }
+                                            <div class="flex items-center bg-gray-50 p-3 rounded-lg">
+                                                <div class="bg-rose-100 text-rose-600 p-2 rounded-full mr-3">
+                                                    <i class="fas fa-calculator"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="text-sm text-gray-500">Tổng cộng</div>
+                                                    <div class="font-medium">@((room.DonGia * Model.NumberOfNights + room.TotalPhuThu).ToString("C0", new System.Globalization.CultureInfo("vi-VN")))</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Tiện nghi phòng -->
+                                        @if (room.TienNghis.Any())
+                                        {
+                                            <div class="mb-6">
+                                                <h4 class="font-medium mb-3 text-gray-700">Tiện nghi phòng:</h4>
+                                                <div class="flex flex-wrap gap-2">
+                                                    @foreach (var tienNghi in room.TienNghis)
+                                                    {
+                                                        <span class="bg-white border border-gray-200 text-gray-800 text-sm px-3 py-2 rounded-lg flex items-center shadow-sm hover:shadow-md transition-shadow">
+                                                            <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                                            @(tienNghi.TienNghi?.TenTienNghi ?? "Không xác định") (@tienNghi.SoLuong)
+                                                        </span>
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+
+                                        <!-- Nút đặt phòng -->
+                                        <div class="flex justify-end">
+                                            <a asp-controller="Booking"
+                                               asp-action="Create"
+                                               asp-route-maPhong="@room.Ma_Phong"
+                                               asp-route-checkInDate="@Model.CheckInDate.ToString("yyyy-MM-dd")"
+                                               asp-route-checkOutDate="@Model.CheckOutDate.ToString("yyyy-MM-dd")"
+                                               asp-route-homestayId="@Model.Homestay.ID_Homestay"
+                                               asp-route-selectedRoomIds="@string.Join(",", selectedRoomIds)"
+                                               class="relative inline-flex items-center justify-center px-8 py-3 overflow-hidden font-medium text-white bg-gradient-to-r from-rose-500 to-rose-600 rounded-lg group shadow-lg hover:shadow-xl transition-all duration-300">
+                                                <span class="absolute top-0 left-0 w-full h-full rounded-lg opacity-30 filter blur-sm bg-gradient-to-br from-rose-400 to-rose-600"></span>
+                                                <span class="flex items-center">
+                                                    <i class="fas fa-calendar-check mr-2"></i>
+                                                    @(isAddingRoom ? "Thêm phòng" : "Đặt phòng ngay")
+                                                </span>
+                                                <span class="absolute inset-0 w-full h-full transition-all duration-300 ease-in-out bg-gradient-to-br from-rose-500 to-rose-600 rounded-lg opacity-0 group-hover:opacity-90"></span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="bg-rose-50 border border-rose-200 rounded-xl p-8 text-center shadow-inner">
+                        <div class="mx-auto w-20 h-20 bg-rose-100 rounded-full flex items-center justify-center mb-4 text-rose-500">
+                            <i class="fas fa-exclamation-circle text-3xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-rose-700 mb-3">Không có phòng trống</h3>
+                        <p class="text-gray-600 mb-6">Không có phòng trống trong khoảng thời gian từ @Model.CheckInDate.ToString("dd/MM/yyyy") đến @Model.CheckOutDate.ToString("dd/MM/yyyy")</p>
+                        <div class="flex flex-col sm:flex-row justify-center gap-3">
+                            <a href="#" onclick="clearSelectedRoomsAndRedirect(event)"
+                               class="px-6 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg font-medium transition-colors flex items-center justify-center">
+                                <i class="fas fa-search mr-2"></i> Tìm kiếm lại
+                            </a>
+                            @if (isAddingRoom)
+                            {
+                                <a asp-controller="Booking"
+                                   asp-action="Create"
+                                   asp-route-checkInDate="@Model.CheckInDate.ToString("yyyy-MM-dd")"
+                                   asp-route-checkOutDate="@Model.CheckOutDate.ToString("yyyy-MM-dd")"
+                                   asp-route-homestayId="@Model.Homestay.ID_Homestay"
+                                   asp-route-selectedRoomIds="@string.Join(",", selectedRoomIds)"
+                                   class="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors flex items-center justify-center">
+                                    <i class="fas fa-arrow-left mr-2"></i> Trở lại đặt phòng
+                                </a>
+                            }
+                        </div>
+                    </div>
+                }
+            </section>
+
+            <!-- Dịch vụ -->
+            <section class="mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 font-lora mb-6 relative inline-block">
+                    <span>Dịch vụ</span>
+                    <span class="absolute bottom-0 left-0 w-full h-1 bg-rose-500 rounded-full"></span>
+                </h2>
+                <div id="dichVusContent" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-5 flex items-center justify-center text-gray-500">
+                        Đang tải dịch vụ...
+                    </div>
+                </div>
+            </section>
+
+            <!-- Đánh giá -->
+            <section class="mb-12 hidden">
+                <h2 class="text-3xl font-bold text-gray-900 font-lora mb-6 relative inline-block">
+                    <span>Đánh giá</span>
+                    <span class="absolute bottom-0 left-0 w-full h-1 bg-rose-500 rounded-full"></span>
+                </h2>
+
+                @if (ViewBag.DanhGias != null)
+                {
+                    <div class="space-y-6">
+                        @foreach (var danhGia in ViewBag.DanhGias)
+                        {
+                            <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                                <div class="flex items-start mb-4">
+                                    <div class="bg-rose-100 text-rose-600 px-3 py-1 rounded-full flex items-center mr-4">
+                                        <i class="fas fa-star mr-1"></i>
+                                        <span>@danhGia.Rating.ToString("0")</span>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-gray-800">
+                                            @(danhGia.NguoiDung?.FullName ?? "Ẩn danh")
+                                        </h4>
+                                        <span class="text-sm text-gray-500">@danhGia.NgayDanhGia.ToString("dd/MM/yyyy")</span>
+                                    </div>
+                                </div>
+                                <p class="text-gray-700 mb-4">@danhGia.BinhLuan</p>
+                                @if (!string.IsNullOrEmpty(danhGia.HinhAnh))
+                                {
+                                    <div class="mb-3">
+                                        <img src="@danhGia.HinhAnh"
+                                             alt="Hình ảnh đánh giá"
+                                             class="w-32 h-32 object-cover rounded-lg review-image cursor-pointer hover:ring-2 hover:ring-rose-300 transition-all"
+                                             loading="lazy" />
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
+                        <div class="mx-auto w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4 text-gray-400">
+                            <i class="fas fa-comment-slash text-3xl"></i>
+                        </div>
+                        <p class="text-gray-600">Chưa có đánh giá nào cho homestay này.</p>
+                    </div>
+                }
+            </section>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="lg:w-1/3">
+            <div class="sticky top-6 space-y-6">
+                <!-- Bản đồ -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="h-64 relative">
+                        <iframe class="w-full h-full"
+                                frameborder="0"
+                                style="border:0"
+                                src="https://www.google.com/maps/embed/v1/place?key=@ViewBag.GoogleMapsApiKey&q=@System.Web.HttpUtility.UrlEncode(Model.Homestay.DiaChi)"
+                                allowfullscreen
+                                loading="lazy">
+                        </iframe>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent pointer-events-none"></div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-bold text-xl text-gray-900 mb-3">Vị trí</h3>
+                        <p class="text-gray-600 mb-4 flex items-start">
+                            <i class="fas fa-map-marker-alt text-rose-500 mt-1 mr-2"></i>
+                            <span>@Model.Homestay.DiaChi</span>
+                        </p>
+                        <a href="https://www.google.com/maps/search/?api=1&query=@System.Web.HttpUtility.UrlEncode(Model.Homestay.DiaChi)"
+                           target="_blank"
+                           class="w-full inline-flex items-center justify-center bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white py-3 px-4 rounded-lg font-medium transition-all shadow hover:shadow-lg">
+                            <i class="fas fa-directions mr-2"></i> Chỉ đường
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Liên hệ chủ homestay -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="font-bold text-xl text-gray-900 mb-4">Liên hệ chủ homestay</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center">
+                            <div class="bg-rose-100 text-rose-600 p-2 rounded-full mr-3 flex-shrink-0">
+                                <i class="fas fa-phone-alt"></i>
+                            </div>
+                            <a href="tel:@Model.HostPhone" class="text-gray-700 hover:text-rose-600 transition-colors">
+                                @Model.HostPhone
+                            </a>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="bg-rose-100 text-rose-600 p-2 rounded-full mr-3 flex-shrink-0">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <a href="mailto:@Model.HostEmail" class="text-gray-700 hover:text-rose-600 transition-colors">
+                                @Model.HostEmail
+                            </a>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="bg-rose-100 text-rose-600 p-2 rounded-full mr-3 flex-shrink-0">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <span class="text-gray-700">Hỗ trợ 24/7</span>
+                        </div>
+                    </div>
+                    <a href="https://zalo.me/@cleanPhone" target="_blank"
+                       class="w-full mt-6 inline-flex items-center justify-center bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-all shadow hover:shadow-lg">
+                        <i class="fab fa-zalo mr-2 text-lg"></i> Nhắn tin qua Zalo
+                    </a>
+                </div>
+
+                <!-- Chính sách -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="font-bold text-xl text-gray-900 mb-4">Chính sách</h3>
+                    <div class="space-y-5" id="chinhSachContent">
+                        <div class="flex items-start">
+                            <div class="bg-rose-100 text-rose-600 p-2 rounded-full mr-3 flex-shrink-0">
+                                <i class="fas fa-door-open"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-800 mb-1">Nhận phòng</h4>
+                                <p class="text-gray-600 text-sm" id="nhanPhong">Đang tải...</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="bg-rose-100 text-rose-600 p-2 rounded-full mr-3 flex-shrink-0">
+                                <i class="fas fa-door-closed"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-800 mb-1">Trả phòng</h4>
+                                <p class="text-gray-600 text-sm" id="traPhong">Đang tải...</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="bg-rose-100 text-rose-600 p-2 rounded-full mr-3 flex-shrink-0">
+                                <i class="fas fa-ban"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-800 mb-1">Hủy phòng</h4>
+                                <p class="text-gray-600 text-sm" id="huyPhong">Đang tải...</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="bg-rose-100 text-rose-600 p-2 rounded-full mr-3 flex-shrink-0">
+                                <i class="fas fa-utensils"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-800 mb-1">Bữa ăn</h4>
+                                <p class="text-gray-600 text-sm" id="buaAn">Đang tải...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Modal xem hình ảnh lớn -->
+<div class="fixed inset-0 bg-black/90 z-50 flex items-center justify-center hidden" id="imageModal">
+    <div class="relative max-w-4xl w-full mx-4">
+        <button class="absolute top-4 right-4 text-white text-3xl z-10 hover:text-rose-300 transition-colors" id="closeModal">
+            <i class="fas fa-times"></i>
+        </button>
+        <img src="" alt="" class="w-full max-h-[90vh] object-contain" id="modalImage" loading="lazy" />
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        /* Animation cho các phần tử */
+        .review-image {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+            .review-image:hover {
+                transform: scale(1.05);
+            }
+
+        /* Hiệu ứng cho nút */
+        .btn-hover-effect {
+            position: relative;
+            overflow: hidden;
+        }
+
+            .btn-hover-effect::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.3));
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .btn-hover-effect:hover::after {
+                transform: translateX(100%);
+            }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // Hàm hiển thị thông báo lỗi
+        function showErrorToast(message) {
+            const escapedMessage = message.replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, ' ');
+
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                }
+            });
+
+            Toast.fire({
+                icon: 'error',
+                title: escapedMessage
+            });
+        }
+
+        // Hàm gọi API xóa danh sách phòng và chuyển hướng
+        async function clearSelectedRoomsAndRedirect(event) {
+            event.preventDefault();
+
+            try {
+                const url = '@Url.Action("ClearSelectedRooms", "Homestay")';
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error('Non-JSON response:', text);
+                    throw new Error('Phản hồi không phải JSON');
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    window.location.href = '@Url.Action("Index", "Home")';
+                } else {
+                    showErrorToast(result.message || 'Lỗi trong quá trình thực hiện');
+                    setTimeout(() => {
+                        window.location.href = '@Url.Action("Index", "Home")';
+                    }, 3000);
+                }
+            } catch (error) {
+                console.error('Error in clearSelectedRoomsAndRedirect:', error);
+                showErrorToast('Lỗi trong quá trình thực hiện');
+                setTimeout(() => {
+                    window.location.href = '@Url.Action("Index", "Home")';
+                }, 3000);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Fetch dịch vụ
+            const homestayId = '@Model.Homestay.ID_Homestay';
+            try {
+                const response = await fetch(`@Url.Action("GetDichVusByHomestay", "Homestay")?idHomestay=${homestayId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const result = await response.json();
+                const dichVusContent = document.getElementById('dichVusContent');
+                if (result.success && result.data.length > 0) {
+                    dichVusContent.innerHTML = result.data.map(dv => `
+                        <div class="bg-white border border-gray-200 rounded-lg p-5 flex items-start hover:shadow-md transition-shadow">
+                            <div class="bg-rose-100 text-rose-600 p-3 rounded-full mr-4 flex-shrink-0">
+                                <i class="fas fa-concierge-bell"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-800 mb-1">${dv.tenDv}</h4>
+                                <span class="inline-block bg-rose-100 text-rose-600 text-xs px-2 py-1 rounded">
+                                    ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', minimumFractionDigits: 0 }).format(dv.donGia)}/ngày
+                                </span>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    dichVusContent.innerHTML = `
+                        <div class="bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
+                            <div class="mx-auto w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4 text-gray-400">
+                                <i class="fas fa-concierge-bell text-3xl"></i>
+                            </div>
+                            <p class="text-gray-600">Chưa có dịch vụ nào cho homestay này.</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error fetching dich vus:', error);
+                showErrorToast('Lỗi khi tải dịch vụ');
+                document.getElementById('dichVusContent').innerHTML = `
+                    <div class="bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
+                        <div class="mx-auto w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4 text-gray-400">
+                            <i class="fas fa-concierge-bell text-3xl"></i>
+                        </div>
+                        <p class="text-gray-600">Chưa có dịch vụ nào cho homestay này.</p>
+                    </div>
+                `;
+            }
+
+            // Fetch chính sách
+            try {
+                const response = await fetch(`@Url.Action("GetChinhSach", "Homestay")?homestayId=${homestayId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('nhanPhong').textContent = result.data.nhanPhong;
+                    document.getElementById('traPhong').textContent = result.data.traPhong;
+                    document.getElementById('huyPhong').textContent = result.data.huyPhong;
+                    document.getElementById('buaAn').textContent = result.data.buaAn;
+                } else {
+                    showErrorToast(result.message || 'Không thể tải chính sách');
+                    document.getElementById('nhanPhong').textContent = 'Từ 14:00';
+                    document.getElementById('traPhong').textContent = 'Trước 12:00';
+                    document.getElementById('huyPhong').textContent = 'Không hoàn tiền';
+                    document.getElementById('buaAn').textContent = 'Không bao gồm';
+                }
+            } catch (error) {
+                console.error('Error fetching chinh sach:', error);
+                showErrorToast('Lỗi khi tải chính sách');
+                document.getElementById('nhanPhong').textContent = 'Từ 14:00';
+                document.getElementById('traPhong').textContent = 'Trước 12:00';
+                document.getElementById('huyPhong').textContent = 'Không hoàn tiền';
+                document.getElementById('buaAn').textContent = 'Không bao gồm';
+            }
+
+            // Xử lý modal hình ảnh đánh giá
+            const reviewImages = document.querySelectorAll('.review-image');
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            const closeModal = document.getElementById('closeModal');
+
+            reviewImages.forEach(img => {
+                img.addEventListener('click', () => {
+                    modalImg.src = img.src;
+                    modalImg.alt = img.alt;
+                    modal.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                });
+            });
+
+            closeModal.addEventListener('click', () => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            });
+
+            modal.addEventListener('click', e => {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                }
+            });
+
+            // Hiệu ứng parallax cho hình ảnh hero
+            const heroImage = document.querySelector('.relative.h-96.w-full img');
+            if (heroImage) {
+                window.addEventListener('scroll', () => {
+                    const scrollPosition = window.pageYOffset;
+                    heroImage.style.transform = `translateY(${scrollPosition * 0.3}px)`;
+                });
+            }
+        });
+    </script>
+}

@@ -1,0 +1,966 @@
+﻿@{
+    ViewData["Title"] = "DashBoard";
+}
+<!-- Đảm bảo nội dung sát sidebar bằng cách loại bỏ padding trái và lấp đầy không gian -->
+<div class="w-full max-w-full ml-0">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4 pl-0">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-200">Dashboard</h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-1">Tổng quan hệ thống và thống kê</p>
+        </div>
+        <div class="flex items-center space-x-4">
+            <button id="exportExcelBtn" class="relative flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition shadow-md hover:shadow-lg disabled:opacity-50" title="Xuất báo cáo Excel" disabled>
+                <i class="fas fa-file-excel mr-2"></i> Xuất Excel
+                <span class="absolute inset-0 flex items-center justify-center hidden loading-spinner">
+                    <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </span>
+            </button>
+            <span class="text-sm text-gray-500 dark:text-gray-400">Cập nhật lúc: <span id="lastUpdatedTime">@DateTime.Now.ToString("HH:mm dd/MM/yyyy")</span></span>
+            <button id="refreshBtn" class="relative p-2 text-gray-500 hover:text-blue-600 hover:bg-gray-100 rounded-full transition" title="Làm mới dữ liệu">
+                <i class="fas fa-sync-alt"></i>
+                <span class="absolute inset-0 flex items-center justify-center hidden loading-spinner">
+                    <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-4 pl-0">
+        <!-- Total Revenue -->
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition stat-card">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Tổng doanh thu</p>
+                    <h3 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200" id="totalRevenue">--</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Tất cả hóa đơn đã thanh toán</p>
+                </div>
+                <div class="p-3 rounded-full bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400">
+                    <i class="fas fa-money-bill-wave text-lg sm:text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Profit -->
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition stat-card">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Tổng lợi nhuận</p>
+                    <h3 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200" id="totalProfit">--</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">15% từ tiền phòng mỗi hóa đơn</p>
+                </div>
+                <div class="p-3 rounded-full bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400">
+                    <i class="fas fa-coins text-lg sm:text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Bookings -->
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition stat-card">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Tổng đặt phòng</p>
+                    <h3 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200" id="totalBookings">--</h3>
+                    <div class="flex space-x-2 mt-1">
+                        <span class="text-xs text-green-600 dark:text-green-400" id="confirmedBookings">-- xác nhận</span>
+                        <span class="text-xs text-yellow-600 dark:text-yellow-400" id="pendingBookings">-- chờ</span>
+                    </div>
+                </div>
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400">
+                    <i class="fas fa-calendar-check text-lg sm:text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Users -->
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition stat-card">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Tổng người dùng</p>
+                    <h3 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200" id="totalUsers">--</h3>
+                    <div class="flex space-x-2 mt-1">
+                        <span class="text-xs text-green-600 dark:text-green-400" id="activeUsers">-- hoạt động</span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400" id="inactiveUsers">-- không hoạt động</span>
+                    </div>
+                </div>
+                <div class="p-3 rounded-full bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-400">
+                    <i class="fas fa-users text-lg sm:text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Homestays -->
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition stat-card">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Tổng Homestay</p>
+                    <h3 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200" id="totalHomestays">--</h3>
+                    <p class="text-xs text-green-600 dark:text-green-400 mt-1" id="activeHomestays">-- đang hoạt động</p>
+                </div>
+                <div class="p-3 rounded-full bg-orange-100 text-orange-600 dark:bg-orange-900 dark:text-orange-400">
+                    <i class="fas fa-home text-lg sm:text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts and Additional Stats -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4 pl-0">
+        <!-- Revenue and Profit Chart -->
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 lg:col-span-2">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Doanh thu và lợi nhuận theo tháng</h2>
+                <div class="flex space-x-2">
+                    <button id="revenue6Months" class="px-3 py-1 text-xs bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-full hover:bg-blue-100 hover:text-blue-600 dark:hover:bg-blue-900 dark:hover:text-blue-400 transition">6 tháng</button>
+                    <button id="revenue12Months" class="px-3 py-1 text-xs bg-blue-600 text-white rounded-full hover:bg-blue-700 transition">12 tháng</button>
+                </div>
+            </div>
+            <div class="h-64 sm:h-80 lg:h-96">
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Popular Areas -->
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+            <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Khu vực phổ biến</h2>
+            <div class="space-y-3" id="popularAreas">
+                <!-- Skeleton loading -->
+                <div class="space-y-3 animate-pulse">
+                    <div class="h-10 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                    <div class="h-10 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                    <div class="h-10 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popular Homestays and Recent Activities -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4 pl-0">
+        <!-- Popular Homestays -->
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+            <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Homestay phổ biến</h2>
+            <div class="space-y-3" id="popularHomestays">
+                <!-- Skeleton loading -->
+                <div class="space-y-3 animate-pulse">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                        <div class="flex-1 h-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                        <div class="flex-1 h-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Invoices -->
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Hóa đơn gần đây</h2>
+                <a href="/Admin/Invoice" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">Xem tất cả</a>
+            </div>
+            <div class="space-y-3" id="recentInvoices">
+                <!-- Skeleton loading -->
+                <div class="space-y-3 animate-pulse">
+                    <div class="h-16 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                    <div class="h-16 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Bookings -->
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Đặt phòng gần đây</h2>
+                <a href="/Admin/Booking/Index" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">Xem tất cả</a>
+            </div>
+            <div class="space-y-3" id="recentBookings">
+                <!-- Skeleton loading -->
+                <div class="space-y-3 animate-pulse">
+                    <div class="h-16 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                    <div class="h-16 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Users and Additional Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pl-0">
+        <!-- New Users -->
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Người dùng mới</h2>
+                <a href="/Admin/User/Index" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">Xem tất cả</a>
+            </div>
+            <div class="space-y-3" id="newUsers">
+                <!-- Skeleton loading -->
+                <div class="space-y-3 animate-pulse">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                        <div class="flex-1 h-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                        <div class="flex-1 h-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Popular News -->
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+            <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Tin tức phổ biến</h2>
+            <div class="space-y-3" id="popularNews">
+                <!-- Skeleton loading -->
+                <div class="space-y-3 animate-pulse">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                        <div class="flex-1 h-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                        <div class="flex-1 h-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Popular Services -->
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+            <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Dịch vụ phổ biến</h2>
+            <div class="space-y-3" id="popularServices">
+                <!-- Skeleton loading -->
+                <div class="space-y-3 animate-pulse">
+                    <div class="h-10 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                    <div class="h-10 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .stat-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+            .stat-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+
+        .activity-item {
+            transition: background-color 0.2s ease;
+        }
+
+            .activity-item:hover {
+                background-color: #f9fafb;
+            }
+
+        .popular-homestay {
+            transition: transform 0.2s ease;
+        }
+
+            .popular-homestay:hover {
+                transform: translateX(2px);
+            }
+
+        #exportExcelBtn, #refreshBtn {
+            transition: all 0.2s ease;
+        }
+
+            #exportExcelBtn:hover, #refreshBtn:hover {
+                transform: translateY(-1px);
+            }
+
+        .loading-spinner.active {
+            display: flex;
+        }
+        /* Tăng kích thước chữ trên mobile */
+        @@media (max-width: 640px) {
+            .text-sm
+
+        {
+            font-size: 0.9rem;
+        }
+
+        .text-xs {
+            font-size: 0.75rem;
+        }
+
+        .text-2xl {
+            font-size: 1.5rem;
+        }
+
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
+
+    <script>
+        // Global variables
+        let revenueChart;
+        let currentMonths = 12;
+        let dashboardCache = { 6: null, 12: null };
+        let activitiesCache = null;
+        const BASE_URL = window.location.origin;
+
+        // Format currency with VND
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('vi-VN');
+        }
+
+        // Format time ago
+        function timeAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+            if (seconds >= 31536000) return `${Math.floor(seconds / 31536000)} năm trước`;
+            if (seconds >= 2592000) return `${Math.floor(seconds / 2592000)} tháng trước`;
+            if (seconds >= 86400) return `${Math.floor(seconds / 86400)} ngày trước`;
+            if (seconds >= 3600) return `${Math.floor(seconds / 3600)} giờ trước`;
+            if (seconds >= 60) return `${Math.floor(seconds / 60)} phút trước`;
+            return 'Vừa xong';
+        }
+
+        // Initialize revenue and profit chart
+        function initRevenueChart(labels, revenueData, profitData) {
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            if (revenueChart) revenueChart.destroy();
+
+            if (!labels.length || !revenueData.length) {
+                ctx.canvas.parentElement.innerHTML = `
+                    <div class="text-center py-4 text-gray-500 dark:text-gray-400">
+                        Không có dữ liệu doanh thu
+                    </div>`;
+                return;
+            }
+
+            const dates = labels.map(label => {
+                const [month, year] = label.split('/');
+                return `${year}-${month.padStart(2, '0')}`;
+            });
+
+            revenueChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [
+                        {
+                            label: 'Doanh thu',
+                            data: revenueData,
+                            backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true,
+                            pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        },
+                        {
+                            label: 'Lợi nhuận',
+                            data: profitData,
+                            backgroundColor: 'rgba(239, 68, 68, 0.05)',
+                            borderColor: 'rgba(239, 68, 68, 1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true,
+                            pointBackgroundColor: 'rgba(239, 68, 68, 1)',
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false, // Tắt animation để tăng tốc
+                    plugins: {
+                        legend: { position: 'top', labels: { boxWidth: 20, padding: 15 } },
+                        tooltip: {
+                            callbacks: {
+                                label: context => `${context.dataset.label}: ${formatCurrency(context.raw)}`,
+                                title: context => {
+                                    const date = new Date(context[0].parsed.x);
+                                    return isNaN(date.getTime()) ? 'Tháng không xác định' : `Tháng ${date.getMonth() + 1}/${date.getFullYear()}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: { unit: 'month', displayFormats: { month: 'MM/yyyy' }, tooltipFormat: 'MM/yyyy' },
+                            grid: { display: false },
+                            ticks: {
+                                source: 'labels',
+                                callback: (value, index, ticks) => {
+                                    const date = new Date(ticks[index].value);
+                                    return `${date.getMonth() + 1}/${date.getFullYear()}`;
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                            ticks: {
+                                callback: value => value >= 1000000 ? (value / 1000000) + 'M' : (value / 1000) + 'K'
+                            },
+                            title: { display: true, text: 'Số tiền (VND)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update revenue and profit chart
+        function updateRevenueChart(labels, revenueData, profitData) {
+            if (!labels.length || !revenueData.length) {
+                const ctx = document.getElementById('revenueChart').getContext('2d');
+                ctx.canvas.parentElement.innerHTML = `
+                    <div class="text-center py-4 text-gray-500 dark:text-gray-400">
+                        Không có dữ liệu doanh thu
+                    </div>`;
+                return;
+            }
+
+            const dates = labels.map(label => {
+                const [month, year] = label.split('/');
+                return `${year}-${month.padStart(2, '0')}`;
+            });
+
+            if (revenueChart) {
+                revenueChart.data.labels = dates;
+                revenueChart.data.datasets[0].data = revenueData;
+                revenueChart.data.datasets[1].data = profitData;
+                revenueChart.update();
+            } else {
+                initRevenueChart(labels, revenueData, profitData);
+            }
+        }
+
+        // Render functions
+        function renderPopularAreas(areas) {
+            const container = document.getElementById('popularAreas');
+            if (!areas?.length) {
+                container.innerHTML = `
+                    <div class="text-center py-4 text-gray-500 dark:text-gray-400">
+                        <i class="fas fa-map-marker-alt text-3xl text-gray-300 dark:text-gray-600 mb-2"></i>
+                        <p>Không có dữ liệu khu vực</p>
+                    </div>`;
+                return;
+            }
+            container.innerHTML = areas.map(area => `
+                <div class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 activity-item">
+                    <div>
+                        <p class="text-sm font-medium text-gray-900 dark:text-gray-200">${area.ten_KV || 'Khu vực'}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">${area.bookingCount} đặt phòng</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderPopularHomestays(homestays) {
+            const container = document.getElementById('popularHomestays');
+            if (!homestays?.length) {
+                container.innerHTML = `
+                    <div class="text-center py-4 text-gray-500 dark:text-gray-400">
+                        <i class="fas fa-home text-3xl text-gray-300 dark:text-gray-600 mb-2"></i>
+                        <p>Không có dữ liệu homestay</p>
+                    </div>`;
+                return;
+            }
+            container.innerHTML = homestays.map(homestay => `
+                <div class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 popular-homestay">
+                    <div class="flex-shrink-0">
+                        <img src="${homestay.image || '/img/default-homestay.jpg'}"
+                             alt="${homestay.name || 'Homestay'}"
+                             class="w-12 h-12 rounded-lg object-cover">
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-900 dark:text-gray-200 truncate">${homestay.name || 'Homestay'}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">${homestay.bookingCount} đặt phòng</p>
+                    </div>
+                    <div class="text-blue-600 dark:text-blue-400">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderPopularNews(news) {
+            const container = document.getElementById('popularNews');
+            if (!news?.length) {
+                container.innerHTML = `
+                    <div class="text-center py-4 text-gray-500 dark:text-gray-400">
+                        <i class="fas fa-newspaper text-3xl text-gray-300 dark:text-gray-600 mb-2"></i>
+                        <p>Không có tin tức phổ biến</p>
+                    </div>`;
+                return;
+            }
+            container.innerHTML = news.map(newsItem => `
+                <div class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 activity-item">
+                    <div class="flex-shrink-0">
+                        <img src="${newsItem.hinhAnh || '/img/default-news.jpg'}"
+                             alt="${newsItem.tieuDe || 'Tin tức'}"
+                             class="w-12 h-12 rounded-lg object-cover">
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-900 dark:text-gray-200 truncate">${newsItem.tieuDe || 'Tin tức'}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">${newsItem.commentCount} bình luận</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderPopularServices(services) {
+            const container = document.getElementById('popularServices');
+            if (!services?.length) {
+                container.innerHTML = `
+                    <div class="text-center py-4 text-gray-500 dark:text-gray-400">
+                        <i class="fas fa-concierge-bell text-3xl text-gray-300 dark:text-gray-600 mb-2"></i>
+                        <p>Không có dịch vụ phổ biến</p>
+                    </div>`;
+                return;
+            }
+            container.innerHTML = services.map(service => `
+                <div class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 activity-item">
+                    <div>
+                        <p class="text-sm font-medium text-gray-900 dark:text-gray-200">${service.ten_DV || 'Dịch vụ'}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">${service.homestayCount} homestay</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderRecentInvoices(invoices) {
+            const container = document.getElementById('recentInvoices');
+            if (!invoices?.length) {
+                container.innerHTML = `
+                    <div class="text-center py-4 text-gray-500 dark:text-gray-400">
+                        <i class="fas fa-file-invoice text-3xl text-gray-300 dark:text-gray-600 mb-2"></i>
+                        <p>Không có hóa đơn gần đây</p>
+                    </div>`;
+                return;
+            }
+            container.innerHTML = invoices.map(invoice => `
+                <div class="flex items-center justify-between p-3 rounded-lg border border-gray-100 dark:border-gray-700 activity-item">
+                    <div>
+                        <p class="text-sm font-medium text-gray-900 dark:text-gray-200">${invoice.id}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">${invoice.customerName || 'Khách hàng'}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm font-medium ${invoice.status === 'Đã thanh toán' ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}">
+                            ${formatCurrency(invoice.amount)}
+                        </p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">${timeAgo(invoice.date)}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderRecentBookings(bookings) {
+            const container = document.getElementById('recentBookings');
+            if (!bookings?.length) {
+                container.innerHTML = `
+                    <div class="text-center py-4 text-gray-500 dark:text-gray-400">
+                        <i class="fas fa-calendar-check text-3xl text-gray-300 dark:text-gray-600 mb-2"></i>
+                        <p>Không có đặt phòng gần đây</p>
+                    </div>`;
+                return;
+            }
+            container.innerHTML = bookings.map(booking => `
+                <div class="flex items-center justify-between p-3 rounded-lg border border-gray-100 dark:border-gray-700 activity-item">
+                    <div>
+                        <p class="text-sm font-medium text-gray-900 dark:text-gray-200">${booking.id}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">${booking.customerName || 'Khách hàng'}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm font-medium ${booking.status === 'Đã xác nhận' ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}">
+                            ${booking.roomCount} phòng
+                        </p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">${timeAgo(booking.date)}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderNewUsers(users) {
+            const container = document.getElementById('newUsers');
+            if (!users?.length) {
+                container.innerHTML = `
+                    <div class="text-center py-4 text-gray-500 dark:text-gray-400">
+                        <i class="fas fa-user-plus text-3xl text-gray-300 dark:text-gray-600 mb-2"></i>
+                        <p>Không có người dùng mới</p>
+                    </div>`;
+                return;
+            }
+            container.innerHTML = users.map(user => `
+                <div class="flex items-center justify-between p-3 rounded-lg border border-gray-100 dark:border-gray-700 activity-item">
+                    <div class="flex items-center space-x-3">
+                        <div class="flex-shrink-0">
+                            <img src="${user.profilePicture || '/img/default-user.png'}"
+                                 alt="${user.name || 'Người dùng'}"
+                                 class="w-8 h-8 rounded-full object-cover">
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-900 dark:text-gray-200">${user.name || 'Người dùng mới'}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 truncate">${user.email}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs px-2 py-1 rounded-full ${user.status === 'Hoạt động' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-400' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-400'}">
+                            ${user.status || 'Không xác định'}
+                        </span>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">${timeAgo(user.joinDate)}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render dashboard stats
+        function renderDashboardStats(cache) {
+            const stats = cache?.stats || {};
+            const updateElement = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = value;
+            };
+
+            updateElement('totalRevenue', formatCurrency(stats.totalRevenue || 0));
+            updateElement('totalProfit', formatCurrency(stats.totalProfit || 0));
+            updateElement('totalBookings', stats.bookingCount || 0);
+            updateElement('confirmedBookings', `${stats.confirmedBookingCount || 0} xác nhận`);
+            updateElement('pendingBookings', `${stats.pendingBookingCount || 0} chờ`);
+            updateElement('totalUsers', stats.userCount || 0);
+            updateElement('activeUsers', `${stats.activeUserCount || 0} hoạt động`);
+            updateElement('inactiveUsers', `${stats.inactiveUserCount || 0} không hoạt động`);
+            updateElement('totalHomestays', stats.homestayCount || 0);
+            updateElement('activeHomestays', `${stats.activeHomestayCount || 0} đang hoạt động`);
+
+            if (cache?.lastUpdated) {
+                const lastUpdated = new Date(cache.lastUpdated);
+                updateElement('lastUpdatedTime', lastUpdated.toLocaleTimeString('vi-VN') + ' ' + lastUpdated.toLocaleDateString('vi-VN'));
+            }
+
+            const revenueLabels = (cache?.monthlyRevenue || []).map(item => item.month);
+            const revenueData = (cache?.monthlyRevenue || []).map(item => item.revenue || 0);
+            const profitData = (cache?.monthlyProfit || []).map(item => item.profit || 0);
+            updateRevenueChart(revenueLabels, revenueData, profitData);
+        }
+
+        // Load section data
+        async function loadSectionData(sectionId, months = 12, forceRefresh = false) {
+            if (!forceRefresh && dashboardCache[months]?.[sectionId]) {
+                window[`render${sectionId.charAt(0).toUpperCase() + sectionId.slice(1)}`](dashboardCache[months][sectionId]);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${BASE_URL}/Admin/Dashboard/GetDashboardStats?months=${months}`);
+                if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+                const data = await response.json();
+                if (data.success) {
+                    dashboardCache[months] = data.data;
+                    window[`render${sectionId.charAt(0).toUpperCase() + sectionId.slice(1)}`](data.data[sectionId]);
+                } else {
+                    showToast('error', data.message || 'Lỗi khi tải dữ liệu');
+                }
+            } catch (error) {
+                showToast('error', `Lỗi khi tải dữ liệu ${sectionId}: ${error.message}`);
+            }
+        }
+
+        // Load recent activities
+        async function loadRecentActivities(forceRefresh = false) {
+            if (!forceRefresh && activitiesCache) {
+                renderRecentInvoices(activitiesCache.recentInvoices);
+                renderRecentBookings(activitiesCache.recentBookings);
+                renderNewUsers(activitiesCache.newUsers);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${BASE_URL}/Admin/Dashboard/GetRecentActivities`);
+                if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+                const data = await response.json();
+                if (data.success) {
+                    activitiesCache = data.data;
+                    renderRecentInvoices(data.data.recentInvoices);
+                    renderRecentBookings(data.data.recentBookings);
+                    renderNewUsers(data.data.newUsers);
+                } else {
+                    showToast('error', data.message || 'Lỗi khi tải hoạt động gần đây');
+                }
+            } catch (error) {
+                showToast('error', `Lỗi khi tải hoạt động gần đây: ${error.message}`);
+            }
+        }
+
+        // Load dashboard data
+        async function loadDashboardData(months = 12, forceRefresh = false) {
+            if (!forceRefresh && dashboardCache[months]) {
+                renderDashboardStats(dashboardCache[months]);
+                return;
+            }
+
+            const elementsToReset = [
+                'totalRevenue', 'totalProfit', 'totalBookings', 'confirmedBookings', 'pendingBookings',
+                'totalUsers', 'activeUsers', 'inactiveUsers', 'totalHomestays', 'activeHomestays'
+            ];
+            elementsToReset.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = '--';
+            });
+
+            try {
+                const response = await fetch(`${BASE_URL}/Admin/Dashboard/GetDashboardStats?months=${months}`);
+                if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+                const data = await response.json();
+                if (data.success) {
+                    dashboardCache[months] = data.data;
+                    renderDashboardStats(data.data);
+                    document.getElementById('exportExcelBtn').disabled = false; // Kích hoạt nút xuất Excel
+                } else {
+                    showToast('error', data.message || 'Lỗi khi tải dữ liệu dashboard');
+                }
+            } catch (error) {
+                showToast('error', `Lỗi khi tải dữ liệu dashboard: ${error.message}`);
+            }
+        }
+
+        // Toast notification
+        function showToast(type, message) {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 px-4 py-2 rounded-md shadow-lg text-white ${
+                type === 'success' ? 'bg-green-500' : 'bg-red-500'
+            } flex items-center space-x-2`;
+            toast.innerHTML = `
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                <span>${message}</span>
+                <button class="ml-2 text-white hover:text-gray-200" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+
+        // Export to Excel
+        function exportToExcel() {
+            const cache = dashboardCache[currentMonths];
+            if (!cache || !activitiesCache) {
+                showToast('error', 'Vui lòng tải dữ liệu trước khi xuất Excel');
+                return;
+            }
+
+            const wb = XLSX.utils.book_new();
+            const stats = cache.stats || {};
+            const monthlyRevenue = cache.monthlyRevenue || [];
+            const monthlyProfit = cache.monthlyProfit || [];
+            const monthlyBookings = cache.monthlyBookings || [];
+            const popularAreas = cache.popularAreas || [];
+            const popularNews = cache.popularNews || [];
+            const popularServices = cache.popularServices || [];
+            const recentInvoices = activitiesCache.recentInvoices || [];
+
+            // Sheet 1: Thống kê tổng quan
+            const statsData = [
+                ["Báo cáo tổng quan hệ thống"],
+                [`Ngày xuất báo cáo: ${new Date().toLocaleString('vi-VN')}`],
+                [],
+                ["Chỉ số", "Giá trị"],
+                ["Tổng doanh thu", stats.totalRevenue || 0],
+                ["Tổng lợi nhuận", stats.totalProfit || 0],
+                ["Tổng hóa đơn", stats.invoiceCount || 0],
+                ["Hóa đơn đã thanh toán", stats.paidInvoiceCount || 0],
+                ["Hóa đơn chưa thanh toán", stats.unpaidInvoiceCount || 0],
+                ["Tổng đặt phòng", stats.bookingCount || 0],
+                ["Đặt phòng đã xác nhận", stats.confirmedBookingCount || 0],
+                ["Đặt phòng chờ xác nhận", stats.pendingBookingCount || 0],
+                ["Tổng người dùng", stats.userCount || 0],
+                ["Người dùng hoạt động", stats.activeUserCount || 0],
+                ["Người dùng không hoạt động", stats.inactiveUserCount || 0],
+                ["Tổng Homestay", stats.homestayCount || 0],
+                ["Homestay hoạt động", stats.activeHomestayCount || 0],
+                ["Tổng dịch vụ", stats.serviceCount || 0]
+            ];
+            const statsSheet = XLSX.utils.aoa_to_sheet(statsData);
+            statsSheet['!cols'] = [{ wch: 30 }, { wch: 20 }]; // Sửa lỗi cú pháp
+            XLSX.utils.book_append_sheet(wb, statsSheet, "Thống kê tổng quan");
+
+            // Sheet 2: Doanh thu và lợi nhuận
+            const revenueProfitData = [
+                [`Doanh thu và lợi nhuận ${currentMonths} tháng gần nhất`],
+                [],
+                ["Tháng", "Doanh thu (VND)", "Lợi nhuận (VND)"],
+                ...monthlyRevenue.map((item, index) => [
+                    item.month,
+                    item.revenue || 0,
+                    (monthlyProfit[index] && monthlyProfit[index].month === item.month ? monthlyProfit[index].profit : 0) || 0
+                ])
+            ];
+            const revenueProfitSheet = XLSX.utils.aoa_to_sheet(revenueProfitData);
+            revenueProfitSheet['!cols'] = [{ wch: 15 }, { wch: 20 }, { wch: 20 }];
+            XLSX.utils.book_append_sheet(wb, revenueProfitSheet, "Doanh thu và lợi nhuận");
+
+            // Sheet 3: Lượng đặt phòng
+            const bookingsData = [
+                [`Lượng đặt phòng ${currentMonths} tháng gần nhất`],
+                [],
+                ["Tháng", "Số lượng đặt phòng"],
+                ...monthlyBookings.map(item => [item.month, item.bookingCount || 0])
+            ];
+            const bookingsSheet = XLSX.utils.aoa_to_sheet(bookingsData);
+            bookingsSheet['!cols'] = [{ wch: 15 }, { wch: 20 }];
+            XLSX.utils.book_append_sheet(wb, bookingsSheet, "Lượng đặt phòng");
+
+            // Sheet 4: Khu vực phổ biến
+            const areasData = [
+                ["Khu vực phổ biến"],
+                [],
+                ["Tên khu vực", "Số lượng đặt phòng"],
+                ...popularAreas.map(area => [area.ten_KV, area.bookingCount || 0])
+            ];
+            const areasSheet = XLSX.utils.aoa_to_sheet(areasData);
+            areasSheet['!cols'] = [{ wch: 30 }, { wch: 20 }];
+            XLSX.utils.book_append_sheet(wb, areasSheet, "Khu vực phổ biến");
+
+            // Sheet 5: Tin tức phổ biến
+            const newsData = [
+                ["Tin tức phổ biến"],
+                [],
+                ["Tiêu đề", "Số lượng bình luận"],
+                ...popularNews.map(news => [news.tieuDe, news.commentCount || 0])
+            ];
+            const newsSheet = XLSX.utils.aoa_to_sheet(newsData);
+            newsSheet['!cols'] = [{ wch: 50 }, { wch: 20 }];
+            XLSX.utils.book_append_sheet(wb, newsSheet, "Tin tức phổ biến");
+
+            // Sheet 6: Dịch vụ phổ biến
+            const servicesData = [
+                ["Dịch vụ phổ biến"],
+                [],
+                ["Tên dịch vụ", "Số lượng homestay"],
+                ...popularServices.map(service => [service.ten_DV, service.homestayCount || 0])
+            ];
+            const servicesSheet = XLSX.utils.aoa_to_sheet(servicesData);
+            servicesSheet['!cols'] = [{ wch: 30 }, { wch: 20 }];
+            XLSX.utils.book_append_sheet(wb, servicesSheet, "Dịch vụ phổ biến");
+
+            // Sheet 7: Hoạt động gần đây
+            const activitiesData = [
+                ["Hoạt động gần đây"],
+                [],
+                ["Hóa đơn gần đây"],
+                ["Mã HD", "Khách hàng", "Ngày lập", "Tổng tiền", "Trạng thái"],
+                ...recentInvoices.map(inv => [
+                    inv.id,
+                    inv.customerName || 'Khách hàng',
+                    new Date(inv.date).toLocaleString('vi-VN'),
+                    inv.amount || 0,
+                    inv.status || 'Không xác định'
+                ])
+            ];
+            const activitiesSheet = XLSX.utils.aoa_to_sheet(activitiesData);
+            activitiesSheet['!cols'] = [{ wch: 15 }, { wch: 30 }, { wch: 20 }, { wch: 20 }, { wch: 20 }];
+            XLSX.utils.book_append_sheet(wb, activitiesSheet, "Hoạt động gần đây");
+
+            const fileName = `BaoCaoTongQuan_${new Date().toISOString().replace(/[-:T]/g, '').split('.')[0]}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load main dashboard data
+            loadDashboardData(currentMonths);
+
+            // Setup IntersectionObserver for lazy loading
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const sectionId = entry.target.id;
+                        loadSectionData(sectionId, currentMonths);
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            ['popularAreas', 'popularHomestays', 'popularNews', 'popularServices'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) observer.observe(el);
+            });
+
+            // Load recent activities
+            loadRecentActivities();
+
+            // Setup refresh button
+            const refreshBtn = document.getElementById('refreshBtn');
+            refreshBtn.addEventListener('click', () => {
+                refreshBtn.querySelector('.loading-spinner').classList.add('active');
+                refreshBtn.disabled = true;
+                Promise.all([
+                    loadDashboardData(currentMonths, true),
+                    loadRecentActivities(true)
+                ]).finally(() => {
+                    refreshBtn.querySelector('.loading-spinner').classList.remove('active');
+                    refreshBtn.disabled = false;
+                });
+            });
+
+            // Setup revenue period buttons
+            const revenue6Months = document.getElementById('revenue6Months');
+            const revenue12Months = document.getElementById('revenue12Months');
+            revenue6Months.addEventListener('click', () => {
+                currentMonths = 6;
+                revenue6Months.classList.add('bg-blue-600', 'text-white');
+                revenue6Months.classList.remove('bg-gray-100', 'text-gray-600');
+                revenue12Months.classList.add('bg-gray-100', 'text-gray-600');
+                revenue12Months.classList.remove('bg-blue-600', 'text-white');
+                loadDashboardData(currentMonths);
+            });
+            revenue12Months.addEventListener('click', () => {
+                currentMonths = 12;
+                revenue12Months.classList.add('bg-blue-600', 'text-white');
+                revenue12Months.classList.remove('bg-gray-100', 'text-gray-600');
+                revenue6Months.classList.add('bg-gray-100', 'text-gray-600');
+                revenue6Months.classList.remove('bg-blue-600', 'text-white');
+                loadDashboardData(currentMonths);
+            });
+
+            // Setup export Excel button
+            const exportExcelBtn = document.getElementById('exportExcelBtn');
+            exportExcelBtn.addEventListener('click', () => {
+                exportExcelBtn.querySelector('.loading-spinner').classList.add('active');
+                exportExcelBtn.disabled = true;
+                setTimeout(() => {
+                    exportToExcel();
+                    exportExcelBtn.querySelector('.loading-spinner').classList.remove('active');
+                    exportExcelBtn.disabled = false;
+                }, 100); // Small delay to show loading spinner
+            });
+        });
+    </script>
+}

@@ -1,0 +1,1209 @@
+﻿@{
+    ViewData["Title"] = "Quản lý Người dùng";
+}
+
+<!-- Page header -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6 border border-gray-200 dark:border-gray-700">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-200">Quản lý Người dùng</h1>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                Tổng số người dùng: <span id="totalUsers" class="font-medium text-primary-600 dark:text-primary-400">0</span>
+            </p>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-3">
+            <button onclick="openCreateRoleModal()"
+                    class="inline-flex items-center justify-center px-4 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+                <i class="fas fa-user-tag mr-2"></i> Tạo vai trò mới
+            </button>
+            <button onclick="openAddUserModal()"
+                    class="inline-flex items-center justify-center px-4 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+                <i class="fas fa-plus-circle mr-2"></i> Thêm người dùng
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6 border border-gray-200 dark:border-gray-700">
+    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center">
+        <i class="fas fa-filter mr-2 text-primary-500"></i> Bộ lọc nâng cao
+    </h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <!-- Search -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tìm kiếm</label>
+            <div class="relative rounded-lg shadow-sm">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 dark:text-gray-500">
+                    <i class="fas fa-search"></i>
+                </div>
+                <input type="text" id="searchInput" class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition duration-200" placeholder="Tìm theo tên hoặc email...">
+            </div>
+        </div>
+
+        <!-- Status filter -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Trạng thái</label>
+            <div class="relative">
+                <select id="statusFilter" class="appearance-none block w-full pl-3 pr-10 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition duration-200">
+                    <option value="all">Tất cả trạng thái</option>
+                    <option value="Hoạt động">Hoạt động</option>
+                    <option value="Đã xóa">Đã xóa</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400 dark:text-gray-500">
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sort -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sắp xếp</label>
+            <div class="relative">
+                <select id="sortBy" class="appearance-none block w-full pl-3 pr-10 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition duration-200">
+                    <option value="newest">Mới nhất</option>
+                    <option value="oldest">Cũ nhất</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400 dark:text-gray-500">
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- User grid -->
+<div id="userGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- Users will be loaded here via JavaScript -->
+</div>
+
+<!-- Loading state -->
+<div id="loadingState" class="col-span-full text-center py-12">
+    <div class="inline-flex items-center justify-center">
+        <i class="fas fa-spinner fa-spin text-4xl text-primary-600 dark:text-primary-400 mr-3"></i>
+        <span class="text-lg font-medium text-gray-600 dark:text-gray-300">Đang tải dữ liệu...</span>
+    </div>
+</div>
+
+<!-- Empty state -->
+<div id="emptyState" class="col-span-full text-center py-12 hidden">
+    <div class="flex flex-col items-center justify-center">
+        <div class="bg-gray-100 dark:bg-gray-700 rounded-full p-5 mb-4">
+            <i class="fas fa-users text-3xl text-gray-400 dark:text-gray-500"></i>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-200 mb-2">Không có người dùng nào</h3>
+        <p class="text-gray-500 dark:text-gray-400 max-w-md">Không tìm thấy người dùng nào phù hợp với bộ lọc hiện tại.</p>
+        <button onclick="resetFilters()" class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800">
+            <i class="fas fa-sync-alt mr-2"></i> Đặt lại bộ lọc
+        </button>
+    </div>
+</div>
+
+<!-- Pagination -->
+<div class="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-sm px-6 py-4 flex items-center justify-between border-t border-gray-200 dark:border-gray-700">
+    <div class="flex-1 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <p class="text-sm text-gray-700 dark:text-gray-300">
+                Hiển thị <span class="font-medium text-gray-900 dark:text-gray-200" id="startRecord">1</span> đến
+                <span class="font-medium text-gray-900 dark:text-gray-200" id="endRecord">6</span> của
+                <span id="totalResults" class="font-medium text-gray-900 dark:text-gray-200">0</span> kết quả
+            </p>
+        </div>
+        <div>
+            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                <button id="prevPage" class="relative inline-flex items-center px-3 py-2 rounded-l-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200">
+                    <span class="sr-only">Previous</span>
+                    <i class="fas fa-chevron-left h-4 w-4"></i>
+                </button>
+                <div id="pageNumbers" class="inline-flex"></div>
+                <button id="nextPage" class="relative inline-flex items-center px-3 py-2 rounded-r-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200">
+                    <span class="sr-only">Next</span>
+                    <i class="fas fa-chevron-right h-4 w-4"></i>
+                </button>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div id="userModal" class="fixed z-50 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 dark:bg-gray-700 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+            <div id="userModalContent">
+                <!-- Content will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Details Modal -->
+<div id="detailsModal" class="fixed z-50 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 dark:bg-gray-700 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+            <div id="detailsModalContent">
+                <!-- Content will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Role Modal -->
+<div id="addRoleModal" class="fixed z-50 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 dark:bg-gray-700 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div id="addRoleModalContent">
+                <!-- Content will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Role Modal -->
+<div id="createRoleModal" class="fixed z-50 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 dark:bg-gray-700 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div id="createRoleModalContent">
+                <!-- Content will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete User Modal -->
+<div id="deleteModal" class="fixed z-50 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 dark:bg-gray-700 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white dark:bg-gray-800 px-6 pt-6 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900 sm:mx-0 sm:h-10 sm:w-10">
+                        <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400"></i>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-200" id="modal-title">
+                            Xác nhận đánh dấu xóa
+                        </h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                                Bạn có chắc chắn muốn đánh dấu người dùng này là đã xóa? Người dùng sẽ không thể truy cập hệ thống nhưng dữ liệu vẫn được lưu trữ.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button onclick="confirmDelete()" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2.5 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200">
+                    <i class="fas fa-trash-alt mr-2"></i> Xác nhận
+                </button>
+                <button onclick="closeDeleteModal()" class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2.5 bg-white dark:bg-gray-700 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200">
+                    Hủy bỏ
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Role Modal -->
+<div id="deleteRoleModal" class="fixed z-50 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 dark:bg-gray-700 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white dark:bg-gray-800 px-6 pt-6 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900 sm:mx-0 sm:h-10 sm:w-10">
+                        <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400"></i>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-200" id="modal-title">
+                            Xác nhận xóa vai trò
+                        </h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                                Bạn có chắc chắn muốn xóa vai trò <span id="deleteRoleName" class="font-medium text-gray-900 dark:text-gray-200"></span>? Hành động này không thể hoàn tác.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button onclick="confirmDeleteRole()" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2.5 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200">
+                    <i class="fas fa-trash-alt mr-2"></i> Xác nhận
+                </button>
+                <button onclick="closeDeleteRoleModal()" class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2.5 bg-white dark:bg-gray-700 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200">
+                    Hủy bỏ
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Tất cả JavaScript gốc giữ nguyên không thay đổi
+        let currentPage = 1;
+        let pageSize = 6;
+        let totalPages = 1;
+        let currentUserId = null;
+        let currentRoleId = null;
+        let searchTimeout = null;
+        let userCache = [];
+        let roleCache = [];
+        let totalRecords = 0;
+
+        // Load users on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadInitialData();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            document.getElementById('searchInput').addEventListener('input', () => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    currentPage = 1;
+                    userCache = []; // Reset cache when search changes
+                    loadUsersWithCurrentFilters();
+                }, 500);
+            });
+            document.getElementById('statusFilter').addEventListener('change', () => {
+                currentPage = 1;
+                userCache = []; // Reset cache when filter changes
+                loadUsersWithCurrentFilters();
+            });
+            document.getElementById('sortBy').addEventListener('change', () => {
+                currentPage = 1;
+                renderUsersFromCache();
+            });
+            document.getElementById('prevPage').addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderUsersFromCache();
+                }
+            });
+            document.getElementById('nextPage').addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderUsersFromCache();
+                }
+            });
+        }
+
+        async function loadInitialData() {
+            const userGrid = document.getElementById('userGrid');
+            userGrid.innerHTML = '';
+            document.getElementById('loadingState').classList.remove('hidden');
+            document.getElementById('emptyState').classList.add('hidden');
+
+            await loadUsersWithCurrentFilters();
+
+            if (roleCache.length === 0) {
+                const rolesResponse = await fetch('/Admin/User/GetRoles');
+                const rolesResult = await rolesResponse.json();
+                if (rolesResult.success) {
+                    roleCache = rolesResult.data;
+                } else {
+                    console.error('Failed to load roles:', rolesResult.message);
+                }
+            }
+        }
+
+        async function loadUsersWithCurrentFilters() {
+            const searchQuery = document.getElementById('searchInput').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const cacheSize = pageSize * 3; // 18 bản ghi
+
+            document.getElementById('loadingState').classList.remove('hidden');
+            document.getElementById('emptyState').classList.add('hidden');
+
+            try {
+                const response = await fetch(`/Admin/User/GetUsers?searchQuery=${encodeURIComponent(searchQuery)}&statusFilter=${statusFilter}&pageNumber=1&pageSize=${cacheSize}`);
+                if (!response.ok) {
+                    showToast('error', 'Không thể tải danh sách người dùng. Vui lòng thử lại sau.');
+                    document.getElementById('loadingState').classList.add('hidden');
+                    document.getElementById('emptyState').classList.remove('hidden');
+                    return;
+                }
+
+                const result = await response.json();
+                if (result.success) {
+                    userCache = result.data || [];
+                    totalRecords = result.totalRecords || 0;
+                    totalPages = Math.ceil(totalRecords / pageSize);
+                    renderUsersFromCache();
+                } else {
+                    showToast('error', result.message || 'Không có dữ liệu để hiển thị.');
+                    document.getElementById('loadingState').classList.add('hidden');
+                    document.getElementById('emptyState').classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+                showToast('error', 'Đã xảy ra lỗi khi tải dữ liệu. Vui lòng thử lại.');
+                document.getElementById('loadingState').classList.add('hidden');
+                document.getElementById('emptyState').classList.remove('hidden');
+            }
+        }
+
+        async function loadMoreUsers(pageNumber) {
+            const cacheSize = pageSize * 3;
+            const startPage = Math.max(1, pageNumber - 1);
+            const searchQuery = document.getElementById('searchInput').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            try {
+                const response = await fetch(`/Admin/User/GetUsers?searchQuery=${encodeURIComponent(searchQuery)}&statusFilter=${statusFilter}&pageNumber=${startPage}&pageSize=${cacheSize}`);
+                const result = await response.json();
+                if (result.success) {
+                    userCache = result.data || [];
+                    totalRecords = result.totalRecords || 0;
+                    totalPages = Math.ceil(totalRecords / pageSize);
+                    console.log('Loaded more users:', userCache); // Debug log
+                    renderUsersFromCache();
+                } else {
+                    showToast('error', result.message || 'Không thể tải thêm dữ liệu.');
+                }
+            } catch (error) {
+                console.error('Error loading more users:', error);
+                showToast('error', 'Đã xảy ra lỗi khi tải thêm dữ liệu.');
+            }
+        }
+
+        function renderUsersFromCache() {
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const sortBy = document.getElementById('sortBy').value;
+
+            // Lọc dữ liệu từ userCache
+            let filteredUsers = userCache.filter(user => {
+                const matchesSearch = user.fullName.toLowerCase().includes(searchQuery) || user.email.toLowerCase().includes(searchQuery);
+                const matchesStatus = statusFilter === 'all' || user.trangThai === statusFilter;
+                return matchesSearch && matchesStatus;
+            });
+
+            if (sortBy === 'newest') {
+                filteredUsers.sort((a, b) => new Date(b.ngayTao) - new Date(a.ngayTao));
+            } else if (sortBy === 'oldest') {
+                filteredUsers.sort((a, b) => new Date(a.ngayTao) - new Date(b.ngayTao));
+            }
+
+            const startIndex = (currentPage - 1) * pageSize;
+            const paginatedUsers = filteredUsers.slice(startIndex, startIndex + pageSize);
+
+            // Kiểm tra và tải thêm nếu cần
+            if (startIndex >= userCache.length && currentPage <= totalPages) {
+                loadMoreUsers(currentPage);
+                return; // Chờ load xong để render lại
+            }
+
+            document.getElementById('totalUsers').textContent = totalRecords;
+            document.getElementById('totalResults').textContent = totalRecords;
+
+            const startRecord = startIndex + 1;
+            const endRecord = Math.min(startIndex + pageSize, totalRecords);
+            document.getElementById('startRecord').textContent = startRecord;
+            document.getElementById('endRecord').textContent = endRecord;
+
+            document.getElementById('prevPage').disabled = currentPage === 1;
+            document.getElementById('nextPage').disabled = currentPage === totalPages;
+
+            renderPageNumbers();
+            renderUsers(paginatedUsers);
+        }
+
+        function renderPageNumbers() {
+            const pageNumbers = document.getElementById('pageNumbers');
+            pageNumbers.innerHTML = '';
+
+            const maxPagesToShow = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+            let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+            if (endPage - startPage + 1 < maxPagesToShow) {
+                startPage = Math.max(1, endPage - maxPagesToShow + 1);
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const pageButton = `
+                    <button onclick="goToPage(${i})" class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium ${i === currentPage ? 'bg-primary-600 text-white' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'}">
+                        ${i}
+                    </button>
+                `;
+                pageNumbers.innerHTML += pageButton;
+            }
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderUsersFromCache();
+        }
+
+        function renderUsers(users) {
+            const userGrid = document.getElementById('userGrid');
+            userGrid.innerHTML = '';
+
+            document.getElementById('loadingState').classList.add('hidden');
+
+            if (users.length === 0) {
+                document.getElementById('emptyState').classList.remove('hidden');
+                return;
+            }
+
+            document.getElementById('emptyState').classList.add('hidden');
+
+            users.forEach(user => {
+                const statusStyles = {
+                    'Hoạt động': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-400',
+                    'Khóa': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-400',
+                    'Đang chờ duyệt': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-400',
+                    'Đã xóa': 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                };
+                const userCard = `
+                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-xl border border-gray-200 dark:border-gray-700 transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
+                        <div class="flex justify-center pt-6">
+                            <img src="${user.profilePicture || '/img/default-user.jpg'}"
+                                 class="h-28 w-28 rounded-full object-cover border-4 border-white dark:border-gray-700 shadow-sm"
+                                 alt="${user.fullName}">
+                        </div>
+                        <div class="relative px-5 py-6">
+                            <span class="absolute top-4 right-4 px-2.5 py-1 text-xs font-semibold rounded-full ${statusStyles[user.trangThai] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'}">
+                                ${user.trangThai}
+                            </span>
+                            <div class="flex items-center justify-center">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-200 truncate text-center">${user.fullName}</h3>
+                            </div>
+                            <div class="mt-2 flex items-center justify-center text-sm text-gray-500 dark:text-gray-400">
+                                <i class="fas fa-envelope text-gray-400 dark:text-gray-500 mr-2"></i>
+                                <span class="truncate">${user.email}</span>
+                            </div>
+                            <div class="mt-4 grid grid-cols-2 gap-4">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 bg-blue-100 dark:bg-blue-900 p-2 rounded-lg">
+                                        <i class="fas fa-map-marker-alt text-blue-600 dark:text-blue-400"></i>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">Địa chỉ</p>
+                                        <p class="text-sm font-medium text-gray-900 dark:text-gray-200 truncate">${user.address || 'Chưa có'}</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 bg-purple-100 dark:bg-purple-900 p-2 rounded-lg">
+                                        <i class="fas fa-calendar-alt text-purple-600 dark:text-purple-400"></i>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">Ngày tạo</p>
+                                        <p class="text-sm font-medium text-gray-900 dark:text-gray-200">${new Date(user.ngayTao).toLocaleDateString()}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-5 flex justify-between border-t border-gray-200 dark:border-gray-700 pt-4">
+                                <div class="flex space-x-2">
+                                    <button onclick="openDetailsModal('${user.id}')"
+                                            class="inline-flex items-center px-3 py-1.5 border border-gray-300 dark:border-gray-600 shadow-sm text-xs font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+                                        <i class="fas fa-eye mr-1"></i> Chi tiết
+                                    </button>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button onclick="openEditUserModal('${user.id}')"
+                                            class="inline-flex items-center p-1.5 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+                                        <i class="fas fa-edit h-4 w-4"></i>
+                                    </button>
+                                    <button onclick="openDeleteModal('${user.id}')"
+                                            class="inline-flex items-center p-1.5 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-red-600 dark:text-red-400 bg-white dark:bg-gray-700 hover:bg-red-50 dark:hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+                                        <i class="fas fa-trash-alt h-4 w-4"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                userGrid.innerHTML += userCard;
+            });
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('statusFilter').value = 'all';
+            document.getElementById('sortBy').value = 'newest';
+            currentPage = 1;
+            userCache = [];
+            loadUsersWithCurrentFilters();
+        }
+
+        function openAddUserModal() {
+            const modalContent = `
+                <div class="bg-white dark:bg-gray-800 px-6 pt-6 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-xl leading-6 font-bold text-gray-900 dark:text-gray-200" id="modal-title">
+                                <i class="fas fa-user-plus text-primary-500 mr-2"></i> Thêm Người dùng Mới
+                            </h3>
+                            <div class="mt-4">
+                                <form id="addUserForm" class="space-y-5" enctype="multipart/form-data">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
+                                        <input name="email" type="email" class="block w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:text-gray-200 transition duration-200" required />
+                                        <p class="error-message text-red-500 text-xs mt-1.5 hidden" id="email-error"></p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Mật khẩu</label>
+                                        <input name="password" type="password" class="block w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:text-gray-200 transition duration-200" required />
+                                        <p class="error-message text-red-500 text-xs mt-1.5 hidden" id="password-error"></p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Họ và tên</label>
+                                        <input name="fullName" class="block w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:text-gray-200 transition duration-200" required />
+                                        <p class="error-message text-red-500 text-xs mt-1.5 hidden" id="fullName-error"></p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Địa chỉ</label>
+                                        <input name="address" class="block w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:text-gray-200 transition duration-200" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Ngày sinh</label>
+                                        <input name="dateOfBirth" type="date" class="block w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:text-gray-200 transition duration-200" />
+                                        <p class="error-message text-red-500 text-xs mt-1.5 hidden" id="dateOfBirth-error"></p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Ảnh đại diện</label>
+                                        <input name="profilePicture" type="file" accept="image/*" class="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-50 dark:file:bg-primary-900 file:text-primary-700 dark:file:text-primary-400 hover:file:bg-primary-100 dark:hover:file:bg-primary-800 transition-colors duration-200" />
+                                        <p class="error-message text-red-500 text-xs mt-1.5 hidden" id="profilePicture-error"></p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Trạng thái</label>
+                                        <select name="trangThai" class="block w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:text-gray-200 transition duration-200" required>
+                                            <option value="Hoạt động">Hoạt động</option>
+                                            <option value="Khóa">Khóa</option>
+                                            <option value="Đang chờ duyệt">Đang chờ duyệt</option>
+                                            <option value="Đã xóa">Đã xóa</option>
+                                        </select>
+                                        <p class="error-message text-red-500 text-xs mt-1.5 hidden" id="trangThai-error"></p>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button onclick="submitAddUser()" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-5 py-2.5 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200">
+                        <i class="fas fa-save mr-2"></i> Thêm người dùng
+                    </button>
+                    <button onclick="closeUserModal()" class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm px-5 py-2.5 bg-white dark:bg-gray-700 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200">
+                        <i class="fas fa-times mr-2"></i> Hủy bỏ
+                    </button>
+                </div>
+            `;
+            document.getElementById('userModalContent').innerHTML = modalContent;
+            document.getElementById('userModal').classList.remove('hidden');
+        }
+
+        async function openEditUserModal(id) {
+            const response = await fetch(`/Admin/User/Details/${id}`);
+            const result = await response.json();
+
+            if (!result.success) {
+                showToast('error', result.message || 'Không thể tải thông tin người dùng.');
+                return;
+            }
+
+            const user = result.data;
+            const modalContent = `
+                <div class="bg-white dark:bg-gray-800 px-6 pt-6 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-xl leading-6 font-bold text-gray-900 dark:text-gray-200" id="modal-title">
+                                <i class="fas fa-user-edit text-primary-500 mr-2"></i> Chỉnh sửa Người dùng
+                            </h3>
+                            <div class="mt-4">
+                                <form id="editUserForm" class="space-y-5" enctype="multipart/form-data">
+                                    <input type="hidden" name="id" value="${user.id}" />
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
+                                        <input name="email" type="email" value="${user.email}" class="block w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-600 transition duration-200" disabled />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Họ và tên</label>
+                                        <input name="fullName" value="${user.fullName || ''}" class="block w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:text-gray-200 transition duration-200" required />
+                                        <p class="error-message text-red-500 text-xs mt-1.5 hidden" id="fullName-error"></p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Địa chỉ</label>
+                                        <input name="address" value="${user.address || ''}" class="block w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:text-gray-200 transition duration-200" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Ngày sinh</label>
+                                        <input name="dateOfBirth" type="date" value="${user.dateOfBirth ? new Date(user.dateOfBirth).toISOString().split('T')[0] : ''}" class="block w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:text-gray-200 transition duration-200" />
+                                        <p class="error-message text-red-500 text-xs mt-1.5 hidden" id="dateOfBirth-error"></p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Ảnh đại diện</label>
+                                        <input name="profilePicture" type="file" accept="image/*" class="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-50 dark:file:bg-primary-900 file:text-primary-700 dark:file:text-primary-400 hover:file:bg-primary-100 dark:hover:file:bg-primary-800 transition-colors duration-200" />
+                                        <p class="error-message text-red-500 text-xs mt-1.5 hidden" id="profilePicture-error"></p>
+                                        ${user.profilePicture ? `<div class="mt-3 flex items-center">
+                                            <img src="${user.profilePicture}" class="h-16 w-16 rounded-full object-cover border border-gray-200 dark:border-gray-600" alt="Current Profile Picture" />
+                                            <span class="ml-3 text-sm text-gray-500 dark:text-gray-400">Ảnh hiện tại</span>
+                                        </div>` : ''}
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Trạng thái</label>
+                                        <select name="trangThai" class="block w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:text-gray-200 transition duration-200" required>
+                                            <option value="Hoạt động" ${user.trangThai === 'Hoạt động' ? 'selected' : ''}>Hoạt động</option>
+                                            <option value="Khóa" ${user.trangThai === 'Khóa' ? 'selected' : ''}>Khóa</option>
+                                            <option value="Đang chờ duyệt" ${user.trangThai === 'Đang chờ duyệt' ? 'selected' : ''}>Đang chờ duyệt</option>
+                                            <option value="Đã xóa" ${user.trangThai === 'Đã xóa' ? 'selected' : ''}>Đã xóa</option>
+                                        </select>
+                                        <p class="error-message text-red-500 text-xs mt-1.5 hidden" id="trangThai-error"></p>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button onclick="submitEditUser()" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-5 py-2.5 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200">
+                        <i class="fas fa-save mr-2"></i> Lưu thay đổi
+                    </button>
+                    <button onclick="closeUserModal()" class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm px-5 py-2.5 bg-white dark:bg-gray-700 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200">
+                        <i class="fas fa-times mr-2"></i> Hủy bỏ
+                    </button>
+                </div>
+            `;
+            document.getElementById('userModalContent').innerHTML = modalContent;
+            document.getElementById('userModal').classList.remove('hidden');
+        }
+
+        async function openDetailsModal(id) {
+            const userResponse = await fetch(`/Admin/User/Details/${id}`);
+            const userResult = await userResponse.json();
+
+            if (userResult.success) {
+                const user = userResult.data;
+                const modalContent = `
+                    <div class="bg-white dark:bg-gray-800 px-6 pt-6 pb-4 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                                <h3 class="text-xl leading-6 font-bold text-gray-900 dark:text-gray-200" id="modal-title">
+                                    <i class="fas fa-user-circle text-primary-500 mr-2"></i> Chi tiết Người dùng
+                                </h3>
+                                <div class="mt-5">
+                                    <div class="flex flex-col items-center mb-6">
+                                        <img src="${user.profilePicture || '/img/default-user.jpg'}" class="h-24 w-24 rounded-full object-cover border-4 border-white dark:border-gray-700 shadow-md mb-3" alt="${user.fullName}">
+                                        <div class="text-center">
+                                            <h4 class="text-xl font-bold text-gray-900 dark:text-gray-200">${user.fullName}</h4>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">${user.email}</p>
+                                            <span class="inline-block mt-2 px-3 py-1 text-xs font-semibold rounded-full ${user.trangThai === 'Hoạt động' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-400' : user.trangThai === 'Khóa' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-400' : user.trangThai === 'Đang chờ duyệt' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-400' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'}">
+                                                ${user.trangThai}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                                            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Địa chỉ</p>
+                                            <p class="text-sm text-gray-900 dark:text-gray-200">${user.address || 'Chưa có'}</p>
+                                        </div>
+                                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                                            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Ngày sinh</p>
+                                            <p class="text-sm text-gray-900 dark:text-gray-200">${user.dateOfBirth ? new Date(user.dateOfBirth).toLocaleDateString() : 'Chưa có'}</p>
+                                        </div>
+                                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                                            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Ngày tạo</p>
+                                            <p class="text-sm text-gray-900 dark:text-gray-200">${new Date(user.ngayTao).toLocaleDateString()}</p>
+                                        </div>
+                                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                                            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Vai trò</p>
+                                            <p class="text-sm text-gray-900 dark:text-gray-200">${user.roles.length > 0 ? user.roles.join(', ') : 'Chưa có'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button onclick="openAddRoleModal('${user.id}')"
+                                class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-5 py-2.5 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200">
+                            <i class="fas fa-user-tag mr-2"></i> Cập nhật vai trò
+                        </button>
+                        <button onclick="closeDetailsModal()" class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm px-5 py-2.5 bg-white dark:bg-gray-700 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200">
+                            <i class="fas fa-times mr-2"></i> Đóng
+                        </button>
+                    </div>
+                `;
+                document.getElementById('detailsModalContent').innerHTML = modalContent;
+                document.getElementById('detailsModal').classList.remove('hidden');
+            } else {
+                showToast('error', userResult.message);
+            }
+        }
+
+        async function openAddRoleModal(id) {
+            currentUserId = id;
+
+            const userResponse = await fetch(`/Admin/User/Details/${id}`);
+            const userResult = await userResponse.json();
+
+            if (userResult.success && roleCache.length > 0) {
+                const userRoles = userResult.data.roles || [];
+                const availableRoles = roleCache.filter(role => !userRoles.includes(role.name));
+
+                if (availableRoles.length === 0) {
+                    showToast('error', 'Người dùng đã có tất cả vai trò hiện có.');
+                    return;
+                }
+
+                const roleOptions = availableRoles.map(role => `<option value="${role.name}">${role.name}</option>`).join('');
+
+                const modalContent = `
+                    <div class="bg-white dark:bg-gray-800 px-6 pt-6 pb-4 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                                <h3 class="text-xl leading-6 font-bold text-gray-900 dark:text-gray-200" id="modal-title">
+                                    <i class="fas fa-user-tag text-primary-500 mr-2"></i> Cập nhật Vai trò
+                                </h3>
+                                <div class="mt-4">
+                                    <form id="addRoleForm" class="space-y-5">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Vai trò</label>
+                                            <select name="roleName" class="block w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:text-gray-200 transition duration-200" required>
+                                                ${roleOptions}
+                                            </select>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button onclick="submitAddRole()" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-5 py-2.5 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200">
+                            <i class="fas fa-save mr-2"></i> Cập nhật vai trò
+                        </button>
+                        <button onclick="closeAddRoleModal()" class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm px-5 py-2.5 bg-white dark:bg-gray-700 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200">
+                            <i class="fas fa-times mr-2"></i> Hủy bỏ
+                        </button>
+                    </div>
+                `;
+                document.getElementById('addRoleModalContent').innerHTML = modalContent;
+                document.getElementById('addRoleModal').classList.remove('hidden');
+            } else {
+                showToast('error', userResult.message || 'Không thể tải dữ liệu vai trò.');
+            }
+        }
+
+        async function openCreateRoleModal() {
+            let rolesList = '';
+            if (roleCache.length > 0) {
+                rolesList = `
+                    <div class="mt-6">
+                        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center">
+                            <i class="fas fa-list-ul mr-2 text-primary-500"></i> Danh sách vai trò hiện có
+                        </h4>
+                        <ul class="border border-gray-200 dark:border-gray-600 rounded-lg divide-y divide-gray-200 dark:divide-gray-600">
+                            ${roleCache.map(role => `
+                                <li class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
+                                    <span class="text-sm font-medium text-gray-900 dark:text-gray-200">${role.name}</span>
+                                    <button onclick="openDeleteRoleModal('${role.id}')" class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition-colors duration-200">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                `;
+            } else {
+                rolesList = '<div class="mt-6 bg-gray-50 dark:bg-gray-700 rounded-lg p-4 text-center"><p class="text-sm text-gray-500 dark:text-gray-400">Chưa có vai trò nào trong hệ thống.</p></div>';
+            }
+
+            const modalContent = `
+                <div class="bg-white dark:bg-gray-800 px-6 pt-6 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-xl leading-6 font-bold text-gray-900 dark:text-gray-200" id="modal-title">
+                                <i class="fas fa-plus-circle text-primary-500 mr-2"></i> Tạo Vai trò Mới
+                            </h3>
+                            <div class="mt-4">
+                                <form id="createRoleForm" class="space-y-5">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tên vai trò</label>
+                                        <input name="roleName" class="block w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:text-gray-200 transition duration-200" required />
+                                    </div>
+                                </form>
+                                ${rolesList}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button onclick="submitCreateRole()" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-5 py-2.5 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200">
+                        <i class="fas fa-save mr-2"></i> Tạo vai trò
+                    </button>
+                    <button onclick="closeCreateRoleModal()" class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm px-5 py-2.5 bg-white dark:bg-gray-700 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200">
+                        <i class="fas fa-times mr-2"></i> Hủy bỏ
+                    </button>
+                </div>
+            `;
+            document.getElementById('createRoleModalContent').innerHTML = modalContent;
+            document.getElementById('createRoleModal').classList.remove('hidden');
+        }
+
+        function openDeleteModal(id) {
+            currentUserId = id;
+            document.getElementById('deleteModal').classList.remove('hidden');
+        }
+
+        function openDeleteRoleModal(roleId) {
+            const role = roleCache.find(r => r.id === roleId);
+            if (!role) {
+                showToast('error', 'Không tìm thấy vai trò trong hệ thống.');
+                return;
+            }
+            currentRoleId = roleId;
+            document.getElementById('deleteRoleName').textContent = role.name;
+            document.getElementById('deleteRoleModal').classList.remove('hidden');
+        }
+
+        function closeDeleteRoleModal() {
+            document.getElementById('deleteRoleModal').classList.add('hidden');
+            currentRoleId = null;
+            document.getElementById('deleteRoleName').textContent = '';
+        }
+
+        function closeUserModal() {
+            document.getElementById('userModal').classList.add('hidden');
+            document.getElementById('userModalContent').innerHTML = '';
+        }
+
+        function closeDetailsModal() {
+            document.getElementById('detailsModal').classList.add('hidden');
+            document.getElementById('detailsModalContent').innerHTML = '';
+        }
+
+        function closeAddRoleModal() {
+            document.getElementById('addRoleModal').classList.add('hidden');
+            document.getElementById('addRoleModalContent').innerHTML = '';
+        }
+
+        function closeCreateRoleModal() {
+            document.getElementById('createRoleModal').classList.add('hidden');
+            document.getElementById('createRoleModalContent').innerHTML = '';
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.add('hidden');
+            currentUserId = null;
+        }
+
+        // Validation function for Add User Form
+        function validateAddUserForm(formData) {
+            let isValid = true;
+            const email = formData.get('email');
+            const password = formData.get('password');
+            const fullName = formData.get('fullName');
+            const dateOfBirth = formData.get('dateOfBirth');
+            const profilePicture = formData.get('profilePicture');
+            const trangThai = formData.get('trangThai');
+
+            // Reset error messages
+            document.querySelectorAll('#addUserForm .error-message').forEach(error => error.classList.add('hidden'));
+
+            // Validate Email
+            const emailRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+            if (!email) {
+                document.getElementById('email-error').textContent = 'Email là bắt buộc.';
+                document.getElementById('email-error').classList.remove('hidden');
+                isValid = false;
+            } else if (!emailRegex.test(email)) {
+                document.getElementById('email-error').textContent = 'Email không đúng định dạng.';
+                document.getElementById('email-error').classList.remove('hidden');
+                isValid = false;
+            }
+
+            // Validate Password
+            if (!password) {
+                document.getElementById('password-error').textContent = 'Mật khẩu là bắt buộc.';
+                document.getElementById('password-error').classList.remove('hidden');
+                isValid = false;
+            } else if (password.length < 6) {
+                document.getElementById('password-error').textContent = 'Mật khẩu phải có ít nhất 6 ký tự.';
+                document.getElementById('password-error').classList.remove('hidden');
+                isValid = false;
+            }
+
+            // Validate Full Name
+            if (!fullName) {
+                document.getElementById('fullName-error').textContent = 'Họ và tên là bắt buộc.';
+                document.getElementById('fullName-error').classList.remove('hidden');
+                isValid = false;
+            }
+
+            // Validate Date of Birth
+            if (dateOfBirth) {
+                const dob = new Date(dateOfBirth);
+                const today = new Date();
+                if (dob > today) {
+                    document.getElementById('dateOfBirth-error').textContent = 'Ngày sinh không được lớn hơn ngày hiện tại.';
+                    document.getElementById('dateOfBirth-error').classList.remove('hidden');
+                    isValid = false;
+                }
+            }
+
+            // Validate Profile Picture
+            if (profilePicture && profilePicture.size > 0) {
+                const validImageTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+                if (!validImageTypes.includes(profilePicture.type)) {
+                    document.getElementById('profilePicture-error').textContent = 'Ảnh đại diện phải là file JPG, PNG hoặc JPEG.';
+                    document.getElementById('profilePicture-error').classList.remove('hidden');
+                    isValid = false;
+                }
+            }
+
+            // Validate Trang Thai
+            const validStatuses = ['Hoạt động', 'Khóa', 'Đang chờ duyệt', 'Đã xóa'];
+            if (!trangThai || !validStatuses.includes(trangThai)) {
+                document.getElementById('trangThai-error').textContent = 'Vui lòng chọn trạng thái hợp lệ.';
+                document.getElementById('trangThai-error').classList.remove('hidden');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+        const changedFields = new Set();
+
+        document.querySelectorAll('#editUserForm input, #editUserForm select, #editUserForm textarea').forEach(el => {
+            el.addEventListener('change', () => {
+                changedFields.add(el.name);
+            });
+        });
+
+        // Validation function for Edit User Form
+        function validateEditUserForm(formData) {
+            let isValid = true;
+
+            const fullName = formData.get('fullName');
+            const dateOfBirth = formData.get('dateOfBirth');
+            const profilePicture = formData.get('profilePicture');
+            const trangThai = formData.get('trangThai');
+
+            // Reset error messages
+            document.querySelectorAll('#editUserForm .error-message').forEach(error => error.classList.add('hidden'));
+
+           
+            if (changedFields.has('fullName') && !fullName.trim()) {
+                document.getElementById('fullName-error').textContent = 'Họ và tên là bắt buộc.';
+                document.getElementById('fullName-error').classList.remove('hidden');
+                isValid = false;
+            }
+
+            if (changedFields.has('dateOfBirth') && dateOfBirth) {
+                const dob = new Date(dateOfBirth);
+                const today = new Date();
+                if (dob > today) {
+                    document.getElementById('dateOfBirth-error').textContent = 'Ngày sinh không được lớn hơn ngày hiện tại.';
+                    document.getElementById('dateOfBirth-error').classList.remove('hidden');
+                    isValid = false;
+                }
+            }
+
+            if (changedFields.has('profilePicture') && profilePicture && profilePicture.size > 0) {
+                const validImageTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+                if (!validImageTypes.includes(profilePicture.type)) {
+                    document.getElementById('profilePicture-error').textContent = 'Ảnh đại diện phải là file JPG, PNG hoặc JPEG.';
+                    document.getElementById('profilePicture-error').classList.remove('hidden');
+                    isValid = false;
+                }
+            }
+
+            if (changedFields.has('trangThai') && (!trangThai || !['Hoạt động', 'Khóa', 'Đang chờ duyệt', 'Đã xóa'].includes(trangThai))) {
+                document.getElementById('trangThai-error').textContent = 'Vui lòng chọn trạng thái hợp lệ.';
+                document.getElementById('trangThai-error').classList.remove('hidden');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+
+        async function submitAddUser() {
+            const form = document.getElementById('addUserForm');
+            const formData = new FormData(form);
+
+            // Validate form before submission
+            if (!validateAddUserForm(formData)) {
+                return;
+            }
+
+            const response = await fetch('/Admin/User/Create', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+
+            if (result.success) {
+                userCache = []; // Reset cache to force reload
+                totalRecords++;
+                totalPages = Math.ceil(totalRecords / pageSize);
+                showToast('success', result.message);
+                closeUserModal();
+                loadUsersWithCurrentFilters();
+            } else {
+                showToast('error', result.message + (result.errors ? '<br>' + result.errors.join('<br>') : ''));
+            }
+        }
+
+        async function submitEditUser() {
+            const form = document.getElementById('editUserForm');
+            const formData = new FormData(form);
+
+            // Validate form before submission
+            if (!validateEditUserForm(formData)) {
+                return;
+            }
+
+            const response = await fetch('/Admin/User/Update', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+
+            if (result.success) {
+                userCache = []; // Reset cache to force reload
+                showToast('success', result.message);
+                closeUserModal();
+                loadUsersWithCurrentFilters();
+            } else {
+                showToast('error', result.message + (result.errors ? '<br>' + result.errors.join('<br>') : ''));
+            }
+        }
+
+        async function submitAddRole() {
+            const form = document.getElementById('addRoleForm');
+            const formData = new FormData(form);
+            const data = {
+                userId: currentUserId,
+                roleName: formData.get('roleName')
+            };
+
+            const response = await fetch('/Admin/User/AddRole', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+
+            if (result.success) {
+                showToast('success', result.message);
+                closeAddRoleModal();
+                closeDetailsModal();
+            } else {
+                showToast('error', result.message + (result.errors ? '<br>' + result.errors.join('<br>') : ''));
+            }
+        }
+
+        async function submitCreateRole() {
+            const form = document.getElementById('createRoleForm');
+            const formData = new FormData(form);
+            const data = {
+                roleName: formData.get('roleName')
+            };
+
+            const response = await fetch('/Admin/User/CreateRole', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+
+            if (result.success) {
+                roleCache.push(result.data);
+                showToast('success', result.message);
+                closeCreateRoleModal();
+                openCreateRoleModal();
+            } else {
+                showToast('error', result.message + (result.errors ? '<br>' + result.errors.join('<br>') : ''));
+            }
+        }
+
+        async function deleteRole(roleId) {
+            openDeleteRoleModal(roleId);
+        }
+
+        async function confirmDeleteRole() {
+            if (!currentRoleId) {
+                showToast('error', 'Không có vai trò nào được chọn để xóa.');
+                closeDeleteRoleModal();
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Admin/User/DeleteRole/${currentRoleId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    roleCache = roleCache.filter(role => role.id !== currentRoleId);
+                    showToast('success', result.message || 'Xóa vai trò thành công');
+                    closeDeleteRoleModal();
+                    closeCreateRoleModal();
+                    openCreateRoleModal();
+                } else {
+                    showToast('error', result.message || 'Xóa vai trò thất bại');
+                }
+            } catch (error) {
+                showToast('error', 'Đã xảy ra lỗi khi xóa vai trò. Vui lòng thử lại.');
+                console.error(error);
+            }
+        }
+
+        async function confirmDelete() {
+            const response = await fetch(`/Admin/User/Delete/${currentUserId}`, {
+                method: 'POST'
+            });
+            const result = await response.json();
+
+            if (result.success) {
+                userCache = []; // Reset cache to force reload
+                showToast('success', result.message);
+                closeDeleteModal();
+                loadUsersWithCurrentFilters();
+            } else {
+                showToast('error', result.message + (result.errors ? '<br>' + result.errors.join('<br>') : ''));
+            }
+        }
+
+        function showToast(type, message) {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 px-5 py-3 rounded-lg shadow-lg text-white flex items-start ${
+                type === 'success' ? 'bg-green-500' : 'bg-red-500'
+            } z-50 max-w-md transition-all duration-300 transform translate-x-0 opacity-100`;
+            toast.innerHTML = `
+                <div class="flex-shrink-0 pt-0.5">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} text-lg"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium">${message}</p>
+                </div>
+                <button onclick="this.parentElement.remove()" class="ml-4 -mr-1.5 -mt-0.5 flex-shrink-0 p-1 rounded-full hover:bg-opacity-30 focus:outline-none focus:ring-2 focus:ring-white">
+                    <span class="sr-only">Đóng</span>
+                    <i class="fas fa-times h-4 w-4"></i>
+                </button>
+            `;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-x-full');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+    </script>
+}

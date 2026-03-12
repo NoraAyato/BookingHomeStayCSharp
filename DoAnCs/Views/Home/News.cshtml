@@ -1,0 +1,524 @@
+﻿@{
+    ViewData["Title"] = "Tin Tức - Rose Homestay";
+    ViewData["Description"] = "Cập nhật tin tức mới nhất về Rose Homestay và các thông tin du lịch, nghỉ dưỡng hữu ích";
+    ViewData["Keywords"] = "tin tức homestay, thông tin nghỉ dưỡng, rose homestay news";
+}
+
+<!-- Hero Section with Parallax Effect -->
+<section class="relative h-[70vh] min-h-[500px] max-h-[800px] overflow-hidden flex items-end">
+    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent z-10"></div>
+    <div class="absolute inset-0 z-0">
+        <img src="https://i.dailymail.co.uk/1s/2020/02/05/12/24297624-7964677-Situated_914_metres_above_sea_level_The_Hotel_Villa_Honegg_is_su-a-61_1580905129018.jpg" alt="Rose Homestay News"
+             class="w-full h-full object-cover object-center transform scale-110"
+             style="filter: brightness(0.7);">
+        <div class="absolute inset-0 bg-noise opacity-10"></div>
+    </div>
+
+    <div class="container mx-auto px-4 relative z-20 pb-20">
+        <div data-aos="fade-up" data-aos-delay="100">
+            <div class="inline-flex items-center px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full mb-6 border border-white/20">
+                <span class="text-white font-medium"><i class="fas fa-newspaper mr-2"></i> Tin tức & Cẩm nang</span>
+            </div>
+            <h1 class="text-5xl md:text-7xl font-bold text-white mb-6 font-lora leading-tight">
+                Khám Phá <span class="text-rose-300">Rose Homestay</span>
+            </h1>
+            <p class="text-xl md:text-2xl text-white/90 max-w-3xl mb-8">
+                Cập nhật những tin tức mới nhất, kinh nghiệm du lịch và câu chuyện đằng sau mỗi chuyến đi
+            </p>
+            <div class="flex flex-wrap gap-4">
+                <a href="#news-content"
+                   class="inline-flex items-center px-6 py-3 bg-rose-600 text-white rounded-full font-medium hover:bg-rose-700 transition-all shadow-lg hover:shadow-xl">
+                    <i class="fas fa-book-open mr-2"></i> Khám phá ngay
+                </a>
+                <a href="#newsletter"
+                   class="inline-flex items-center px-6 py-3 bg-white/10 backdrop-blur-sm text-white rounded-full font-medium hover:bg-white/20 transition-all border border-white/20">
+                    <i class="fas fa-envelope mr-2"></i> Nhận bản tin
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="absolute bottom-8 left-0 right-0 text-center z-20 animate-bounce-slow hidden">
+        <a href="#news-content" class="inline-block w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-all flex items-center justify-center">
+            <i class="fas fa-chevron-down mt-1 hidden"></i>
+        </a>
+    </div>
+</section>
+
+<!-- Main Content -->
+<main id="news-content" class="relative">
+   
+
+    <div class="container mx-auto px-4 relative z-10">
+        <!-- Featured News (Carousel) -->
+        <section class="py-16" data-aos="fade-up">
+            <div class="flex items-center justify-between mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 font-lora">
+                    <span class="text-rose-600">Tin nổi bật</span> trong tuần
+                </h2>
+                
+            </div>
+
+            <div class="featured-news-slider splide hidden">
+                <div class="splide__track">
+                    <div class="splide__list" id="featuredNewsContainer">
+                        <!-- Featured news will be populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- News Grid -->
+        <section class="pb-16">
+            <div class="flex flex-col lg:flex-row gap-8">
+                <!-- Main News Content -->
+                <div class="lg:w-2/3">
+                    <!-- Filter Section -->
+                    <div class="mb-12 bg-white rounded-2xl shadow-sm p-1 border border-gray-100 inline-flex" data-aos="fade-up">
+                        <form id="newsFilterForm" class="flex flex-col md:flex-row gap-1">
+                            <div class="relative">
+                                <div class="relative">
+                                    <input type="text" id="searchInput" name="searchString"
+                                           class="w-full md:w-64 pl-12 pr-4 py-3 border-0 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all duration-200"
+                                           placeholder="Tìm kiếm tin tức..." autocomplete="off">
+                                    <div class="absolute left-4 top-3.5 text-rose-500">
+                                        <i class="fas fa-search"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="relative">
+                                <select name="categoryId" id="categorySelect"
+                                        class="w-full md:w-48 pl-4 pr-10 py-3 border-0 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-transparent appearance-none transition-all duration-200">
+                                    <option value="">Tất cả chủ đề</option>
+                                    <!-- Categories will be populated dynamically -->
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                                    <i class="fas fa-chevron-down text-sm"></i>
+                                </div>
+                            </div>
+
+                            <button type="submit"
+                                    class="px-6 py-3 bg-rose-600 text-white rounded-xl font-medium hover:bg-rose-700 transition-all duration-200 shadow-sm hover:shadow-md flex items-center justify-center">
+                                <i class="fas fa-filter mr-2"></i> Lọc
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- News Grid -->
+                    <div id="newsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-8" data-aos="fade-up">
+                        <!-- News articles will be populated dynamically -->
+                    </div>
+
+                    <!-- Pagination -->
+                    <div id="paginationContainer" class="mt-16" data-aos="fade-up">
+                        <nav class="flex items-center justify-center space-x-2">
+                            <!-- Pagination will be populated dynamically -->
+                        </nav>
+                    </div>
+
+                    <div id="noResults" class="hidden text-center py-16 bg-white rounded-2xl shadow-sm border border-gray-100" data-aos="fade-up">
+                        <div class="w-24 h-24 mx-auto text-rose-400 mb-6">
+                            <i class="fas fa-newspaper text-6xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-3 font-lora">Không tìm thấy tin tức phù hợp</h3>
+                        <p class="text-gray-500 mb-6 max-w-md mx-auto">Hãy thử tìm kiếm với từ khóa khác hoặc chọn chủ đề khác</p>
+                        <a href="/Home/GetNews" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-rose-600 hover:bg-rose-700 transition-all">
+                            <i class="fas fa-sync-alt mr-2"></i> Xem tất cả tin tức
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="lg:w-1/3 space-y-8">
+                    <!-- Categories Widget -->
+                    <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100" data-aos="fade-up" data-aos-delay="100">
+                        <h3 class="text-xl font-bold text-gray-800 mb-5 pb-3 border-b border-gray-100 font-lora flex items-center">
+                            <i class="fas fa-tags text-rose-500 mr-3"></i> Danh mục
+                        </h3>
+                        <ul id="categoriesList" class="space-y-3">
+                            <!-- Categories will be populated dynamically -->
+                        </ul>
+                    </div>
+
+                    <!-- Popular News Widget -->
+                    <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100" data-aos="fade-up" data-aos-delay="150">
+                        <h3 class="text-xl font-bold text-gray-800 mb-5 pb-3 border-b border-gray-100 font-lora flex items-center">
+                            <i class="fas fa-fire text-rose-500 mr-3"></i> Đọc nhiều nhất
+                        </h3>
+                        <div id="popularNewsContainer" class="space-y-5">
+                            <!-- Popular news will be populated dynamically -->
+                        </div>
+                    </div>
+
+                    
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+
+
+@section Styles {
+    <style>
+        /* Custom animations */
+        @@keyframes bounce-slow {
+            0%, 100%
+
+        {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-10px);
+        }
+
+        }
+
+        .animate-bounce-slow {
+            animation: bounce-slow 3s infinite;
+        }
+
+        /* Noise texture */
+        .bg-noise {
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.20'/%3E%3C/svg%3E");
+        }
+
+        /* News card hover effect */
+        .news-card {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            transform-origin: center bottom;
+        }
+
+            .news-card:hover {
+                transform: translateY(-8px) scale(1.02);
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            }
+
+        /* Featured news card */
+        .featured-news-card {
+            transition: all 0.3s ease;
+        }
+
+            .featured-news-card:hover .featured-news-overlay {
+                opacity: 1;
+            }
+
+            .featured-news-card:hover .featured-news-content {
+                transform: translateY(0);
+            }
+
+        /* Splide slider customization */
+        .splide__pagination__page.is-active {
+            background: #f43f5e !important;
+            transform: scale(1.2);
+        }
+
+        .splide__arrow {
+            background: #fff !important;
+            color: #f43f5e !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+            .splide__arrow:hover {
+                background: #f43f5e !important;
+                color: #fff !important;
+            }
+
+        /* Line clamp for text */
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f3f4f6;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #f43f5e;
+            border-radius: 4px;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // Initialize AOS animations
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof AOS !== 'undefined') {
+                AOS.init({
+                    duration: 800,
+                    easing: 'ease-out-cubic',
+                    once: true,
+                    offset: 120
+                });
+            }
+
+            // Smooth scroll for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+
+            // Initialize featured news slider
+            function initFeaturedSlider() {
+                if (typeof Splide !== 'undefined') {
+                    new Splide('.featured-news-slider', {
+                        type: 'loop',
+                        perPage: 1,
+                        perMove: 1,
+                        gap: '2rem',
+                        arrows: false,
+                        pagination: false,
+                        autoplay: true,
+                        interval: 5000,
+                        breakpoints: {
+                            768: {
+                                gap: '1rem'
+                            }
+                        }
+                    }).mount();
+
+                    // Custom navigation buttons
+                    document.querySelector('.featured-prev-btn').addEventListener('click', () => {
+                        document.querySelector('.featured-news-slider .splide__arrow--prev').click();
+                    });
+
+                    document.querySelector('.featured-next-btn').addEventListener('click', () => {
+                        document.querySelector('.featured-news-slider .splide__arrow--next').click();
+                    });
+                }
+            }
+
+            // Fetch news data
+            const fetchNews = async (searchString = '', categoryId = '', page = 1) => {
+                try {
+                    const params = new URLSearchParams();
+                    if (searchString) params.append('searchString', searchString);
+                    if (categoryId) params.append('categoryId', categoryId);
+                    params.append('page', page);
+
+                    const response = await fetch(`/Home/GetNews?${params.toString()}`, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) throw new Error('Failed to fetch news');
+                    const data = await response.json();
+                    renderNews(data);
+                } catch (error) {
+                    console.error('Error fetching news:', error);
+                    document.getElementById('noResults').classList.remove('hidden');
+                    document.getElementById('newsContainer').innerHTML = '';
+                    document.getElementById('paginationContainer').innerHTML = '';
+                }
+            };
+
+            // Render news data
+            const renderNews = (data) => {
+                const newsContainer = document.getElementById('newsContainer');
+                const paginationContainer = document.getElementById('paginationContainer').querySelector('nav');
+                const categoriesList = document.getElementById('categoriesList');
+                const popularNewsContainer = document.getElementById('popularNewsContainer');
+                const featuredNewsContainer = document.getElementById('featuredNewsContainer');
+                const categorySelect = document.getElementById('categorySelect');
+                const noResults = document.getElementById('noResults');
+
+                // Render featured news
+                if (data.featuredNews && data.featuredNews.length > 0) {
+                    featuredNewsContainer.innerHTML = data.featuredNews.map(news => `
+                        <div class="splide__slide">
+                            <div class="featured-news-card relative rounded-2xl overflow-hidden h-[500px]">
+                                <img src="${news.hinhAnh}" alt="${news.tieuDe}"
+                                     class="absolute inset-0 w-full h-full object-cover">
+                                <div class="featured-news-overlay absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 transition-opacity duration-300"></div>
+                                <div class="featured-news-content absolute bottom-0 left-0 right-0 p-8 transform translate-y-10 transition-transform duration-300">
+                                    <span class="inline-block px-3 py-1 bg-rose-600 text-white text-sm font-medium rounded-full mb-4">
+                                        ${news.chuDe?.tenChuDe || 'Nổi bật'}
+                                    </span>
+                                    <h3 class="text-3xl font-bold text-white mb-4 font-lora">${news.tieuDe}</h3>
+                                    <p class="text-white/90 mb-6 line-clamp-3">${news.noiDung.length > 200 ? news.noiDung.substring(0, 200) + '...' : news.noiDung}</p>
+                                    <a href="/Home/NewsDetail?id=${news.ma_TinTuc}" class="inline-flex items-center text-white font-medium hover:text-rose-300 transition-colors group">
+                                        Đọc bài viết
+                                        <i class="fas fa-arrow-right ml-2 transition-transform group-hover:translate-x-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    // Initialize slider after content is loaded
+                    initFeaturedSlider();
+                }
+
+                // Render news articles
+                if (data.news.length > 0) {
+                    noResults.classList.add('hidden');
+                    newsContainer.innerHTML = data.news.map(news => `
+                        <article class="bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 group border border-gray-100 news-card">
+                            <div class="relative overflow-hidden aspect-[4/3]">
+                                <a href="/Home/NewsDetail?id=${news.ma_TinTuc}" class="block h-full">
+                                    <img src="${news.hinhAnh}" alt="${news.tieuDe}"
+                                         class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                    <span class="absolute top-4 left-4 bg-rose-600 text-white text-xs px-3 py-1 rounded-full font-medium">
+                                        ${news.chuDe?.tenChuDe || 'Không xác định'}
+                                    </span>
+                                </a>
+                            </div>
+                            <div class="p-6">
+                                <div class="flex items-center text-sm text-gray-500 mb-3">
+                                    <span class="inline-flex items-center mr-4">
+                                        <i class="far fa-calendar-alt mr-2 text-rose-500"></i>
+                                        ${news.ngayDang}
+                                    </span>
+                                    <span class="inline-flex items-center">
+                                        <i class="far fa-user mr-2 text-rose-500"></i>
+                                        ${news.tacGia || 'Ẩn danh'}
+                                    </span>
+                                </div>
+                                <a href="/Home/NewsDetail?id=${news.ma_TinTuc}" class="block">
+                                    <h3 class="text-xl font-bold text-gray-800 mb-3 group-hover:text-rose-600 transition-colors duration-200 font-lora line-clamp-2">${news.tieuDe}</h3>
+                                    <p class="text-gray-600 mb-4 line-clamp-3">${news.noiDung.length > 150 ? news.noiDung.substring(0, 150) + '...' : news.noiDung}</p>
+                                </a>
+                                <div class="pt-4 border-t border-gray-100">
+                                    <a href="/Home/NewsDetail?id=${news.ma_TinTuc}"
+                                       class="inline-flex items-center text-rose-600 font-medium hover:text-rose-700 transition-colors group">
+                                        Đọc chi tiết
+                                        <i class="fas fa-arrow-right ml-2 transition-transform group-hover:translate-x-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </article>
+                    `).join('');
+                } else {
+                    noResults.classList.remove('hidden');
+                    newsContainer.innerHTML = '';
+                }
+
+                // Render pagination
+                paginationContainer.innerHTML = `
+                    ${data.currentPage > 1 ? `
+                        <a href="#" data-page="${data.currentPage - 1}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:shadow-sm transition-all">
+                            <i class="fas fa-chevron-left mr-2"></i> Trước
+                        </a>
+                    ` : `
+                        <span class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm font-medium text-gray-400 cursor-not-allowed">
+                            <i class="fas fa-chevron-left mr-2"></i> Trước
+                        </span>
+                    `}
+                    ${Array.from({ length: data.totalPages }, (_, i) => i + 1).map(i => `
+                        ${i === data.currentPage ? `
+                            <span class="inline-flex items-center px-4 py-2 border border-rose-300 bg-rose-50 text-sm font-medium text-rose-600 rounded-lg">
+                                ${i}
+                            </span>
+                        ` : `
+                            <a href="#" data-page="${i}" class="inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                                ${i}
+                            </a>
+                        `}
+                    `).join('')}
+                    ${data.currentPage < data.totalPages ? `
+                        <a href="#" data-page="${data.currentPage + 1}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:shadow-sm transition-all">
+                            Sau <i class="fas fa-chevron-right ml-2"></i>
+                        </a>
+                    ` : `
+                        <span class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm font-medium text-gray-400 cursor-not-allowed">
+                            Sau <i class="fas fa-chevron-right ml-2"></i>
+                        </span>
+                    `}
+                `;
+
+                // Render categories
+                categoriesList.innerHTML = `
+                    <li>
+                        <a href="#" data-category="" class="flex items-center justify-between py-3 px-4 -mx-4 rounded-xl hover:bg-rose-50 transition-colors group">
+                            <span class="text-gray-700 group-hover:text-rose-600 font-medium">Tất cả chủ đề</span>
+                            <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full group-hover:bg-rose-100 group-hover:text-rose-600">${data.totalNewsCount}</span>
+                        </a>
+                    </li>
+                    ${data.categories.map(category => `
+                        <li>
+                            <a href="#" data-category="${category.iD_ChuDe}" class="flex items-center justify-between py-3 px-4 -mx-4 rounded-xl hover:bg-rose-50 transition-colors group">
+                                <span class="text-gray-700 group-hover:text-rose-600 font-medium">${category.tenChuDe}</span>
+                                <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full group-hover:bg-rose-100 group-hover:text-rose-600">${category.tinTucsCount}</span>
+                            </a>
+                        </li>
+                    `).join('')}
+                `;
+
+                // Populate category dropdown
+                categorySelect.innerHTML = `
+                    <option value="">Tất cả chủ đề</option>
+                    ${data.categories.map(category => `
+                        <option value="${category.iD_ChuDe}" ${data.categoryId === category.iD_ChuDe ? 'selected' : ''}>${category.tenChuDe}</option>
+                    `).join('')}
+                `;
+
+                // Set search input value
+                document.getElementById('searchInput').value = data.currentFilter || '';
+
+                // Render popular news
+                popularNewsContainer.innerHTML = data.popularNews.map(news => `
+                    <div class="flex gap-4 group">
+                        <div class="w-16 h-16 flex-shrink-0 overflow-hidden rounded-lg shadow-sm border border-gray-100">
+                            <a href="/Home/NewsDetail?id=${news.ma_TinTuc}" class="block h-full">
+                                <img src="${news.hinhAnh}" alt="${news.tieuDe}"
+                                     class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-300">
+                            </a>
+                        </div>
+                        <div class="flex-grow">
+                            <a href="/Home/NewsDetail?id=${news.ma_TinTuc}" class="block">
+                                <h4 class="font-semibold text-gray-800 mb-1 group-hover:text-rose-600 transition-colors line-clamp-2">${news.tieuDe}</h4>
+                            </a>
+                            <div class="flex items-center text-xs text-gray-500">
+                                <span><i class="far fa-calendar mr-1.5"></i> ${news.ngayDang}</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                // Add event listeners for pagination and category links
+                document.querySelectorAll('#paginationContainer a[data-page], #categoriesList a[data-category]').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const page = link.dataset.page || data.currentPage;
+                        const categoryId = link.dataset.category || data.categoryId;
+                        fetchNews(document.getElementById('searchInput').value, categoryId, page);
+                    });
+                });
+            };
+
+            // Handle form submission
+            document.getElementById('newsFilterForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const searchString = document.getElementById('searchInput').value;
+                const categoryId = document.getElementById('categorySelect').value;
+                fetchNews(searchString, categoryId, 1);
+            });
+
+            // Initial fetch
+            const urlParams = new URLSearchParams(window.location.search);
+            fetchNews(urlParams.get('searchString') || '', urlParams.get('categoryId') || '', urlParams.get('page') || 1);
+        });
+    </script>
+}

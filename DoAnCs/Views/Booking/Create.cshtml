@@ -1,0 +1,1246 @@
+﻿@model DoAnCs.Models.ViewModels.BookingViewModel
+@{
+    ViewData["Title"] = "Đặt phòng";
+    var services = ViewBag.Services;
+    var selectedRoomIds = ViewBag.SelectedRoomIds as string[] ?? new string[0];
+    var numberOfRoom = Model.SelectedRooms.Count;
+}
+
+<!-- Thêm SweetAlert2 -->
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
+<section class="py-12 bg-gradient-to-b from-white to-gray-50">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12" data-aos="fade-up">
+            <span class="inline-block px-4 py-1 text-sm font-medium rounded-full bg-rose-100 text-rose-600 mb-4">Đặt phòng</span>
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 font-lora mb-4">Đặt phòng tại <span class="text-rose-600">@Model.HomestayName</span></h1>
+            <div class="w-24 h-1 bg-rose-500 mx-auto"></div>
+        </div>
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="bg-rose-50 border-l-4 border-rose-500 text-rose-700 p-4 rounded-lg mb-8 max-w-4xl mx-auto" role="alert">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <p class="font-medium">@TempData["Error"]</p>
+                </div>
+            </div>
+        }
+
+        <div class="flex flex-col lg:flex-row gap-8 max-w-7xl mx-auto">
+            <!-- Phần thông tin đặt phòng -->
+            <div class="lg:w-2/3">
+                <form id="bookingForm" asp-action="Create" asp-controller="Booking" method="post" class="bg-white rounded-2xl shadow-xl p-6">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="bookingData" name="bookingData" />
+
+                    <!-- Thông tin homestay -->
+                    <div class="mb-8">
+                        <h3 class="text-xl font-semibold text-gray-900 font-lora mb-4 pb-2 border-b border-gray-200">Thông tin homestay</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <p class="text-gray-600"><i class="fas fa-home text-rose-500 mr-2"></i> <strong>Tên:</strong> @Model.HomestayName</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <p class="text-gray-600"><i class="fas fa-map-marker-alt text-rose-500 mr-2"></i> <strong>Địa chỉ:</strong> @Model.HomestayAddress</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <p class="text-gray-600"><i class="fas fa-calendar-check text-rose-500 mr-2"></i> <strong>Nhận phòng:</strong> @Model.CheckInDate.ToString("dd/MM/yyyy")</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <p class="text-gray-600"><i class="fas fa-calendar-times text-rose-500 mr-2"></i> <strong>Trả phòng:</strong> @Model.CheckOutDate.ToString("dd/MM/yyyy")</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <p class="text-gray-600"><i class="fas fa-moon text-rose-500 mr-2"></i> <strong>Số đêm:</strong> @Model.NumberOfNights</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Danh sách phòng đã chọn -->
+                    <div class="mb-8">
+                        <h3 class="text-xl font-semibold text-gray-900 font-lora mb-4 pb-2 border-b border-gray-200">Phòng đã chọn</h3>
+
+                        @if (!Model.SelectedRooms.Any())
+                        {
+                            <div class="bg-gray-50 p-6 rounded-lg text-center">
+                                <i class="fas fa-bed text-4xl text-gray-300 mb-4"></i>
+                                <p class="text-gray-600">Bạn chưa chọn phòng nào</p>
+                            </div>
+                        }
+                        else
+                        {
+                            @for (int i = 0; i < Model.SelectedRooms.Count; i++)
+                            {
+                                <div class="border border-gray-200 rounded-xl p-5 mb-6 flex flex-col md:flex-row" id="room_@Model.SelectedRooms[i].MaPhong">
+                                    <div class="md:w-1/3 mb-4 md:mb-0">
+                                        <img src="@Model.SelectedRooms[i].HinhAnh" alt="@Model.SelectedRooms[i].TenPhong" class="w-full h-48 object-cover rounded-lg shadow-md" />
+                                    </div>
+                                    <div class="md:w-2/3 md:pl-6">
+                                        <input type="hidden" class="room-input" data-ma-phong="@Model.SelectedRooms[i].MaPhong" />
+                                        <input type="hidden" class="room-input" data-ten-phong="@Model.SelectedRooms[i].TenPhong" />
+                                        <input type="hidden" class="room-input" data-don-gia="@Model.SelectedRooms[i].DonGia.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
+                                        <input type="hidden" class="room-input" data-hinh-anh="@Model.SelectedRooms[i].HinhAnh" />
+                                        <input type="hidden" class="room-input" data-total-phu-thu="@Model.SelectedRooms[i].TotalPhuThu.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
+
+                                        <h4 class="text-lg font-medium text-gray-900 mb-2">@Model.SelectedRooms[i].TenPhong</h4>
+                                        <div class="my-4">
+                                            <p class="text-gray-600 mb-2"><i class="fas fa-tag text-rose-500 mr-2"></i> Giá: @Model.SelectedRooms[i].DonGia.ToString("N0", new System.Globalization.CultureInfo("vi-VN"))₫/đêm</p>
+                                            @if (Model.SelectedRooms[i].TotalPhuThu > 0)
+                                            {
+                                                <p class="text-gray-600 mb-2"><i class="fas fa-exclamation-circle text-rose-500 mr-2"></i> Phụ thu: @Model.SelectedRooms[i].TotalPhuThu.ToString("N0", new System.Globalization.CultureInfo("vi-VN"))₫</p>
+                                            }
+                                            <p class="text-gray-600"><i class="fas fa-receipt text-rose-500 mr-2"></i> Tổng: @((Model.SelectedRooms[i].DonGia * Model.NumberOfNights + Model.SelectedRooms[i].TotalPhuThu).ToString("N0", new System.Globalization.CultureInfo("vi-VN")))₫</p>
+                                        </div>
+
+                                        @if (numberOfRoom > 1)
+                                        {
+                                            <button type="button" class="remove-room-btn text-rose-600 hover:text-rose-800 font-medium flex items-center" data-room-id="@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(Model.SelectedRooms[i].MaPhong))">
+                                                <i class="fas fa-trash-alt mr-2"></i> Bỏ chọn
+                                            </button>
+                                        }
+
+                                        <div class="mt-6 pt-4 border-t border-gray-200">
+                                            <h5 class="font-medium text-gray-900 mb-3 flex items-center">
+                                                <i class="fas fa-concierge-bell text-rose-500 mr-2"></i> Dịch vụ đi kèm
+                                            </h5>
+
+                                            @if (services != null)
+                                            {
+                                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                    @foreach (var service in services)
+                                                    {
+                                                        <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                                            <div class="flex items-center mb-2">
+                                                                <input type="checkbox"
+                                                                       name="serviceSelected"
+                                                                       value="@service.Ma_DV"
+                                                                       id="select_@(Model.SelectedRooms[i].MaPhong)_@(service.Ma_DV)"
+                                                                       class="rounded text-rose-500 focus:ring-rose-500 mr-2" />
+                                                                <label for="select_@(Model.SelectedRooms[i].MaPhong)_@(service.Ma_DV)" class="font-medium">@service.Ten_DV</label>
+                                                            </div>
+                                                            <div class="flex items-center">
+                                                                <input type="number"
+                                                                       name="serviceQuantities"
+                                                                       min="1"
+                                                                       value="1"
+                                                                       disabled
+                                                                       id="quantity_@(Model.SelectedRooms[i].MaPhong)_@(service.Ma_DV)"
+                                                                       class="w-16 p-2 border border-gray-300 rounded-lg focus:ring-rose-500 focus:border-rose-500 disabled:bg-gray-100 mr-2" />
+                                                                <span class="text-sm text-gray-600">x @service.DonGia.ToString("N0", new System.Globalization.CultureInfo("vi-VN"))₫/ngày</span>
+                                                            </div>
+                                                            <input type="hidden"
+                                                                   name="serviceIds"
+                                                                   value="@service.Ma_DV"
+                                                                   id="id_@(Model.SelectedRooms[i].MaPhong)_@(service.Ma_DV)" />
+                                                            <input type="hidden"
+                                                                   id="price_@(Model.SelectedRooms[i].MaPhong)_@(service.Ma_DV)"
+                                                                   value="@service.DonGia" />
+                                                        </div>
+                                                    }
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="bg-gray-50 p-4 rounded-lg text-center">
+                                                    <i class="fas fa-info-circle text-gray-400 mr-2"></i>
+                                                    <span class="text-gray-600">Không có dịch vụ nào khả dụng</span>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+
+                    <div class="mb-8 text-center">
+                        <a asp-controller="Homestay"
+                           asp-action="Details"
+                           asp-route-id="@Model.HomestayId"
+                           asp-route-checkInDate="@Model.CheckInDate.ToString("yyyy-MM-dd")"
+                           asp-route-checkOutDate="@Model.CheckOutDate.ToString("yyyy-MM-dd")"
+                           class="inline-flex items-center bg-rose-100 hover:bg-rose-200 text-rose-600 px-6 py-3 rounded-lg font-medium transition-colors shadow hover:shadow-md">
+                            <i class="fas fa-plus mr-2"></i> Đặt thêm phòng
+                        </a>
+                    </div>
+
+                    <div class="flex justify-center">
+                        <button type="submit" class="bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white px-8 py-3 rounded-lg font-medium transition-all shadow-lg hover:shadow-xl flex items-center">
+                            <i class="fas fa-check-circle mr-2"></i> Xác nhận đặt phòng
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Phần tổng hợp thanh toán -->
+            <div class="lg:w-1/3">
+                <div class="bg-white rounded-2xl shadow-xl p-6 sticky top-6">
+                    <h3 class="text-xl font-semibold text-gray-900 font-lora mb-6 pb-2 border-b border-gray-200">Tóm tắt đặt phòng</h3>
+
+                    <div class="space-y-4 mb-6 summary-info">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Số phòng:</span>
+                            <span class="font-medium">@Model.SelectedRooms.Count</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Số đêm:</span>
+                            <span class="font-medium">@Model.NumberOfNights</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Ngày nhận phòng:</span>
+                            <span class="font-medium">@Model.CheckInDate.ToString("dd/MM/yyyy")</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Ngày trả phòng:</span>
+                            <span class="font-medium">@Model.CheckOutDate.ToString("dd/MM/yyyy")</span>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-gray-200 pt-4 mb-6">
+                        <h4 class="font-medium text-gray-900 mb-4">Chi tiết giá</h4>
+
+                        <div class="summary-room-details">
+                            @foreach (var room in Model.SelectedRooms)
+                            {
+                                <div class="mb-3" data-room-id="@room.MaPhong">
+                                    <div class="flex justify-between mb-1">
+                                        <span class="text-gray-600">@room.TenPhong</span>
+                                        <span class="font-medium">@((room.DonGia * Model.NumberOfNights + room.TotalPhuThu).ToString("N0", new System.Globalization.CultureInfo("vi-VN")))₫</span>
+                                    </div>
+                                    <div class="text-sm text-gray-500 ml-4">
+                                        @room.DonGia.ToString("N0", new System.Globalization.CultureInfo("vi-VN"))₫ x @Model.NumberOfNights đêm
+                                        @if (room.TotalPhuThu > 0)
+                                        {
+                                            <div>+ @room.TotalPhuThu.ToString("N0", new System.Globalization.CultureInfo("vi-VN"))₫ phụ thu</div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="mt-4 pt-4 border-t border-gray-200 summary-totals">
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-600">Tổng giá phòng:</span>
+                                <span class="font-medium">@Model.SelectedRooms.Sum(r => r.DonGia * Model.NumberOfNights).ToString("N0", new System.Globalization.CultureInfo("vi-VN"))₫</span>
+                            </div>
+                            @if (Model.SelectedRooms.Sum(r => r.TotalPhuThu) > 0)
+                            {
+                                <div class="flex justify-between mb-2 total-phu-thu">
+                                    <span class="text-gray-600">Tổng phụ thu:</span>
+                                    <span class="font-medium">@Model.SelectedRooms.Sum(r => r.TotalPhuThu).ToString("N0", new System.Globalization.CultureInfo("vi-VN"))₫</span>
+                                </div>
+                            }
+                            <div class="flex justify-between text-lg font-bold text-rose-600 mt-3">
+                                <span>Tổng cộng:</span>
+                                <span>@(Model.SelectedRooms.Sum(r => (r.DonGia * Model.NumberOfNights + r.TotalPhuThu)).ToString("N0", new System.Globalization.CultureInfo("vi-VN")))₫</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-rose-50 border-l-4 border-rose-500 p-4 rounded-r-lg mb-6">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-info-circle text-rose-500"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-rose-700">
+                                    Giá phòng có thể tăng do phụ thu vào một số ngày đặc biệt
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modal xác nhận -->
+<div id="confirmModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50 px-4">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900 font-lora">Xác nhận đặt phòng</h2>
+            <button id="cancelConfirm" class="text-gray-400 hover:text-gray-500">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <div id="confirmContent" class="space-y-6">
+            <!-- Nội dung modal sẽ được render bằng JS -->
+        </div>
+        <!-- Phần chọn khuyến mãi -->
+        <div class="bg-gray-50 p-4 rounded-lg mt-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-3">Chọn khuyến mãi</h3>
+            <select id="promotionSelect" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-rose-500 focus:border-rose-500">
+                <option value="">Không áp dụng khuyến mãi</option>
+                <!-- Danh sách khuyến mãi sẽ được thêm bằng JS -->
+            </select>
+            <p id="promotionMessage" class="text-sm text-gray-600 mt-2 hidden"></p>
+        </div>
+        <div class="flex justify-end mt-8 space-x-3">
+            <button id="cancelConfirmBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-2 rounded-lg font-medium transition-colors">
+                Hủy
+            </button>
+            <button id="submitConfirm" class="bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white px-6 py-2 rounded-lg font-medium transition-all shadow hover:shadow-lg flex items-center">
+                <i class="fas fa-check-circle mr-2"></i> Xác nhận
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal thanh toán -->
+<div id="paymentModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50 px-4">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900 font-lora">Thanh toán hóa đơn</h2>
+            <button id="cancelPayment" class="text-gray-400 hover:text-gray-500">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <div id="paymentContent" class="space-y-6 mb-8"></div>
+
+        <form id="paymentForm" asp-action="ProcessPayment" asp-controller="Booking" method="post" class="space-y-6">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="maHD" name="maHD" />
+
+            <div class="bg-rose-50 border-l-4 border-rose-500 p-4 rounded-r-lg mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-info-circle text-rose-500"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-rose-700">
+                            Bạn chỉ cần thanh toán 15% tiền phòng, phần còn lại sẽ phải thanh toán khi trả phòng
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Phương thức thanh toán</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <input type="radio" id="vnpay" name="phuongThuc" value="VNPay" class="hidden peer" checked>
+                        <label for="vnpay" class="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer peer-checked:border-rose-500 peer-checked:bg-rose-50">
+                            <div class="w-10 h-10 mr-4 bg-blue-50 rounded-full flex items-center justify-center">
+                                <img src="https://vnpay.vn/s1/statics.vnpay.vn/2023/9/06ncktiwd6dc1694418196384.png" alt="VNPay" class="w-8 h-8">
+                            </div>
+                            <div>
+                                <h4 class="font-medium">VNPay</h4>
+                                <p class="text-sm text-gray-500">Thanh toán qua cổng VNPay</p>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div>
+                        <input type="radio" id="momo" name="phuongThuc" value="MoMo" class="hidden peer">
+                        <label for="momo" class="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer peer-checked:border-rose-500 peer-checked:bg-rose-50">
+                            <div class="w-10 h-10 mr-4 bg-pink-50 rounded-full flex items-center justify-center">
+                                <img src="https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-MoMo-Square.png" alt="MoMo" class="w-8 h-8">
+                            </div>
+                            <div>
+                                <h4 class="font-medium">MoMo</h4>
+                                <p class="text-sm text-rose-500">Ví điện tử MoMo</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 p-4 rounded-lg hidden" >
+                <label for="soTien" class="block text-sm font-medium text-gray-700 mb-1">Số tiền thanh toán</label>
+                <div class="relative">
+                    <input type="number" id="soTien" name="soTien" class="w-full p-3 border border-gray-300 rounded-lg bg-white font-medium text-lg" readonly />
+                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <span class="text-gray-500">₫</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-3 pt-4">
+                <button type="button" id="cancelPaymentBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-3 rounded-lg font-medium transition-colors">
+                    Hủy
+                </button>
+                <button type="submit" id="submitPayment" class="bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white px-6 py-3 rounded-lg font-medium transition-all shadow hover:shadow-lg flex items-center">
+                    <i class="fas fa-wallet mr-2"></i> Thanh toán ngay
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Biến toàn cục để lưu trữ selectedServices ban đầu
+        let originalSelectedServices = {};
+
+        // Hàm lưu trữ selectedServices ban đầu khi người dùng chọn dịch vụ
+        function saveOriginalServices() {
+            originalSelectedServices = {};
+            document.querySelectorAll('[id^="room_"]').forEach(roomElement => {
+                const maPhong = roomElement.querySelector('.room-input').dataset.maPhong;
+                const services = [];
+                const checkboxes = roomElement.querySelectorAll('input[name="serviceSelected"]:checked');
+                checkboxes.forEach(checkbox => {
+                    const serviceId = checkbox.value;
+                    const quantityInput = document.getElementById(checkbox.id.replace('select_', 'quantity_'));
+                    const quantity = parseInt(quantityInput.value);
+                    if (quantity >= 1) {
+                        const priceInput = document.getElementById(checkbox.id.replace('select_', 'price_'));
+                        const price = parseFloat(priceInput.value);
+                        const label = roomElement.querySelector(`label[for="${checkbox.id}"]`);
+
+                        services.push({
+                            maDV: serviceId,
+                            tenDV: label.textContent,
+                            donGia: price,
+                            soLuong: quantity
+                        });
+                    }
+                });
+                originalSelectedServices[maPhong] = services;
+            });
+            console.log('Original Selected Services Saved:', originalSelectedServices);
+        }
+
+        // Hàm thoát HTML để tránh XSS
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Hàm định dạng tiền tệ
+        function formatCurrency(amount) {
+            return amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+        }
+
+        // Hàm hiển thị toast
+        function showToast(message, isSuccess, callback) {
+            const escapedMessage = message.replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, ' ');
+            Swal.fire({
+                icon: isSuccess ? 'success' : 'error',
+                title: escapedMessage,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                }
+            }).then(() => {
+                if (callback && typeof callback === 'function') callback();
+            });
+        }
+
+        // Hàm lấy dữ liệu đặt phòng từ form
+        function getBookingData() {
+            const rooms = [];
+            document.querySelectorAll('[id^="room_"]').forEach(roomElement => {
+                const roomInputs = roomElement.querySelectorAll('.room-input');
+                const maPhong = roomInputs[0].dataset.maPhong;
+                const roomData = {
+                    maPhong: maPhong,
+                    tenPhong: roomInputs[1].dataset.tenPhong,
+                    donGia: parseFloat(roomInputs[2].dataset.donGia),
+                    hinhAnh: roomInputs[3].dataset.hinhAnh,
+                    totalPhuThu: parseFloat(roomInputs[4].dataset.totalPhuThu || '0'),
+                    selectedServices: originalSelectedServices[maPhong] || []
+                };
+
+                rooms.push(roomData);
+            });
+
+            const bookingData = {
+                homestayId: '@Model.HomestayId',
+                homestayName: '@Model.HomestayName',
+                homestayAddress: '@Model.HomestayAddress',
+                checkInDate: '@Model.CheckInDate.ToString("o")',
+                checkOutDate: '@Model.CheckOutDate.ToString("o")',
+                numberOfNights: @Model.NumberOfNights,
+                selectedRooms: rooms
+            };
+
+            console.log('Booking Data:', bookingData);
+            return bookingData;
+        }
+
+        // Hàm cập nhật phần tóm tắt đặt phòng
+        function updateSummary() {
+            const bookingData = getBookingData();
+            const summaryInfo = document.querySelector('.summary-info');
+            const summaryRoomDetails = document.querySelector('.summary-room-details');
+            const summaryTotals = document.querySelector('.summary-totals');
+
+            // Cập nhật số phòng
+            const roomCountElement = summaryInfo.querySelector('.flex:nth-child(1) .font-medium');
+            roomCountElement.textContent = bookingData.selectedRooms.length;
+
+            // Cập nhật chi tiết giá phòng
+            summaryRoomDetails.innerHTML = bookingData.selectedRooms.map(room => `
+                <div class="mb-3" data-room-id="${escapeHtml(room.maPhong)}">
+                    <div class="flex justify-between mb-1">
+                        <span class="text-gray-600">${escapeHtml(room.tenPhong)}</span>
+                        <span class="font-medium">${formatCurrency(room.donGia * bookingData.numberOfNights + room.totalPhuThu)}</span>
+                    </div>
+                    <div class="text-sm text-gray-500 ml-4">
+                        ${formatCurrency(room.donGia)} x ${bookingData.numberOfNights} đêm
+                        ${room.totalPhuThu > 0 ? `<div>+ ${formatCurrency(room.totalPhuThu)} phụ thu</div>` : ''}
+                    </div>
+                </div>
+            `).join('');
+
+            // Tính toán tổng giá
+            const totalRoomPrice = bookingData.selectedRooms.reduce((sum, r) => sum + r.donGia * bookingData.numberOfNights, 0);
+            const totalPhuThu = bookingData.selectedRooms.reduce((sum, r) => sum + r.totalPhuThu, 0);
+            const totalServicePrice = bookingData.selectedRooms.reduce((sum, r) => sum + (r.selectedServices ? r.selectedServices.reduce((s, svc) => s + svc.soLuong * svc.donGia * bookingData.numberOfNights, 0) : 0), 0);
+            const finalAmount = totalRoomPrice + totalPhuThu + totalServicePrice;
+
+            // Cập nhật tổng giá
+            summaryTotals.innerHTML = `
+                <div class="flex justify-between mb-2">
+                    <span class="text-gray-600">Tổng giá phòng:</span>
+                    <span class="font-medium">${formatCurrency(totalRoomPrice)}</span>
+                </div>
+                ${totalPhuThu > 0 ? `
+                    <div class="flex justify-between mb-2 total-phu-thu">
+                        <span class="text-gray-600">Tổng phụ thu:</span>
+                        <span class="font-medium">${formatCurrency(totalPhuThu)}</span>
+                    </div>
+                ` : ''}
+                <div class="flex justify-between mb-2">
+                    <span class="text-gray-600">Tổng giá dịch vụ:</span>
+                    <span class="font-medium">${formatCurrency(totalServicePrice)}</span>
+                </div>
+                <div class="flex justify-between text-lg font-bold text-rose-600 mt-3">
+                    <span>Tổng cộng:</span>
+                    <span>${formatCurrency(finalAmount)}</span>
+                </div>
+            `;
+        }
+
+        // Hàm render nội dung modal xác nhận
+        function renderConfirmContent(data, contentElement) {
+            if (!data || !data.user || !data.bookingViewModel) {
+                showToast('Dữ liệu xác nhận không hợp lệ. Vui lòng thử lại.', false);
+                return false;
+            }
+
+            const model = data.bookingViewModel;
+            const user = data.user;
+
+            const roomDetails = model.selectedRooms.map(room => {
+                const originalServices = originalSelectedServices[room.maPhong] || [];
+                return `
+                    <div class="border border-gray-200 rounded-lg p-4 mb-4 flex flex-col md:flex-row">
+                        <div class="md:w-1/4 mb-4 md:mb-0">
+                            <img src="${escapeHtml(room.hinhAnh)}" alt="${escapeHtml(room.tenPhong)}" class="w-full h-32 object-cover rounded-lg" />
+                        </div>
+                        <div class="md:w-3/4 md:pl-4">
+                            <h4 class="font-medium text-lg">${escapeHtml(room.tenPhong)}</h4>
+                            <p class="text-gray-600">Giá phòng: ${formatCurrency(room.donGia)}/đêm</p>
+                            ${room.totalPhuThu > 0 ? `<p class="text-gray-600">Phụ thu: ${formatCurrency(room.totalPhuThu)}</p>` : ''}
+                            <p class="text-gray-600">Tổng giá phòng: ${formatCurrency(room.donGia * model.numberOfNights + room.totalPhuThu)}</p>
+                            ${
+                                originalServices.length > 0
+                                    ? `
+                                        <div class="mt-3">
+                                            <h5 class="font-medium mb-2">Dịch vụ đi kèm</h5>
+                                            <ul class="list-disc pl-5 space-y-1">
+                                                ${originalServices.map(service => `
+                                                    <li>${escapeHtml(service.tenDV)}: ${service.soLuong} x ${formatCurrency(service.donGia)}/ngày = ${formatCurrency(service.soLuong * service.donGia * model.numberOfNights)}</li>
+                                                `).join('')}
+                                            </ul>
+                                        </div>
+                                    `
+                                    : ''
+                            }
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            const totalServicePrice = model.selectedRooms.reduce((sum, r) => {
+                const originalServices = originalSelectedServices[r.maPhong] || [];
+                return sum + (originalServices.length ? originalServices.reduce((s, svc) => s + svc.soLuong * svc.donGia * model.numberOfNights, 0) : 0);
+            }, 0);
+
+            const totalRoomPrice = model.selectedRooms.reduce((sum, r) => sum + r.donGia * model.numberOfNights, 0);
+            const totalPhuThu = model.selectedRooms.reduce((sum, r) => sum + r.totalPhuThu, 0);
+            const totalAmount = totalRoomPrice + totalPhuThu + totalServicePrice;
+
+            contentElement.innerHTML = `
+                <div class="space-y-4">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-gray-900 mb-3">Thông tin homestay</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <p><span class="text-gray-600">Tên:</span> ${model.homestayName}</p>
+                            <p><span class="text-gray-600">Địa chỉ:</span> ${escapeHtml(model.homestayAddress)}</p>
+                            <p><span class="text-gray-600">Nhận phòng:</span> ${new Date(model.checkInDate).toLocaleDateString('vi-VN')}</p>
+                            <p><span class="text-gray-600">Trả phòng:</span> ${new Date(model.checkOutDate).toLocaleDateString('vi-VN')}</p>
+                            <p><span class="text-gray-600">Số đêm:</span> ${model.numberOfNights}</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-gray-900 mb-3">Thông tin người đặt</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <p><span class="text-gray-600">Họ tên:</span> ${escapeHtml(user.fullName || user.userName)}</p>
+                            <p><span class="text-gray-600">Email:</span> ${escapeHtml(user.email)}</p>
+                            <p><span class="text-gray-600">Số điện thoại:</span> ${escapeHtml(user.phoneNumber || 'N/A')}</p>
+                            ${user.address ? `<p><span class="text-gray-600">Địa chỉ:</span> ${escapeHtml(user.address)}</p>` : ''}
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-gray-900 mb-3">Phòng và dịch vụ</h3>
+                        ${roomDetails}
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg total-amount-section">
+                        <h3 class="text-lg font-medium text-gray-900 mb-3">Tổng tiền</h3>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Tổng giá phòng:</span>
+                                <span class="font-medium">${formatCurrency(totalRoomPrice)}</span>
+                            </div>
+                            ${totalPhuThu > 0 ? `
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Tổng phụ thu:</span>
+                                    <span class="font-medium">${formatCurrency(totalPhuThu)}</span>
+                                </div>
+                            ` : ''}
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Tổng giá dịch vụ:</span>
+                                <span class="font-medium">${formatCurrency(totalServicePrice)}</span>
+                            </div>
+                            <div class="flex justify-between discount-section hidden">
+                                <span class="text-gray-600">Chiết khấu:</span>
+                                <span class="font-medium text-green-600"></span>
+                            </div>
+                            <div class="flex justify-between text-lg font-bold text-rose-600 pt-2 border-t border-gray-200 mt-2">
+                                <span>Tổng cộng:</span>
+                                <span>${formatCurrency(totalAmount)}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            return true;
+        }
+
+        // Hàm render nội dung modal thanh toán
+        function renderPaymentContent(data, contentElement) {
+            if (!data || !data.maHD || !data.bookingViewModel) {
+                showToast('Dữ liệu thanh toán không hợp lệ.', false);
+                return false;
+            }
+
+            const model = data.bookingViewModel;
+            const roomDetails = model.selectedRooms.map(room => `
+                <div class="border border-gray-200 rounded-lg p-4 mb-4 flex flex-col md:flex-row">
+                    <div class="md:w-1/4 mb-4 md:mb-0">
+                        <img src="${escapeHtml(room.hinhAnh)}" alt="${escapeHtml(room.tenPhong)}" class="w-full h-32 object-cover rounded-lg" />
+                    </div>
+                    <div class="md:w-3/4 md:pl-4">
+                        <h4 class="font-medium text-lg">${escapeHtml(room.tenPhong)}</h4>
+                        <p class="text-gray-600">Giá phòng: ${formatCurrency(room.donGia)}/đêm</p>
+                        ${room.totalPhuThu > 0 ? `<p class="text-gray-600">Phụ thu: ${formatCurrency(room.totalPhuThu)}</p>` : ''}
+                        <p class="text-gray-600">Tổng giá phòng: ${formatCurrency(room.donGia * model.numberOfNights + room.totalPhuThu)}</p>
+                        ${
+                            room.selectedServices && room.selectedServices.length > 0
+                                ? `
+                                    <div class="mt-3">
+                                        <h5 class="font-medium mb-2">Dịch vụ đi kèm</h5>
+                                        <ul class="list-disc pl-5 space-y-1">
+                                            ${room.selectedServices.map(service => `
+                                                <li>${escapeHtml(service.tenDV)}: ${service.soLuong} x ${formatCurrency(service.donGia)}/ngày = ${formatCurrency(service.soLuong * service.donGia * model.numberOfNights)}</li>
+                                            `).join('')}
+                                        </ul>
+                                    </div>
+                                `
+                                : ''
+                        }
+                    </div>
+                </div>
+            `).join('');
+
+            contentElement.innerHTML = `
+                <div class="space-y-4">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-gray-900 mb-3">Thông tin homestay</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <p><span class="text-gray-600">Tên:</span> ${model.homestayName}</p>
+                            <p><span class="text-gray-600">Địa chỉ:</span> ${escapeHtml(model.homestayAddress)}</p>
+                            <p><span class="text-gray-600">Nhận phòng:</span> ${new Date(model.checkInDate).toLocaleDateString('vi-VN')}</p>
+                            <p><span class="text-gray-600">Trả phòng:</span> ${new Date(model.checkOutDate).toLocaleDateString('vi-VN')}</p>
+                            <p><span class="text-gray-600">Số đêm:</span> ${model.numberOfNights}</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-gray-900 mb-3">Thông tin người đặt</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <p><span class="text-gray-600">Họ tên:</span> ${escapeHtml(data.user.fullName || data.user.userName)}</p>
+                            <p><span class="text-gray-600">Email:</span> ${escapeHtml(data.user.email)}</p>
+                            <p><span class="text-gray-600">Số điện thoại:</span> ${escapeHtml(data.user.phoneNumber || 'N/A')}</p>
+                            ${data.user.address ? `<p><span class="text-gray-600">Địa chỉ:</span> ${escapeHtml(data.user.address)}</p>` : ''}
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-gray-900 mb-3">Phòng và dịch vụ</h3>
+                        ${roomDetails}
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-gray-900 mb-3">Tổng tiền</h3>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Tổng giá phòng:</span>
+                                <span class="font-medium">${formatCurrency(model.selectedRooms.reduce((sum, r) => sum + r.donGia * model.numberOfNights, 0))}</span>
+                            </div>
+                            ${data.totalPhuThu > 0 ? `
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Tổng phụ thu:</span>
+                                    <span class="font-medium">${formatCurrency(data.totalPhuThu)}</span>
+                                </div>
+                            ` : ''}
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Tổng giá dịch vụ:</span>
+                                <span class="font-medium">${formatCurrency(model.selectedRooms.reduce((sum, r) => sum + (r.selectedServices ? r.selectedServices.reduce((s, svc) => s + svc.soLuong * svc.donGia * model.numberOfNights, 0) : 0), 0))}</span>
+                            </div>
+                            ${data.discount > 0 ? `
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Chiết khấu:</span>
+                                    <span class="font-medium text-green-600">${formatCurrency(data.discount)}</span>
+                                </div>
+                            ` : ''}
+                            <div class="flex justify-between text-lg font-bold text-rose-600 pt-2 border-t border-gray-200 mt-2">
+                                <span>Tổng cộng:</span>
+                                <span>${formatCurrency(data.tongTien)}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            return true;
+        }
+
+        // Xử lý checkbox và input số lượng
+        document.querySelectorAll('input[name="serviceSelected"]').forEach(checkbox => {
+            const quantityInput = document.getElementById(checkbox.id.replace('select_', 'quantity_'));
+            checkbox.addEventListener('change', () => {
+                quantityInput.disabled = !checkbox.checked;
+                if (!checkbox.checked) {
+                    quantityInput.value = '1';
+                }
+                saveOriginalServices();
+                updateSummary();
+            });
+
+            quantityInput.addEventListener('change', () => {
+                if (quantityInput.value < 1) {
+                    quantityInput.value = 1;
+                }
+                saveOriginalServices();
+                updateSummary();
+            });
+        });
+
+        // Hàm fetch với retry
+        async function fetchWithRetry(url, options, retries = 3) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    return response;
+                } catch (error) {
+                    if (i === retries - 1) throw error;
+                    await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+                }
+            }
+        }
+
+        // Hàm lấy danh sách khuyến mãi
+        async function fetchPromotions(bookingData) {
+            console.log('fetchPromotions called with bookingData:', bookingData);
+            try {
+                if (!bookingData || !bookingData.homestayId || !bookingData.checkInDate || !bookingData.checkOutDate || !bookingData.selectedRooms) {
+                    console.error('Invalid bookingData:', bookingData);
+                    showToast('Dữ liệu đặt phòng không hợp lệ. Không thể lấy khuyến mãi.', false);
+                    return;
+                }
+
+                const params = new URLSearchParams({
+                    homestayId: bookingData.homestayId,
+                    checkInDate: new Date(bookingData.checkInDate).toISOString().split('T')[0],
+                    checkOutDate: new Date(bookingData.checkOutDate).toISOString().split('T')[0],
+                    selectedRoomIds: bookingData.selectedRooms.map(room => room.maPhong).join(',')
+                });
+                const url = '@Url.Action("GetAvailablePromotions", "Booking")' + '?' + params.toString();
+                console.log('Fetching promotions from URL:', url);
+
+                const response = await fetchWithRetry(url, {
+                    method: 'GET',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    credentials: 'same-origin',
+                    cache: 'no-cache'
+                });
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error('Non-JSON response:', text);
+                    throw new Error('Phản hồi không phải JSON');
+                }
+
+                const result = await response.json();
+                console.log('Response data:', result);
+                if (result.success) {
+                    const promotionSelect = document.getElementById('promotionSelect');
+                    promotionSelect.innerHTML = '<option value="">Không áp dụng khuyến mãi</option>';
+                    result.data.forEach(promo => {
+                        promotionSelect.innerHTML += `
+                            <option value="${escapeHtml(promo.maKM)}" data-chiet-khau="${promo.chietKhau}" data-loai-chiet-khau="${promo.loaiChietKhau}">
+                                ${escapeHtml(promo.noiDung)} (${promo.chietKhau}${promo.loaiChietKhau === 'Percentage' ? '%' : '₫'}, HSD: ${promo.hsd})
+                            </option>
+                        `;
+                    });
+                } else {
+                    showToast(result.message || 'Không thể lấy danh sách khuyến mãi.', false);
+                }
+            } catch (error) {
+                console.error('Error fetching promotions:', error);
+                showToast(`Lỗi khi lấy khuyến mãi: ${error.message}. Vui lòng thử lại.`, false);
+            }
+        }
+
+        // Hàm áp dụng khuyến mãi và cập nhật tổng tiền
+        async function applyPromotion(maKM, bookingData) {
+            if (!maKM) {
+                updateTotalAmount(0);
+                document.getElementById('promotionMessage').classList.add('hidden');
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('maKM', maKM);
+                formData.append('homestayId', bookingData.homestayId);
+                formData.append('checkInDate', new Date(bookingData.checkInDate).toISOString().split('T')[0]);
+                formData.append('checkOutDate', new Date(bookingData.checkOutDate).toISOString().split('T')[0]);
+                bookingData.selectedRooms.forEach(room => {
+                    formData.append('selectedRoomIds', room.maPhong);
+                });
+                formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+
+                const response = await fetchWithRetry('@Url.Action("ApplyPromotion", "Booking")', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error('Non-JSON response:', text);
+                    throw new Error('Phản hồi không phải JSON');
+                }
+
+                const result = await response.json();
+                if (result.success) {
+                    const { chietKhau, loaiChietKhau } = result.data;
+                    const totalRoomPrice = bookingData.selectedRooms.reduce((sum, r) => sum + r.donGia * bookingData.numberOfNights, 0);
+                    const totalPhuThu = bookingData.selectedRooms.reduce((sum, r) => sum + r.totalPhuThu, 0);
+                    const totalServicePrice = bookingData.selectedRooms.reduce((sum, r) => sum + (r.selectedServices ? r.selectedServices.reduce((s, svc) => s + svc.soLuong * svc.donGia * bookingData.numberOfNights, 0) : 0), 0);
+                    const totalAmountBeforeDiscount = totalRoomPrice + totalPhuThu;
+
+                    let discount = 0;
+                    if (loaiChietKhau === 'Percentage') {
+                        discount = totalAmountBeforeDiscount * (chietKhau / 100);
+                    } else if (loaiChietKhau === 'Fixed') {
+                        discount = chietKhau;
+                    }
+
+                    discount = Math.min(discount, totalAmountBeforeDiscount);
+
+                    updateTotalAmount(discount);
+                    document.getElementById('promotionMessage').classList.remove('hidden');
+                    document.getElementById('promotionMessage').textContent = `Đã áp dụng khuyến mãi: ${result.data.noiDung} (${chietKhau}${loaiChietKhau === 'Percentage' ? '%' : '₫'})`;
+                    document.getElementById('promotionMessage').classList.add('text-green-600');
+                } else {
+                    showToast(result.message || 'Không thể áp dụng khuyến mãi.', false);
+                    document.getElementById('promotionSelect').value = '';
+                    updateTotalAmount(0);
+                    document.getElementById('promotionMessage').classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('Error applying promotion:', error);
+                showToast(`Lỗi: ${error.message}. Vui lòng thử lại.`, false);
+                document.getElementById('promotionSelect').value = '';
+                updateTotalAmount(0);
+                document.getElementById('promotionMessage').classList.add('hidden');
+            }
+        }
+
+        // Hàm cập nhật tổng tiền trong modal
+        function updateTotalAmount(discount) {
+            const bookingData = getBookingData();
+            const totalRoomPrice = bookingData.selectedRooms.reduce((sum, r) => sum + r.donGia * bookingData.numberOfNights, 0);
+            const totalPhuThu = bookingData.selectedRooms.reduce((sum, r) => sum + r.totalPhuThu, 0);
+            const totalServicePrice = bookingData.selectedRooms.reduce((sum, r) => sum + (r.selectedServices ? r.selectedServices.reduce((s, svc) => s + svc.soLuong * svc.donGia * bookingData.numberOfNights, 0) : 0), 0);
+            const totalAmount = totalRoomPrice + totalPhuThu + totalServicePrice - discount;
+
+            const totalSection = document.querySelector('.total-amount-section .space-y-2');
+            totalSection.innerHTML = `
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Tổng giá phòng:</span>
+                    <span class="font-medium">${formatCurrency(totalRoomPrice)}</span>
+                </div>
+                ${totalPhuThu > 0 ? `
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Tổng phụ thu:</span>
+                        <span class="font-medium">${formatCurrency(totalPhuThu)}</span>
+                    </div>
+                ` : ''}
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Tổng giá dịch vụ:</span>
+                    <span class="font-medium">${formatCurrency(totalServicePrice)}</span>
+                </div>
+                ${discount > 0 ? `
+                    <div class="flex justify-between discount-section">
+                        <span class="text-gray-600">Chiết khấu:</span>
+                        <span class="font-medium text-green-600">${formatCurrency(discount)}</span>
+                    </div>
+                ` : ''}
+                <div class="flex justify-between text-lg font-bold text-rose-600 pt-2 border-t border-gray-200 mt-2">
+                    <span>Tổng cộng:</span>
+                    <span>${formatCurrency(totalAmount)}</span>
+                </div>
+            `;
+        }
+
+        // Xử lý submit form đặt phòng
+        document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Đang xử lý...';
+
+            const bookingData = getBookingData();
+            if (!bookingData.selectedRooms.length) {
+                showToast('Vui lòng chọn ít nhất một phòng.', false);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Xác nhận đặt phòng';
+                return;
+            }
+
+            const errors = [];
+            bookingData.selectedRooms.forEach((room, roomIndex) => {
+                room.selectedServices.forEach((service, serviceIndex) => {
+                    if (service.soLuong < 1) {
+                        errors.push(`Số lượng dịch vụ ${service.tenDV} của phòng ${room.tenPhong} phải lớn hơn hoặc bằng 1.`);
+                    }
+                });
+            });
+
+            if (errors.length > 0) {
+                showToast(`Vui lòng kiểm tra lại dịch vụ:\n${errors.join('\n')}`, false);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Xác nhận đặt phòng';
+                return;
+            }
+
+            const formData = new FormData(form);
+            formData.set('bookingData', JSON.stringify(bookingData));
+
+            const serviceIds = [];
+            const serviceQuantities = [];
+            bookingData.selectedRooms.forEach(room => {
+                room.selectedServices.forEach(service => {
+                    serviceIds.push(service.maDV);
+                    serviceQuantities.push(service.soLuong);
+                });
+            });
+            serviceIds.forEach(id => formData.append('serviceIds', id));
+            serviceQuantities.forEach(qty => formData.append('serviceQuantities', qty));
+
+            try {
+                const response = await fetchWithRetry(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error('Non-JSON response:', text);
+                    showToast(`Lỗi server: ${text || 'Không xác định'}. Vui lòng thử lại.`, false);
+                    return;
+                }
+
+                const result = await response.json();
+                if (result.success) {
+                    const data = result.data;
+                    const confirmContent = document.getElementById('confirmContent');
+                    if (renderConfirmContent(data, confirmContent)) {
+                        document.getElementById('confirmModal').classList.remove('hidden');
+                        fetchPromotions(bookingData);
+                    }
+                } else {
+                    const errorMessage = result.errors ? result.errors.join('\n') : result.message;
+                    showToast(errorMessage || 'Đã xảy ra lỗi khi tạo đặt phòng.', false);
+                }
+            } catch (error) {
+                console.error('Error in Create POST:', error);
+                showToast(`Lỗi: ${error.message}. Vui lòng thử lại sau.`, false);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Xác nhận đặt phòng';
+            }
+        });
+
+        // Xử lý thay đổi khuyến mãi
+        document.getElementById('promotionSelect').addEventListener('change', async (e) => {
+            const maKM = e.target.value;
+            const bookingData = getBookingData();
+            await applyPromotion(maKM, bookingData);
+        });
+
+        // Xử lý xác nhận đặt phòng
+        document.getElementById('submitConfirm').addEventListener('click', async () => {
+            try {
+                document.getElementById('submitConfirm').disabled = true;
+                const form = document.getElementById('bookingForm');
+                const token = form.querySelector('input[name="__RequestVerificationToken"]').value;
+                const bookingData = getBookingData();
+                const maKM = document.getElementById('promotionSelect').value;
+
+                const formData = new FormData();
+                formData.append('__RequestVerificationToken', token);
+                formData.append('bookingData', JSON.stringify(bookingData));
+                if (maKM) {
+                    formData.append('maKM', maKM);
+                }
+
+                const response = await fetchWithRetry('@Url.Action("ConfirmBooking", "Booking")', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error('Non-JSON response:', text);
+                    showToast(`Lỗi server: ${text || 'Không xác định'}. Vui lòng thử lại.`, false);
+                    return;
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast('Đặt phòng thành công!', true, () => {
+                        const data = result.data;
+                        const paymentContent = document.getElementById('paymentContent');
+                        if (renderPaymentContent(data, paymentContent)) {
+                            document.getElementById('maHD').value = data.maHD;
+                            document.getElementById('soTien').value = data.phiDatCoc;
+                            document.getElementById('paymentModal').classList.remove('hidden');
+                        }
+                        document.getElementById('confirmModal').classList.add('hidden');
+                    });
+                } else {
+                    const errorMessage = result.errors ? result.errors.join('\n') : result.message;
+                    showToast(errorMessage || 'Không thể xác nhận đặt phòng.', false, () => {
+                        document.getElementById('confirmModal').classList.add('hidden');
+                    });
+                }
+            } catch (error) {
+                console.error('Error in ConfirmBooking POST:', error);
+                showToast(`Lỗi: ${error.message}. Vui lòng thử lại sau.`, false, () => {
+                    document.getElementById('confirmModal').classList.add('hidden');
+                });
+            } finally {
+                document.getElementById('submitConfirm').disabled = false;
+            }
+        });
+
+        // Xử lý thanh toán (Tích hợp MoMo)
+                document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const submitBtn = document.getElementById('submitPayment');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Đang xử lý...';
+
+            const formData = new FormData(form);
+            const maHD = formData.get('maHD');
+            const phuongThuc = formData.get('phuongThuc');
+            const soTien = parseFloat(formData.get('soTien'));
+            const token = formData.get('__RequestVerificationToken');
+
+            console.log('Payment Form Data:', { maHD, phuongThuc, soTien, token });
+           
+            if (!maHD || !phuongThuc || isNaN(soTien) || soTien <= 0 || !token) {
+                showToast('Dữ liệu thanh toán không hợp lệ. Vui lòng kiểm tra lại.', false);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-wallet mr-2"></i> Thanh toán ngay';
+                return;
+            }
+
+            try {
+                const response = await fetchWithRetry(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error('Non-JSON response:', text);
+                    showToast(`Lỗi server: ${text || 'Không xác định'}. Vui lòng thử lại.`, false);
+                    return;
+                }
+
+                const result = await response.json();
+                console.log('Payment Response:', result);
+
+                if (result.success) {
+                    if (result.redirectUrl) {
+                        showToast('Đang chuyển hướng tới MoMo...', true, () => {
+                            window.location.href = result.redirectUrl;
+                        });
+                    } else {
+                        showToast('Thanh toán thành công!', true, () => {
+                            document.getElementById('paymentModal').classList.add('hidden');
+                            window.location.href = '@Url.Action("Index", "Home")';
+                        });
+                    }
+                } else {
+                    showToast(result.message || 'Không thể thực hiện thanh toán.', false);
+                }
+            } catch (error) {
+                console.error('Error in ProcessPayment POST:', error);
+                showToast(`Lỗi: ${error.message}. Vui lòng thử lại sau.`, false);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-wallet mr-2"></i> Thanh toán ngay';
+            }
+        });
+
+        // Xử lý nút hủy
+        document.getElementById('cancelConfirm').addEventListener('click', () => {
+            document.getElementById('confirmModal').classList.add('hidden');
+        });
+
+        document.getElementById('cancelConfirmBtn').addEventListener('click', () => {
+            document.getElementById('confirmModal').classList.add('hidden');
+        });
+
+        document.getElementById('cancelPayment').addEventListener('click', () => {
+            document.getElementById('paymentModal').classList.add('hidden');
+            window.location.href = '@Url.Action("Index", "Home")';
+        });
+
+        document.getElementById('cancelPaymentBtn').addEventListener('click', () => {
+            document.getElementById('paymentModal').classList.add('hidden');
+            window.location.href = '@Url.Action("Index", "Home")';
+        });
+
+        // Xử lý nút "Bỏ chọn"
+        document.querySelectorAll('.remove-room-btn').forEach(button => {
+            button.addEventListener('click', async (e) => {
+                const roomId = button.getAttribute('data-room-id');
+                const roomElement = document.getElementById(`room_${roomId}`);
+
+                if (!roomId || !roomElement) {
+                    showToast('Không thể xóa phòng. Dữ liệu không hợp lệ.', false);
+                    return;
+                }
+
+                const confirmRemove = await Swal.fire({
+                    title: 'Xác nhận',
+                    text: `Bạn có chắc chắn muốn bỏ chọn phòng này không?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#f43f5e',
+                    cancelButtonColor: '#d1d5db',
+                    confirmButtonText: 'Bỏ chọn',
+                    cancelButtonText: 'Hủy'
+                });
+
+                if (!confirmRemove.isConfirmed) {
+                    return;
+                }
+
+                try {
+                    const url = '@Url.Action("RemoveRoom", "Booking")';
+                    const response = await fetchWithRetry(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify(roomId)
+                    });
+
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        const text = await response.text();
+                        console.error('Non-JSON response:', text);
+                        throw new Error('Phản hồi không phải JSON');
+                    }
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        roomElement.remove();
+                        delete originalSelectedServices[roomId];
+
+                        const remainingRooms = document.querySelectorAll('[id^="room_"]');
+                        if (remainingRooms.length <= 1) {
+                            document.querySelectorAll('.remove-room-btn').forEach(btn => {
+                                btn.style.display = 'none';
+                            });
+                        }
+
+                        if (remainingRooms.length === 0) {
+                            const roomList = document.querySelector('.mb-8');
+                            const noRoomMessage = document.createElement('div');
+                            noRoomMessage.className = 'bg-gray-50 p-6 rounded-lg text-center';
+                            noRoomMessage.innerHTML = `
+                                <i class="fas fa-bed text-4xl text-gray-300 mb-4"></i>
+                                <p class="text-gray-600">Bạn chưa chọn phòng nào</p>
+                            `;
+                            roomList.appendChild(noRoomMessage);
+                        }
+
+                        updateSummary();
+                        showToast(result.message || 'Đã bỏ chọn phòng.', true);
+                    } else {
+                        showToast(result.message || 'Không thể bỏ chọn phòng.', false);
+                    }
+                } catch (error) {
+                    console.error('Error in RemoveRoom:', error);
+                    showToast(`Lỗi: ${error.message}. Vui lòng thử lại.`, false);
+                }
+            });
+        });
+
+        // Khởi tạo dữ liệu ban đầu
+        saveOriginalServices();
+        updateSummary();
+    </script>
+}

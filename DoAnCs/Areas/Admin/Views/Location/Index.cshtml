@@ -1,0 +1,486 @@
+﻿@using DoAnCs.Models
+@model IEnumerable<KhuVuc>
+@{
+    ViewData["Title"] = "Quản lý Khu vực";
+    var currentPage = ViewBag.CurrentPage ?? 1;
+    var pageSize = ViewBag.PageSize ?? 10;
+    var totalCount = ViewBag.TotalCount ?? 0;
+    var totalPages = ViewBag.TotalPages ?? 1;
+    var searchString = ViewBag.SearchString ?? "";
+}
+
+<!-- Main Content -->
+<div class="container mx-auto px-4 py-8">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">Quản lý Khu vực</h1>
+            <p class="text-gray-600 dark:text-gray-300 mt-1 text-sm md:text-base">
+                Tổng số khu vực: <span id="totalKhuVucs" class="font-semibold text-blue-600 dark:text-blue-400">@totalCount</span>
+            </p>
+        </div>
+        <div class="flex gap-3">
+            <a asp-area="Admin" asp-controller="Homestay" asp-action="Index"
+               class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg text-sm md:text-base">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                </svg>
+                Quay lại
+            </a>
+            <button onclick="openAddKhuVucModal()"
+                    class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg text-sm md:text-base">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                </svg>
+                Thêm khu vực mới
+            </button>
+        </div>
+    </div>
+
+    <!-- Search Filter -->
+    <div class="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-gray-600 dark:text-gray-300">Tìm kiếm khu vực</h3>
+            <button id="resetSearch" class="text-sm text-blue-600 hover:text-blue-800 dark:hover:text-blue-400 flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Đặt lại
+            </button>
+        </div>
+        <form id="searchForm" method="get" asp-action="Index">
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+                <input type="text" id="searchInput" name="searchString" value="@searchString" placeholder="Tìm theo tên khu vực..."
+                       class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition duration-150 dark:bg-gray-700 dark:text-white">
+            </div>
+        </form>
+    </div>
+
+    <!-- Khu Vuc Table -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Mã khu vực</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tên khu vực</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    @if (Model.Any())
+                    {
+                        @foreach (var khuVuc in Model)
+                        {
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">@khuVuc.Ma_KV</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">@khuVuc.Ten_KV</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <button onclick="openEditKhuVucModal('@khuVuc.Ma_KV')"
+                                            class="text-blue-600 hover:text-blue-800 dark:hover:text-blue-400 mr-4 transition-colors">
+                                        <svg class="h-5 w-5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                    <button onclick="openDeleteKhuVucModal('@khuVuc.Ma_KV', '@khuVuc.Ten_KV')"
+                                            class="text-red-600 hover:text-red-800 dark:hover:text-red-400 transition-colors">
+                                        <svg class="h-5 w-5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                                Không có khu vực nào. Hãy thêm khu vực mới!
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    @if (totalPages > 1)
+    {
+        <div class="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+                Hiển thị @(pageSize * (currentPage - 1) + 1) đến @(Math.Min(pageSize * currentPage, totalCount)) của @totalCount khu vực
+            </p>
+            <div class="flex gap-2">
+                <a href="@Url.Action("Index", new { page = currentPage - 1, searchString = searchString })"
+                   class="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors @(currentPage == 1 ? "pointer-events-none opacity-50" : "")">
+                    Trang trước
+                </a>
+                <a href="@Url.Action("Index", new { page = currentPage + 1, searchString = searchString })"
+                   class="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors @(currentPage == totalPages ? "pointer-events-none opacity-50" : "")">
+                    Trang sau
+                </a>
+            </div>
+        </div>
+    }
+
+    <!-- Add Khu Vuc Modal -->
+    <div id="addKhuVucModal" class="fixed z-50 inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden transition-opacity">
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md shadow-xl transform transition-all">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Thêm khu vực mới</h3>
+            <form id="addKhuVucForm" asp-action="Create" method="post">
+                <input type="hidden" name="__RequestVerificationToken" value="@Html.AntiForgeryToken()" />
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="Ten_KV">Tên khu vực</label>
+                    <input type="text" id="Ten_KV" name="Ten_KV" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-700 dark:text-white" required maxlength="100">
+                    <p class="text-red-600 text-sm mt-1 hidden" id="Ten_KV_error"></p>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" onclick="closeAddKhuVucModal()" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors">Hủy</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Thêm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Khu Vuc Modal -->
+    <div id="editKhuVucModal" class="fixed z-50 inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden transition-opacity">
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md shadow-xl transform transition-all">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Chỉnh sửa khu vực</h3>
+            <form id="editKhuVucForm" asp-action="Update" method="post">
+                <input type="hidden" name="__RequestVerificationToken" value="@Html.AntiForgeryToken()" />
+                <input type="hidden" id="edit_Ma_KV" name="Ma_KV">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="edit_Ten_KV">Tên khu vực</label>
+                    <input type="text" id="edit_Ten_KV" name="Ten_KV" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-700 dark:text-white" required maxlength="100">
+                    <p class="text-red-600 text-sm mt-1 hidden" id="edit_Ten_KV_error"></p>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" onclick="closeEditKhuVucModal()" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors">Hủy</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Khu Vuc Modal -->
+    <div id="deleteKhuVucModal" class="fixed z-50 inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden transition-opacity">
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md shadow-xl transform transition-all">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Xóa khu vực</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">Bạn có chắc muốn xóa khu vực <span id="deleteKhuVucName" class="font-semibold text-red-600 dark:text-red-400"></span>?</p>
+            <form id="deleteKhuVucForm" asp-action="DeleteConfirmed" method="post">
+                <input type="hidden" name="__RequestVerificationToken" value="@Html.AntiForgeryToken()" />
+                <input type="hidden" id="delete_Ma_KV" name="id">
+                <div class="flex justify-end gap-2">
+                    <button type="button" onclick="closeDeleteKhuVucModal()" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors">Hủy</button>
+                    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">Xóa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Toast function
+        function showToast(message, isSuccess) {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                }
+            });
+
+            Toast.fire({
+                icon: isSuccess ? 'success' : 'error',
+                title: message,
+                background: isSuccess ? 'var(--tw-bg-green-50)' : 'var(--tw-bg-red-50)',
+                color: isSuccess ? 'var(--tw-text-green-800)' : 'var(--tw-text-red-800)'
+            });
+        }
+
+        // Debounce function to limit API calls
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Validate Ten_KV
+        function validateTenKhuVuc(inputElement, submitButton, errorElement, excludeId = null) {
+            const tenKV = inputElement.value.trim();
+            errorElement.classList.add('hidden');
+
+            if (!tenKV) {
+                errorElement.textContent = 'Tên khu vực không được để trống';
+                errorElement.classList.remove('hidden');
+                inputElement.classList.add('border-red-500');
+                inputElement.classList.remove('border-green-500');
+                submitButton.disabled = true;
+                return;
+            }
+
+            fetch(`/Admin/Location/IsTenKhuVucExist?tenKV=${encodeURIComponent(tenKV)}${excludeId ? `&excludeId=${encodeURIComponent(excludeId)}` : ''}`)
+                .then(res => res.json())
+                .then(isValid => {
+                    if (!isValid) {
+                        errorElement.textContent = 'Tên khu vực đã tồn tại';
+                        errorElement.classList.remove('hidden');
+                        inputElement.classList.add('border-red-500');
+                        inputElement.classList.remove('border-green-500');
+                        submitButton.disabled = true;
+                    } else {
+                        errorElement.textContent = '';
+                        inputElement.classList.add('border-green-500');
+                        inputElement.classList.remove('border-red-500');
+                        submitButton.disabled = false;
+                    }
+                })
+                .catch(() => {
+                    errorElement.textContent = 'Lỗi khi kiểm tra tên khu vực';
+                    errorElement.classList.remove('hidden');
+                    inputElement.classList.add('border-red-500');
+                    inputElement.classList.remove('border-green-500');
+                    submitButton.disabled = true;
+                });
+        }
+
+        // Modal Functions
+        function openAddKhuVucModal() {
+            document.getElementById('addKhuVucModal').classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+            document.getElementById('addKhuVucForm').reset();
+            const tenKVInput = document.getElementById('Ten_KV');
+            const submitButton = document.querySelector('#addKhuVucForm button[type="submit"]');
+            const errorElement = document.getElementById('Ten_KV_error');
+            tenKVInput.classList.remove('border-red-500', 'border-green-500');
+            errorElement.classList.add('hidden');
+            errorElement.textContent = '';
+            submitButton.disabled = false;
+        }
+
+        function closeAddKhuVucModal() {
+            document.getElementById('addKhuVucModal').classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+            document.getElementById('addKhuVucForm').reset();
+        }
+
+        function openEditKhuVucModal(id) {
+            fetch(`/Admin/Location/GetKhuVuc?id=${encodeURIComponent(id)}`)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('edit_Ma_KV').value = data.ma_KV || '';
+                    document.getElementById('edit_Ten_KV').value = data.ten_KV || '';
+                    document.getElementById('editKhuVucModal').classList.remove('hidden');
+                    document.body.classList.add('overflow-hidden');
+                    const tenKVInput = document.getElementById('edit_Ten_KV');
+                    const submitButton = document.querySelector('#editKhuVucForm button[type="submit"]');
+                    const errorElement = document.getElementById('edit_Ten_KV_error');
+                    tenKVInput.classList.remove('border-red-500', 'border-green-500');
+                    errorElement.classList.add('hidden');
+                    errorElement.textContent = '';
+                    submitButton.disabled = false;
+                    validateTenKhuVuc(tenKVInput, submitButton, errorElement, data.ma_KV);
+                })
+                .catch(() => showToast('Lỗi khi tải dữ liệu khu vực', false));
+        }
+
+        function closeEditKhuVucModal() {
+            document.getElementById('editKhuVucModal').classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+            document.getElementById('editKhuVucForm').reset();
+        }
+
+        function openDeleteKhuVucModal(id, name) {
+            document.getElementById('delete_Ma_KV').value = id;
+            document.getElementById('deleteKhuVucName').textContent = name;
+            document.getElementById('deleteKhuVucModal').classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeDeleteKhuVucModal() {
+            document.getElementById('deleteKhuVucModal').classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+            document.getElementById('deleteKhuVucForm').reset();
+        }
+
+        // Submit handlers
+        function handleAddSubmit(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch('/Admin/Location/Create', {
+                method: 'POST',
+                body: formData,
+                headers: { 'Accept': 'application/json' }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.errors && data.errors.length > 0) {
+                        showToast(data.errors.join('<br>'), false);
+                    } else {
+                        showToast(data.message || 'Thêm thành công', data.success);
+                    }
+                    if (data.success) {
+                        closeAddKhuVucModal();
+                        refreshKhuVucGrid();
+                    }
+                })
+                .catch(() => showToast('Lỗi khi thêm khu vực', false));
+        }
+
+        function handleEditSubmit(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const maKV = document.getElementById('edit_Ma_KV').value;
+            if (!maKV) {
+                showToast('Mã khu vực không hợp lệ', false);
+                return;
+            }
+            fetch(`/Admin/Location/Update?id=${encodeURIComponent(maKV)}`, {
+                method: 'POST',
+                body: formData,
+                headers: { 'Accept': 'application/json' }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.errors && data.errors.length > 0) {
+                        showToast(data.errors.join('<br>'), false);
+                    } else {
+                        showToast(data.message || 'Cập nhật thành công', data.success);
+                    }
+                    if (data.success) {
+                        closeEditKhuVucModal();
+                        refreshKhuVucGrid();
+                    }
+                })
+                .catch(() => showToast('Lỗi khi cập nhật khu vực', false));
+        }
+
+        function handleDeleteSubmit(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch('/Admin/Location/DeleteConfirmed', {
+                method: 'POST',
+                body: formData,
+                headers: { 'Accept': 'application/json' }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    showToast(data.message || 'Xóa thành công', data.success);
+                    if (data.success) {
+                        closeDeleteKhuVucModal();
+                        refreshKhuVucGrid();
+                    }
+                })
+                .catch(() => showToast('Lỗi khi xóa khu vực', false));
+        }
+
+        // Search and Reset
+        document.getElementById('searchInput').addEventListener('input', function () {
+            clearTimeout(this.timeout);
+            this.timeout = setTimeout(() => {
+                document.getElementById('searchForm').submit();
+            }, 300);
+        });
+
+        document.getElementById('resetSearch').addEventListener('click', function () {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchForm').submit();
+        });
+
+        // Grid refresh
+        function refreshKhuVucGrid() {
+            const searchString = document.getElementById('searchInput').value;
+            const page = @currentPage;
+            const url = `/Admin/Location/Index?page=${page}&searchString=${encodeURIComponent(searchString)}`;
+            fetch(url, { headers: { 'Accept': 'text/html' } })
+                .then(res => res.text())
+                .then(html => {
+                    const doc = new DOMParser().parseFromString(html, 'text/html');
+                    const newContainer = doc.querySelector('.container');
+                    if (newContainer) {
+                        document.querySelector('.container').outerHTML = newContainer.outerHTML;
+                        bindEventListeners();
+                    }
+                })
+                .catch(() => showToast('Lỗi khi làm mới danh sách', false));
+        }
+
+        // Binding lại sự kiện
+        function bindEventListeners() {
+            // Gán lại các nút Edit/Delete
+            document.querySelectorAll('button[onclick^="openEditKhuVucModal"]').forEach(btn => {
+                const match = btn.getAttribute('onclick').match(/'([^']+)'/);
+                if (match) btn.addEventListener('click', () => openEditKhuVucModal(match[1]));
+            });
+
+            document.querySelectorAll('button[onclick^="openDeleteKhuVucModal"]').forEach(btn => {
+                const match = btn.getAttribute('onclick').match(/'([^']+)','([^']+)'/);
+                if (match) btn.addEventListener('click', () => openDeleteKhuVucModal(match[1], match[2]));
+            });
+
+            // Gán lại các submit event
+            const addForm = document.getElementById('addKhuVucForm');
+            if (addForm) addForm.addEventListener('submit', handleAddSubmit);
+
+            const editForm = document.getElementById('editKhuVucForm');
+            if (editForm) editForm.addEventListener('submit', handleEditSubmit);
+
+            const deleteForm = document.getElementById('deleteKhuVucForm');
+            if (deleteForm) deleteForm.addEventListener('submit', handleDeleteSubmit);
+
+            // Validate Ten_KV for Add Modal
+            const addTenKVInput = document.getElementById('Ten_KV');
+            const addSubmitButton = document.querySelector('#addKhuVucForm button[type="submit"]');
+            const addErrorElement = document.getElementById('Ten_KV_error');
+            if (addTenKVInput) {
+                addTenKVInput.addEventListener('input', debounce(() => {
+                    validateTenKhuVuc(addTenKVInput, addSubmitButton, addErrorElement);
+                }, 300));
+            }
+
+            // Validate Ten_KV for Edit Modal
+            const editTenKVInput = document.getElementById('edit_Ten_KV');
+            const editSubmitButton = document.querySelector('#editKhuVucForm button[type="submit"]');
+            const editErrorElement = document.getElementById('edit_Ten_KV_error');
+            if (editTenKVInput) {
+                editTenKVInput.addEventListener('input', debounce(() => {
+                    const excludeId = document.getElementById('edit_Ma_KV').value;
+                    validateTenKhuVuc(editTenKVInput, editSubmitButton, editErrorElement, excludeId);
+                }, 300));
+            }
+        }
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function (e) {
+            if (e.target.id === 'addKhuVucModal') closeAddKhuVucModal();
+            if (e.target.id === 'editKhuVucModal') closeEditKhuVucModal();
+            if (e.target.id === 'deleteKhuVucModal') closeDeleteKhuVucModal();
+        });
+
+        // Init on load
+        document.addEventListener('DOMContentLoaded', () => {
+            bindEventListeners();
+        });
+    </script>
+}

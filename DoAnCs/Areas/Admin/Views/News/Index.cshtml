@@ -1,0 +1,780 @@
+﻿@{
+    ViewData["Title"] = "Quản lý Tin tức";
+}
+
+<!-- Main Content -->
+<div class="p-6">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-200">Quản lý Tin tức</h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-1 text-sm md:text-base">
+                Tổng số bài viết: <span id="totalNews" class="font-semibold text-blue-600 dark:text-blue-400">0</span>
+            </p>
+        </div>
+        <div class="flex gap-2">
+            <a asp-area="Admin" asp-controller="News" asp-action="Topics"
+               class="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg text-sm md:text-base">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M9.243 3.03a1 1 0 01.727 1.213L9.53 6h2.94l.56-2.243a1 1 0 111.94.486L14.53 6H17a1 1 0 110 2h-2.97l-1 4H15a1 1 0 110 2h-2.47l-.56 2.242a1 1 0 11-1.94-.485L10.47 14H7.53l-.56 2.242a1 1 0 11-1.94-.485L5.47 14H3a1 1 0 110-2h2.97l1-4H5a1 1 0 110-2h2.47l.56-2.243a1 1 0 011.213-.727zM9.03 8l-1 4h2.938l1-4H9.031z" clip-rule="evenodd" />
+                </svg>
+                Quản lý Chủ đề
+            </a>
+            <button onclick="openAddNewsModal()"
+                    class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg text-sm md:text-base">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                </svg>
+                Thêm bài viết mới
+            </button>
+        </div>
+    </div>
+
+    <!-- Advanced Filters -->
+    <div class="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 mb-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Bộ lọc nâng cao</h3>
+            <button id="resetFilters" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Đặt lại
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Search Input -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tìm kiếm</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <input type="text" id="searchInput" placeholder="Tìm theo tiêu đề, tác giả..."
+                           class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition duration-150 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200">
+                </div>
+            </div>
+
+            <!-- Topic Filter -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Chủ đề</label>
+                <div class="relative">
+                    <select id="topicFilter" class="w-full pl-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200">
+                        <option value="all">Tất cả chủ đề</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Filter -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Trạng thái</label>
+                <div class="relative">
+                    <select id="statusFilter" class="w-full pl-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200">
+                        <option value="all">Tất cả trạng thái</option>
+                        <option value="published">Đã xuất bản</option>
+                        <option value="draft">Bản nháp</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sort By -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sắp xếp</label>
+                <div class="relative">
+                    <select id="sortBy" class="w-full pl-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200">
+                        <option value="newest">Mới nhất</option>
+                        <option value="oldest">Cũ nhất</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- News Cards Grid -->
+    <div id="newsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden bg-white dark:bg-gray-800 rounded-xl p-8 text-center border border-gray-200 dark:border-gray-700 mt-6">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+        </svg>
+        <h3 class="mt-2 text-lg font-medium text-gray-900 dark:text-gray-200">Không tìm thấy bài viết nào</h3>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Thử thay đổi tiêu chí tìm kiếm hoặc thêm bài viết mới.</p>
+        <div class="mt-6">
+            <button type="button" onclick="openAddNewsModal()"
+                    class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                Thêm bài viết mới
+            </button>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div id="pagination" class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 mt-6 hidden">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <span class="text-xs md:text-sm text-gray-500 dark:text-gray-400">
+                Hiển thị <span id="showingCount" class="font-medium">0</span> đến
+                <span id="totalCount" class="font-medium">0</span> của
+                <span id="totalNewsCount" class="font-medium">0</span> kết quả
+            </span>
+            <div class="flex items-center gap-1">
+                <button id="prevPage" class="px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 transition-colors flex items-center text-sm opacity-50 cursor-not-allowed" disabled>
+                    <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Trước
+                </button>
+                <div id="pageNumbers" class="flex gap-1"></div>
+                <button id="nextPage" class="px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 transition-colors flex items-center text-sm opacity-50 cursor-not-allowed" disabled>
+                    Sau
+                    <svg class="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" aria-modal="true" role="dialog">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-gray-900 dark:bg-opacity-75" aria-hidden="true"></div>
+        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/30 sm:mx-0 sm:h-10 sm:w-10">
+                        <svg class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-200" id="modal-title">Xác nhận xóa</h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Bạn có chắc chắn muốn xóa bài viết này? Tất cả dữ liệu liên quan sẽ bị xóa vĩnh viễn và không thể khôi phục.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-700/30 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button type="button" onclick="confirmDelete()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+                    Xác nhận xóa
+                </button>
+                <button type="button" onclick="closeRemoveModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-600 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    Hủy bỏ
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" aria-modal="true" role="dialog">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-gray-900 dark:bg-opacity-75" aria-hidden="true"></div>
+        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+            <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/30 sm:mx-0 sm:h-10 sm:w-10">
+                        <svg class="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" 形態：動詞 />
+                        </svg>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-200" id="modal-title">Chỉnh sửa Bài viết</h3>
+                        <div class="mt-2 w-full">
+                            <form id="editNewsForm" enctype="multipart/form-data" class="space-y-4">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" id="edit_Ma_TinTuc" name="Ma_TinTuc">
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tiêu đề *</label>
+                                        <input type="text" id="edit_TieuDe" name="TieuDe" required
+                                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200">
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Chủ đề *</label>
+                                        <select id="edit_ID_ChuDe" name="ID_ChuDe" required
+                                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200">
+                                            <!-- Được điền bằng JavaScript -->
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tác giả *</label>
+                                        <input type="text" id="edit_TacGia" name="TacGia" required
+                                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200">
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ngày đăng *</label>
+                                        <input type="date" id="edit_NgayDang" name="NgayDang" required
+                                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200">
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Trạng thái *</label>
+                                        <select id="edit_TrangThai" name="TrangThai" required
+                                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200">
+                                            <option value="published">Đã xuất bản</option>
+                                            <option value="draft">Bản nháp</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Hình ảnh</label>
+                                        <div class="flex items-center gap-2">
+                                            <label class="cursor-pointer">
+                                                <span class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                                    <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                                    </svg>
+                                                    Tải lên
+                                                </span>
+                                                <input type="file" id="edit_HinhAnhFile" name="HinhAnhFile" accept="image/*" class="sr-only">
+                                            </label>
+                                            <span id="editFileName" class="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">Chưa chọn file</span>
+                                        </div>
+                                        <img id="currentNewsImage" class="mt-2 max-w-[150px] rounded-md border border-gray-200 dark:border-gray-600" src="" alt="Current Image" style="display: none;">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nội dung *</label>
+                                    <textarea id="edit_NoiDung" name="NoiDung" rows="6" required
+                                              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"></textarea>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-700/30 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button type="button" onclick="submitEditForm()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                    Lưu thay đổi
+                </button>
+                <button type="button" onclick="closeEditModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-600 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    Hủy bỏ
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add News Modal -->
+<div id="addNewsModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" aria-modal="true" role="dialog">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-gray-900 dark:bg-opacity-75" aria-hidden="true"></div>
+        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+            <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/30 sm:mx-0 sm:h-10 sm:w-10">
+                        <svg class="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-200" id="modal-title">Thêm Bài viết mới</h3>
+                        <div class="mt-2 w-full">
+                            <form id="addNewsForm" enctype="multipart/form-data" class="space-y-4">
+                                @Html.AntiForgeryToken()
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Chủ đề *</label>
+                                        <select name="ID_ChuDe" id="add_ID_ChuDe" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200" required>
+                                            <!-- Được điền bằng JavaScript -->
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tiêu đề *</label>
+                                        <input name="TieuDe" id="add_TieuDe" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200" required />
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tác giả *</label>
+                                        <input name="TacGia" id="add_TacGia" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200" required />
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Trạng thái *</label>
+                                        <select name="TrangThai" id="add_TrangThai" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200" required>
+                                            <option value="published">Đã xuất bản</option>
+                                            <option value="draft">Bản nháp</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Hình ảnh</label>
+                                        <div id="upload-area" class="flex items-center gap-2">
+                                            <label class="cursor-pointer">
+                                                <span class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                                    <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                                    </svg>
+                                                    Tải lên
+                                                </span>
+                                                <input type="file" id="dropzone-file" name="HinhAnhFile" accept="image/*" class="sr-only">
+                                            </label>
+                                            <span id="fileName" class="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">Chưa chọn file</span>
+                                        </div>
+                                        <div id="image-preview" class="mt-2 hidden">
+                                            <img id="preview-image" class="max-w-[150px] rounded-md border border-gray-200 dark:border-gray-600" src="" alt="Preview">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nội dung *</label>
+                                    <textarea name="NoiDung" id="add_NoiDung" rows="6" required
+                                              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"></textarea>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-700/30 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button type="button" id="submitAddNews" onclick="submitAddForm()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                    Thêm bài viết
+                </button>
+                <button type="button" onclick="closeAddNewsModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-600 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    Hủy bỏ
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentNewsId = null;
+
+        // Hiển thị toast thông báo
+        function showToast(type, message) {
+            const toast = $('<div>', {
+                class: `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg text-white ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`,
+                html: message
+            });
+            $('body').append(toast);
+            setTimeout(() => toast.fadeOut(() => toast.remove()), 3000);
+        }
+
+        // Lấy danh sách chủ đề
+        function loadChuDeList() {
+            $.ajax({
+                url: '/Admin/News/GetChuDeList',
+                type: 'GET',
+                success: function (response) {
+                    if (response.success) {
+                        const topicFilter = $('#topicFilter');
+                        const addChuDe = $('#add_ID_ChuDe');
+                        const editChuDe = $('#edit_ID_ChuDe');
+                        response.data.forEach(chuDe => {
+                            topicFilter.append(`<option value="${chuDe.value}">${chuDe.text}</option>`);
+                            addChuDe.append(`<option value="${chuDe.value}">${chuDe.text}</option>`);
+                            editChuDe.append(`<option value="${chuDe.value}">${chuDe.text}</option>`);
+                        });
+                    } else {
+                        showToast('error', response.message || 'Không thể tải danh sách chủ đề');
+                    }
+                },
+                error: function () {
+                    showToast('error', 'Không thể tải danh sách chủ đề');
+                }
+            });
+        }
+
+        // Lấy danh sách tin tức
+        function loadNews(page = 1) {
+            const search = $('#searchInput').val();
+            const topic = $('#topicFilter').val();
+            const status = $('#statusFilter').val();
+            const sort = $('#sortBy').val();
+            const pageSize = 9;
+
+            $.ajax({
+                url: '/Admin/News/GetNewsList',
+                type: 'GET',
+                data: { page, pageSize, search, topic, status, sort },
+                success: function (response) {
+                    if (response.success) {
+                        renderNewsGrid(response.data);
+                        updatePagination(response.pagination);
+                        $('#totalNews').text(response.pagination.totalItems);
+                        $('#emptyState').toggle(response.data.length === 0);
+                        $('#pagination').toggle(response.data.length > 0);
+                    } else {
+                        showToast('error', response.message || 'Không thể tải danh sách tin tức');
+                        $('#newsGrid').empty();
+                        $('#emptyState').show();
+                        $('#pagination').hide();
+                    }
+                },
+                error: function () {
+                    showToast('error', 'Không thể tải danh sách tin tức');
+                    $('#newsGrid').empty();
+                    $('#emptyState').show();
+                    $('#pagination').hide();
+                }
+            });
+        }
+
+        // Render lưới tin tức
+        function renderNewsGrid(newsList) {
+            const grid = $('#newsGrid').empty();
+            newsList.forEach(news => {
+                const card = `
+                    <div class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 dark:border-gray-700 group">
+                        <div class="relative h-52 overflow-hidden">
+                            <img src="${news.hinhAnh || '/img/default-news.jpg'}"
+                                 class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                 alt="${news.tieuDe}">
+                            <div class="absolute top-3 right-3 px-2.5 py-1 rounded-full text-xs font-semibold shadow-sm
+                                        ${news.trangThai === 'published' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'}">
+                                ${news.trangThai === 'published' ? 'Đã xuất bản' : 'Bản nháp'}
+                            </div>
+                            <div class="absolute bottom-3 left-3 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-sm">
+                                <span class="font-bold text-blue-600 dark:text-blue-400">${news.ngayDang}</span>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="text-lg font-bold text-gray-900 dark:text-gray-200 truncate">${news.tieuDe}</h3>
+                                <div class="flex items-center bg-purple-50 dark:bg-purple-900/30 px-2 py-1 rounded-full">
+                                    <span class="text-xs font-medium text-purple-600 dark:text-purple-400">${news.chuDe || 'Không có chủ đề'}</span>
+                                </div>
+                            </div>
+                            <div class="flex items-start text-gray-600 dark:text-gray-400 mb-3">
+                                <svg class="flex-shrink-0 w-4 h-4 mt-0.5 text-gray-400 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                <span class="text-xs">${news.tacGia}</span>
+                            </div>
+                            <div class="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">${news.noiDung}</div>
+                            <div class="flex justify-between border-t border-gray-100 dark:border-gray-700 pt-3">
+                                <div class="flex gap-2">
+                                    <a href="/Admin/News/Comments/${news.ma_TinTuc}"
+                                       class="inline-flex items-center px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors text-xs">
+                                        <svg class="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                        </svg>
+                                        Bình luận (${news.binhLuanCount})
+                                    </a>
+                                </div>
+                                <div class="flex gap-1">
+                                    <button onclick="openEditModal('${news.ma_TinTuc}')"
+                                            class="p-1.5 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                    <button onclick="openRemoveModal('${news.ma_TinTuc}')"
+                                            class="p-1.5 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                grid.append(card);
+            });
+        }
+
+        // Cập nhật phân trang
+        function updatePagination(pagination) {
+            const pageNumbers = $('#pageNumbers').empty();
+            for (let i = 1; i <= pagination.totalPages; i++) {
+                pageNumbers.append(`
+                    <button class="page-number px-3 py-1.5 rounded-lg ${i === pagination.currentPage ? 'bg-blue-600 text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'} text-sm"
+                            data-page="${i}">${i}</button>
+                `);
+            }
+            $('#showingCount').text(Math.min(pagination.currentPage * pagination.pageSize, pagination.totalItems));
+            $('#totalCount').text(pagination.totalItems);
+            $('#totalNewsCount').text(pagination.totalItems);
+            $('#prevPage').prop('disabled', pagination.currentPage === 1).toggleClass('opacity-50 cursor-not-allowed', pagination.currentPage === 1);
+            $('#nextPage').prop('disabled', pagination.currentPage === pagination.totalPages).toggleClass('opacity-50 cursor-not-allowed', pagination.currentPage === pagination.totalPages);
+        }
+
+        // Xử lý sự kiện phân trang
+        $(document).on('click', '.page-number', function () {
+            const page = $(this).data('page');
+            loadNews(page);
+        });
+
+        $('#prevPage').click(function () {
+            const currentPage = parseInt($('.page-number.bg-blue-600').data('page') || 1);
+            if (currentPage > 1) loadNews(currentPage - 1);
+        });
+
+        $('#nextPage').click(function () {
+            const currentPage = parseInt($('.page-number.bg-blue-600').data('page') || 1);
+            const totalPages = parseInt($('#pageNumbers').children().last().data('page') || 1);
+            if (currentPage < totalPages) loadNews(currentPage + 1);
+        });
+
+        // Xử lý thay đổi bộ lọc
+        $('#searchInput, #topicFilter, #statusFilter, #sortBy').change(function () {
+            loadNews(1);
+        });
+
+        // Đặt lại bộ lọc
+        $('#resetFilters').click(function () {
+            $('#searchInput').val('');
+            $('#topicFilter').val('all');
+            $('#statusFilter').val('all');
+            $('#sortBy').val('newest');
+            loadNews(1);
+        });
+
+        // Quản lý modal thêm
+        function openAddNewsModal() {
+            $('#addNewsModal').removeClass('hidden');
+        }
+
+        function closeAddNewsModal() {
+            $('#addNewsModal').addClass('hidden');
+            resetAddForm();
+        }
+
+        function resetAddForm() {
+            $('#addNewsForm')[0].reset();
+            $('#dropzone-file').val('');
+            $('#fileName').text('Chưa chọn file');
+            $('#upload-area').removeClass('hidden');
+            $('#image-preview').addClass('hidden');
+        }
+
+        function submitAddForm() {
+            const form = document.getElementById('addNewsForm');
+            if (!form.checkValidity()) {
+                form.reportValidity(); // Hiển thị cảnh báo của trình duyệt
+                return; // Không gửi form nếu không hợp lệ
+            }
+            const formData = new FormData(form);
+            const submitBtn = $('#submitAddNews');
+            const token = $('input[name="__RequestVerificationToken"]', '#addNewsForm').val();
+
+            submitBtn.prop('disabled', true);
+            submitBtn.html('<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Đang xử lý...');
+
+            $.ajax({
+                url: '/Admin/News/Create',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                headers: { 'RequestVerificationToken': token },
+                success: function (response) {
+                    if (response.success) {
+                        showToast('success', 'Thêm bài viết thành công');
+                        closeAddNewsModal();
+                        loadNews(1);
+                    } else {
+                        showToast('error', response.message || 'Có lỗi xảy ra');
+                    }
+                },
+                error: function () {
+                    showToast('error', 'Có lỗi xảy ra khi thêm bài viết');
+                },
+                complete: function () {
+                    submitBtn.prop('disabled', false);
+                    submitBtn.html('Thêm bài viết');
+                }
+            });
+        }
+
+        // Quản lý modal sửa
+        function openEditModal(id) {
+            currentNewsId = id;
+            $.ajax({
+                url: '/Admin/News/GetNews/' + id,
+                type: 'GET',
+                success: function (response) {
+                    $('#edit_Ma_TinTuc').val(response.maTinTuc);
+                    $('#edit_ID_ChuDe').val(response.idChuDe);
+                    $('#edit_TieuDe').val(response.tieuDe);
+                    $('#edit_NoiDung').val(response.noiDung);
+                    $('#edit_TacGia').val(response.tacGia);
+                    $('#edit_NgayDang').val(response.ngayDang);
+                    $('#edit_TrangThai').val(response.trangThai);
+                    $('#currentNewsImage').attr('src', response.hinhAnh || '/img/default-news.jpg').toggle(!!response.hinhAnh);
+                    $('#editFileName').text('Chưa chọn file');
+                    $('#edit_HinhAnhFile').val('');
+                    $('#editModal').removeClass('hidden');
+                },
+                error: function () {
+                    showToast('error', 'Không thể tải thông tin bài viết');
+                }
+            });
+        }
+
+        function closeEditModal() {
+            $('#editModal').addClass('hidden');
+            resetEditForm();
+        }
+
+        function resetEditForm() {
+            $('#editNewsForm')[0].reset();
+            $('#editFileName').text('Chưa chọn file');
+            $('#currentNewsImage').hide();
+            $('#edit_HinhAnhFile').val('');
+        }
+
+        function submitEditForm() {
+            const form = document.getElementById('editNewsForm');
+            const formData = new FormData(form);
+            const submitBtn = $('#editModal').find('button[type="button"]').first();
+            const token = $('input[name="__RequestVerificationToken"]', '#editNewsForm').val();
+
+            submitBtn.prop('disabled', true);
+            submitBtn.html('<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Đang lưu...');
+
+            $.ajax({
+                url: '/Admin/News/Update/' + currentNewsId,
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                headers: { 'RequestVerificationToken': token },
+                success: function (response) {
+                    if (response.success) {
+                        showToast('success', 'Cập nhật bài viết thành công');
+                        closeEditModal();
+                        loadNews();
+                    } else {
+                        showToast('error', response.message || 'Có lỗi xảy ra');
+                    }
+                },
+                error: function () {
+                    showToast('error', 'Có lỗi xảy ra khi cập nhật');
+                },
+                complete: function () {
+                    submitBtn.prop('disabled', false);
+                    submitBtn.html('Lưu thay đổi');
+                }
+            });
+        }
+
+        // Quản lý modal xóa
+        function openRemoveModal(id) {
+            currentNewsId = id;
+            $('#deleteModal').removeClass('hidden');
+        }
+
+        function closeRemoveModal() {
+            $('#deleteModal').addClass('hidden');
+            currentNewsId = null;
+        }
+
+        function confirmDelete() {
+            const token = $('input[name="__RequestVerificationToken"]', '#addNewsForm').val();
+            $.ajax({
+                url: '/Admin/News/DeleteConfirmed',
+                type: 'POST',
+                data: { id: currentNewsId },
+                headers: { 'RequestVerificationToken': token },
+                success: function (response) {
+                    if (response.success) {
+                        showToast('success', 'Xóa bài viết thành công');
+                        closeRemoveModal();
+                        loadNews();
+                    } else {
+                        showToast('error', response.message || 'Có lỗi xảy ra');
+                    }
+                },
+                error: function () {
+                    showToast('error', 'Có lỗi xảy ra khi xóa bài viết');
+                }
+            });
+        }
+
+        // Xử lý tải lên hình ảnh
+        const dropzoneFile = document.getElementById('dropzone-file');
+        const uploadArea = document.getElementById('upload-area');
+        const imagePreview = document.getElementById('image-preview');
+        const previewImage = document.getElementById('preview-image');
+
+        dropzoneFile.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const allowedTypes = ['image/jpeg', 'image/png'];
+                if (!allowedTypes.includes(file.type)) {
+                    showToast('error', 'Chỉ hỗ trợ file PNG hoặc JPG');
+                    dropzoneFile.value = '';
+                    $('#fileName').text('Chưa chọn file');
+                    return;
+                }
+                if (file.size > 5 * 1024 * 1024) {
+                    showToast('error', 'Kích thước file quá lớn (tối đa 5MB)');
+                    dropzoneFile.value = '';
+                    $('#fileName').text('Chưa chọn file');
+                    return;
+                }
+                $('#fileName').text(file.name);
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    previewImage.src = event.target.result;
+                    uploadArea.classList.add('hidden');
+                    imagePreview.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                $('#fileName').text('Chưa chọn file');
+            }
+        });
+
+        $('#edit_HinhAnhFile').change(function () {
+            const file = this.files[0];
+            if (file) {
+                const allowedTypes = ['image/jpeg', 'image/png'];
+                if (!allowedTypes.includes(file.type)) {
+                    showToast('error', 'Chỉ hỗ trợ file PNG hoặc JPG');
+                    this.value = '';
+                    $('#editFileName').text('Chưa chọn file');
+                    return;
+                }
+                if (file.size > 5 * 1024 * 1024) {
+                    showToast('error', 'Kích thước file quá lớn (tối đa 5MB)');
+                    this.value = '';
+                    $('#editFileName').text('Chưa chọn file');
+                    return;
+                }
+                $('#editFileName').text(file.name);
+            } else {
+                $('#editFileName').text('Chưa chọn file');
+            }
+        });
+
+        // Khởi tạo trang
+        $(document).ready(function () {
+            loadChuDeList();
+            loadNews();
+        });
+    </script>
+}
